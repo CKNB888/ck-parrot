@@ -101,6 +101,7 @@ enum ProfileTest {
         testAskReviewFixes()
         testAskRouting()
         testWriteReport()
+        testMeetingPageMinHeight()
         testCallAbout()
         testOnboardingFlow()
         testCopilotSetupState()
@@ -1243,6 +1244,8 @@ enum ProfileTest {
         check("other labels ordered", m.otherSpeakerLabels == ["Speaker 1", "Speaker 2"])
         check("longest segments sorted", m.longestSegments(for: "Speaker 1").map(\.startTime) == [20.0, 0.0])
         check("participants summary", m.participantsSummary == "Gürkan")
+        check("detect note names every voice", m.detectedSpeakersNote == "Found 2 voices besides you: Gürkan, Speaker 2.")
+        check("detect note with only you", Meeting(title: "solo").detectedSpeakersNote == "Heard no one besides you.")
         check("next speaker after the highest", m.nextSpeakerLabel == "Speaker 3")
         m.speakerNames = ["Speaker 1": "Gürkan", "Speaker 5": "Old"]
         check("next speaker skips a named label", m.nextSpeakerLabel == "Speaker 6")
@@ -1260,6 +1263,7 @@ enum ProfileTest {
         check("merge: the merged name goes", m.speakerNames == ["Speaker 1": "Mac"])
         check("merge: the merged voiceprint goes", Array(m.speakerEmbeddings.keys) == ["Speaker 1"])
         check("merge: menus list one person", m.otherSpeakerLabels == ["Speaker 1"] && m.speakerCount == 2)
+        check("detect note for a one-to-one call", m.detectedSpeakersNote == "Found 1 voice besides you: Mac.")
         check("merge: runs once", !m.mergeSameNamedSpeakers())
 
         func meeting(_ lines: [(String, Double)]) -> Meeting {
@@ -1924,6 +1928,30 @@ enum ProfileTest {
         }
         while sem.wait(timeout: .now()) == .timedOut { RunLoop.main.run(until: .now + 0.01) }
         UserDefaults.standard.setVolatileDomain(saved, forName: UserDefaults.argumentDomain)
+    }
+
+    /// The window's minimum size is the page's size at a zero-size proposal.
+    /// A long About that sets it made the window 6,488 pt tall (Oct 14): it
+    /// ran off the screen, could not shrink, and hid the Call saved sheet.
+    @MainActor
+    static func testMeetingPageMinHeight() {
+        let schema = Schema([Meeting.self, TranscriptSegment.self, CallInsight.self, CallProfile.self, SpeakerProfile.self])
+        guard let container = try? ModelContainer(
+            for: schema, configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)]
+        ) else { check("meeting page min height: container", false); return }
+        let rm = RecordingManager(memory: MeetingMemory(directory: nil), chats: AskChatStore(directory: nil),
+                                  provider: WriteReportRecorder())
+        rm.attachForHarness(modelContext: container.mainContext)
+        let meeting = Meeting(title: "Ping Pong partnership for payment services")
+        meeting.status = .done
+        meeting.about = String(repeating: "You spoke with Kristen about a partnership to promote their payment services. ", count: 6)
+        meeting.notes = "Send the customer profile decks\nSchedule the follow-up call\nAsk about webinars"
+        container.mainContext.insert(meeting)
+        _ = NSApplication.shared
+        let host = NSHostingController(rootView: MeetingDetailView(meeting: meeting)
+            .environment(rm).environment(AppSession()).modelContainer(container))
+        let minHeight = host.sizeThatFits(in: .zero).height
+        check("meeting page: a long About never sets the window's height (min \(Int(minHeight)) pt)", minHeight < 700)
     }
 
     /// #107: Write report on a saved meeting that has none.
