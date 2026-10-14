@@ -13,11 +13,11 @@ struct WhatsNew: Equatable {
 
     /// The entry for the version being released. Empty highlights until the
     /// next release writes its own: no card, no notes.
-    static let current = WhatsNew(version: "0.29.2", headline: "Parrot can perch in your menu bar", highlights: [
+    static let current = WhatsNew(version: "0.29.3", headline: "Parrot can perch in your menu bar", highlights: [
+        "The Profiles page opens again in the Settings window you get with ⌘,.",
         "Hide Parrot from the Dock while its window is closed, in Settings > General.",
         "The meeting window fits your screen again, and Detect speakers says who it heard.",
         "Share a call's report with your team as a clean PDF, from the Share menu.",
-        "Each call names itself and says what it was about, right at the top.",
     ])
 
     /// For the help shot and the harness.
