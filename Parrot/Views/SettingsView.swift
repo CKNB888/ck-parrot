@@ -53,6 +53,7 @@ struct SettingsView: View {
     @Environment(RecordingManager.self) private var recordingManager
     @AppStorage("whisperModel") private var selectedModel = "base"
     @AppStorage("appearance") private var appearance = Appearance.system
+    @AppStorage(ParrotAppDelegate.hideDockKey) private var hideDock = false
     @AppStorage("copilotEnabled") private var copilotEnabled = false
     @AppStorage(LiveNudgeSession.defaultsKey) private var liveNudges = true
     @AppStorage("copilotProvider") private var copilotProvider = CopilotProviderKind.claude.rawValue
@@ -215,6 +216,11 @@ struct SettingsView: View {
         return SettingsPage {
             SettingsCard(title: "Startup") {
                 LoginItemRow(first: true)
+                SettingsToggleRow(
+                    title: "Hide from the Dock when the window is closed",
+                    detail: "Parrot stays in the menu bar. Choose Open Parrot there, and the Dock icon is back while the window is open.",
+                    isOn: $hideDock
+                )
             }
 
             SettingsCard(title: "Appearance") {

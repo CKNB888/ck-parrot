@@ -164,6 +164,7 @@ final class ParrotAppDelegate: NSObject, NSApplicationDelegate {
         pendingLink = nil
         // Parrot still runs with its window closed; a link brings it back
         // (the new window picks the jump up as it appears).
+        Self.showInDock()
         if ParrotApp.mainWindow == nil {
             openMainWindow?(id: ParrotApp.mainWindowID)
         }
@@ -174,12 +175,49 @@ final class ParrotAppDelegate: NSObject, NSApplicationDelegate {
 
     private func deliverProfiles() {
         guard let session = appSession, !pendingProfiles.isEmpty else { return }
+        Self.showInDock()
         if !NSApp.windows.contains(where: { $0.isVisible && $0.canBecomeMain }) {
             openMainWindow?(id: ParrotApp.mainWindowID)
         }
         NSApp.activate()
         session.profileReviews += pendingProfiles
         pendingProfiles = []
+    }
+
+    /// Settings → General: leave the Dock while the window is closed (#118).
+    static let hideDockKey = "hideDockWhenClosed"
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        // After the close has finished: until then the window still counts.
+        NotificationCenter.default.addObserver(forName: NSWindow.willCloseNotification, object: nil, queue: .main) { _ in
+            Task { @MainActor in Self.hideFromDockIfClosed() }
+        }
+    }
+
+    /// With the setting on and the window closed, Parrot lives in the menu
+    /// bar only: no Dock icon, no ⌘-Tab, no menus at the top of the screen.
+    static func hideFromDockIfClosed() {
+        guard UserDefaults.standard.bool(forKey: hideDockKey), ParrotApp.mainWindow == nil,
+              NSApp.activationPolicy() != .accessory else { return }
+        NSApp.setActivationPolicy(.accessory)
+    }
+
+    /// Every way to open the window calls this first. Before, not after: a
+    /// window that opens behind another app tells us nothing, and switched
+    /// while Parrot is already in front, the menus at the top can stay away.
+    static func showInDock() {
+        if NSApp.activationPolicy() != .regular { NSApp.setActivationPolicy(.regular) }
+    }
+
+    /// A Dock click (or opening Parrot again) with the window closed brings
+    /// it back. SwiftUI's own reopen never did: the window group takes no
+    /// outside events, so links land in the window that's there.
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        guard ParrotApp.mainWindow == nil else { return true }
+        Self.showInDock()
+        openMainWindow?(id: ParrotApp.mainWindowID)
+        NSApp.activate()
+        return false
     }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {

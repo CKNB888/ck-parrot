@@ -182,6 +182,7 @@ struct MenuBarView: View {
     /// one as it appears.
     private func showMainWindow(_ request: () -> Void = {}) {
         request()
+        ParrotAppDelegate.showInDock()
         NSApp.activate(ignoringOtherApps: true)
         if let window = ParrotApp.mainWindow {
             window.makeKeyAndOrderFront(nil)
