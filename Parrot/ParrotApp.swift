@@ -273,12 +273,10 @@ struct ParrotApp: App {
     var body: some Scene {
         WindowGroup(id: Self.mainWindowID) {
             ContentView()
-                .environment(recordingManager)
-                .environment(recordingManager.profileStore)
-                .environment(appSession)
+                .parrotEnvironment(recordingManager, appSession)
                 .sheet(isPresented: showOnboarding) {
                     OnboardingView(isPresented: showOnboarding)
-                        .environment(recordingManager)
+                        .parrotEnvironment(recordingManager, appSession)
                         .interactiveDismissDisabled()
                 }
                 .onAppear {
@@ -307,9 +305,7 @@ struct ParrotApp: App {
         // A real menu, not a floating panel: instant, keyboard-navigable, native.
         MenuBarExtra {
             MenuBarView()
-                .environment(recordingManager)
-                .environment(recordingManager.profileStore)
-                .environment(appSession)
+                .parrotEnvironment(recordingManager, appSession)
                 .modelContainer(sharedModelContainer)
         } label: {
             MenuBarLabel(recordingManager: recordingManager)
@@ -318,8 +314,7 @@ struct ParrotApp: App {
 
         Settings {
             SettingsView()
-                .environment(recordingManager)
-                .environment(recordingManager.profileStore)
+                .parrotEnvironment(recordingManager, appSession)
         }
         .modelContainer(sharedModelContainer)
     }
@@ -340,4 +335,15 @@ private struct WindowOpener: View {
     let register: (OpenWindowAction) -> Void
     @Environment(\.openWindow) private var openWindow
     var body: some View { Color.clear.onAppear { register(openWindow) } }
+}
+
+extension View {
+    /// The objects Parrot's views read with @Environment, for every scene and
+    /// sheet. One list: the Settings window had its own and missed AppSession,
+    /// so its Profiles page stopped the app (#131).
+    func parrotEnvironment(_ recordingManager: RecordingManager, _ appSession: AppSession) -> some View {
+        environment(recordingManager)
+            .environment(recordingManager.profileStore)
+            .environment(appSession)
+    }
 }

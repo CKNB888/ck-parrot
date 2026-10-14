@@ -102,6 +102,7 @@ enum ProfileTest {
         testAskRouting()
         testWriteReport()
         testMeetingPageMinHeight()
+        testSettingsWindowPages()
         testCallAbout()
         testOnboardingFlow()
         testCopilotSetupState()
@@ -1952,6 +1953,31 @@ enum ProfileTest {
             .environment(rm).environment(AppSession()).modelContainer(container))
         let minHeight = host.sizeThatFits(in: .zero).height
         check("meeting page: a long About never sets the window's height (min \(Int(minHeight)) pt)", minHeight < 700)
+    }
+
+    /// #131: the separate Settings window (⌘,) gave its pages no AppSession,
+    /// and Profiles needs one: SwiftUI stops the app on a missing object.
+    /// So no FAIL line here; a gap crashes the whole run instead.
+    @MainActor
+    static func testSettingsWindowPages() {
+        let schema = Schema([Meeting.self, TranscriptSegment.self, CallInsight.self, CallProfile.self, SpeakerProfile.self])
+        guard let container = try? ModelContainer(
+            for: schema, configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)]
+        ) else { check("settings window: container", false); return }
+        let rm = RecordingManager(memory: MeetingMemory(directory: nil), chats: AskChatStore(directory: nil),
+                                  provider: WriteReportRecorder())
+        rm.attachForHarness(modelContext: container.mainContext)
+        _ = NSApplication.shared
+        for section in SettingsSection.allCases {
+            // The scene's own helper, so a page that needs a new object and
+            // a scene that doesn't pass it can't both get past this.
+            let host = NSHostingController(rootView: SettingsView(isEmbedded: false, initialSection: section)
+                .parrotEnvironment(rm, AppSession())
+                .modelContainer(container))
+            host.view.frame = NSRect(x: 0, y: 0, width: 780, height: 620)
+            host.view.layoutSubtreeIfNeeded()
+        }
+        check("settings window: every page opens", true)
     }
 
     /// #107: Write report on a saved meeting that has none.
