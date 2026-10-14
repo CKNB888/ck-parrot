@@ -1193,21 +1193,23 @@ final class RecordingManager {
     }
 
     /// Re-runs diarization on a finished meeting (audio is retained). Safe to
-    /// call repeatedly; refuses the meeting currently being recorded.
-    func redetectSpeakers(meeting: Meeting) async {
-        guard !(isRecording && meeting.id == currentMeeting?.id) else { return }
-        await postProcess(meeting: meeting)
+    /// call repeatedly; refuses the meeting currently being recorded. Throws
+    /// when detection didn't run, so the labels are unchanged.
+    func redetectSpeakers(meeting: Meeting) async throws {
+        guard !(isRecording && meeting.id == currentMeeting?.id), await postProcess(meeting: meeting)
+        else { throw RecordingError.speakersNotDetected }
     }
 
     /// `anchors`: the live sweeps' identities for this meeting (empty for
     /// imports, recovery and re-detection), so the final labels keep the
     /// ones the user watched during the call.
-    private func postProcess(meeting: Meeting, anchors: [String: [Float]] = [:]) async {
+    @discardableResult
+    private func postProcess(meeting: Meeting, anchors: [String: [Float]] = [:]) async -> Bool {
         // Status stays .processing here — the calling chain flips .done after
         // the post-call REPORT finishes, so the UI can say "writing report…"
         // instead of the misleading "no report was generated".
         guard let audioPath = meeting.systemAudioPath.nilIfEmpty,
-              FileManager.default.fileExists(atPath: audioPath) else { return }
+              FileManager.default.fileExists(atPath: audioPath) else { return false }
 
         do {
             let audioURL = URL(fileURLWithPath: audioPath)
@@ -1240,12 +1242,14 @@ final class RecordingManager {
             // Names given during the call: one name, one person.
             meeting.mergeSameNamedSpeakers()
             try? modelContext?.save()
+            return true
         } catch {
             // Diarization is a refinement pass; the audio and transcript are
             // already saved. Keep the generic "Them" labels rather than showing
             // a perfectly good meeting as failed.
             NSLog("Parrot: diarization failed — \(error.localizedDescription)")
             try? modelContext?.save()
+            return false
         }
     }
 
@@ -1374,10 +1378,12 @@ final class RecordingManager {
 
 enum RecordingError: LocalizedError {
     case modelNotReady
+    case speakersNotDetected
 
     var errorDescription: String? {
         switch self {
         case .modelNotReady: "The speech model is still loading. Please wait."
+        case .speakersNotDetected: "Speaker detection didn't work this time. Try again."
         }
     }
 }

@@ -74,7 +74,10 @@ struct MeetingDetailView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            // First pick of the height, so the About wraps in full; the tab
+            // below scrolls with whatever is left.
             meetingHeader
+                .layoutPriority(1)
 
             if meeting.wasRecovered { recoveredBanner }
 
@@ -282,12 +285,14 @@ struct MeetingDetailView: View {
                     }
             }
 
+            // No fixedSize: outside the scroll it becomes the window's minimum
+            // height, measured one letter wide (thousands of points). The
+            // header's layoutPriority keeps it from being cut short instead.
             if !meeting.about.isEmpty {
                 Text(meeting.about)
                     .font(Theme.Typography.about)
                     .foregroundStyle(Theme.Colors.ink)
                     .textSelection(.enabled)
-                    .fixedSize(horizontal: false, vertical: true)
             }
 
             // The user's own note, first lines; the Notes tab has the rest.
@@ -1045,7 +1050,11 @@ struct MeetingDetailView: View {
 
     private var detectSpeakersButton: some View {
         Button {
-            Task { await recordingManager.redetectSpeakers(meeting: meeting) }
+            // Say what it found: a one-to-one call has no card to show.
+            runAction {
+                try await recordingManager.redetectSpeakers(meeting: meeting)
+                return meeting.detectedSpeakersNote
+            }
         } label: {
             Label(recordingManager.diarizationEngine.isProcessing
                   ? "Detecting speakers…" : "Detect speakers",

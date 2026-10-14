@@ -391,6 +391,18 @@ final class Meeting {
             .sorted { $0.localizedStandardCompare($1) == .orderedAscending }
     }
 
+    /// What Detect speakers found, in one line. A one-to-one call has no
+    /// naming card, so without this the button seemed to do nothing.
+    var detectedSpeakersNote: String {
+        let labels = otherSpeakerLabels
+        guard !labels.isEmpty else { return "Heard no one besides you." }
+        let found = labels.count == 1 ? "Found 1 voice besides you" : "Found \(labels.count) voices besides you"
+        // ponytail: names up to 4, a count past that; the card lists the rest.
+        guard labels.count <= 4 else { return found + "." }
+        let names = speakerNames
+        return found + ": " + labels.map { displayName(forSpeaker: $0, names: names) }.joined(separator: ", ") + "."
+    }
+
     /// Same name = same person. Diarization often splits one voice into
     /// several labels (a 2-person call came back as Speaker 1, 2 and 3, all
     /// named "Drago"), and the pieces' voiceprints are too far apart to
