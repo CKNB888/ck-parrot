@@ -8,7 +8,7 @@ tree. Line counts are rough — they flag which files are worth reading whole.
 | File | L | Purpose |
 |---|---|---|
 | `Parrot/ParrotApp.swift` | 290 | `@main`; parses CLI harness flags before the SwiftUI `App` starts |
-| `Parrot/ProfileTest.swift` | 5511 | `--profile-test`: headless logic harness, ~1800 checks |
+| `Parrot/ProfileTest.swift` | 5533 | `--profile-test`: headless logic harness, ~1800 checks |
 | `Parrot/ProfileTest+Parakeet.swift` | 190 | `--profile-test` checks for Parakeet: language router, per-side probe, recommendation, rewind, imports |
 | `Parrot/SnapshotTool.swift` | 1680 | Offscreen PNG renderers + transcribe/analyze/capture harnesses; `--language-test <audio> [model] [seconds]` runs the live language check on a saved track; `--echo-replay` scores a recorded call's Me lines with the echo gate; `--liveloop-test` takes `LIVELOOP_MIC` to feed both tracks; `ANALYZE_REPORT=all --analyze-test ollama <model>` writes every built-in report on a model and checks the sections came back; `--store-upgrade-test <file>` upgrades an older store copy (read-only like MCP, then with the Profiles 2.0 migration); `--ask-chat-test, --ask-real` runs a real multi-turn Ask Parrot chat against Claude or Ollama; `--about-test <store> <id> [provider] [model]` merges a meeting's same-named speakers and writes its title + About on a scratch copy |
 | `Parrot/CopilotHarness.swift` | 360 | `--kb-add`, `--doc-answer-eval` (Jev precision/recall), `--copilot-replay` (question-to-card latency; `--real` sends passes to real Claude Haiku and prints each card's call time) |
@@ -38,7 +38,7 @@ tree. Line counts are rough — they flag which files are worth reading whole.
 
 | File | L | Purpose |
 |---|---|---|
-| `Services/RecordingManager.swift` | 1456 | Orchestrates a recording session end-to-end; the hub; echo dedupe (`isBleed` drops a Me line that repeats theirs; `strippingEcho` cuts their words out of a Me line once the call's echo gate has fired); `justFinished` (the window's "Call saved" sheet); `writeReport` (Write report on a saved meeting); `writeAbout` (AI title + About after the report, backfilled on open); "Still recording?" reminder; live speaker sweeps (stable/window mapping, power pacing) |
+| `Services/RecordingManager.swift` | 1479 | Orchestrates a recording session end-to-end; the hub; echo dedupe (`isBleed` drops a Me line that repeats theirs; `strippingEcho` cuts their words out of a Me line once the call's echo gate has fired; `dedupedEcho` does both for the post-call polish); `justFinished` (the window's "Call saved" sheet); `writeReport` (Write report on a saved meeting); `writeAbout` (AI title + About after the report, backfilled on open); "Still recording?" reminder; live speaker sweeps (stable/window mapping, power pacing) |
 | `Services/CallAbout.swift` | 100 | Pure: the title + "About this call" prompt (misheard-name rule), report or transcript opening as input, JSON / "Title:" line parsing and clipping |
 | `Services/AudioCaptureManager.swift` | 1031 | System audio (tap on 15+, SCK on 14.x/rescue) + mic tap, buffer conversion |
 | `Services/SystemAudioTap.swift` | 294 | Core Audio process tap: audio-only capture, no Screen Recording (macOS 15+) |
@@ -48,7 +48,7 @@ tree. Line counts are rough — they flag which files are worth reading whole.
 | `Services/LanguageRouter.swift` | 142 | Pure: which engine each side of a Parakeet call uses (held, Parakeet, Whisper), recheck schedule; `LanguageProbe` gathers each side's first 10 s of speech |
 | `Services/ParakeetTranscriber.swift` | 38 | Parakeet TDT 0.6B v3 via FluidAudio (25 European languages, ~0.5 GB): load, transcribe with a script hint |
 | `Services/EngineRecommendation.swift` | 25 | The model a new install starts on: Parakeet only when every Mac language and past call fits its 25 |
-| `Services/CloudTranscription.swift` | 392 | Opt-in Groq (batch) and Deepgram (streaming) backends + WAV encode |
+| `Services/CloudTranscription.swift` | 445 | Opt-in Groq (batch) and Deepgram (streaming) backends + WAV encode; `TranscriptPolisher`: the post-call Groq re-decode, which skips Me lines the echo gate calls echo |
 | `Services/DiarizationEngine.swift` | 156 | FluidAudio pyannote diarization (CoreML): labels + per-speaker embeddings; whole file or a live 60 s tail |
 | `Services/AnalysisProvider.swift` | 605 | `AnalysisProvider` protocol, request/result types, prompt building, **Keychain helpers** (~L575) |
 | `Services/OpenAICompatibleProvider.swift` | 528 | OpenAI-shaped LLM client (incl. Ollama); provider switching |

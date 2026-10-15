@@ -835,6 +835,18 @@ enum ProfileTest {
               strip((150, 153, "Hi, can you hear me now? Yes, I can hear you now, loud and clear."), loud) == nil)
         check("partial echo: a Me line never strips against Me",
               strip((134, 139.8, "Hi, can you hear me now? Yes, I can hear you now, loud and clear."), (loud.line, "Me")) == nil)
+
+        // The post-call polish gets the same text dedupe, over the whole list.
+        typealias P = TranscriptPolisher.PolishedSegment
+        let polished = RecordingManager.dedupedEcho([
+            P(text: "Yes, I can hear you now, loud and clear. Thanks for hanging in there with me.", start: 138, end: 141.4, speaker: "Them"),
+            P(text: "Hi, can you hear me now? Yes, I can hear you now, loud and clear.", start: 134, end: 139.8, speaker: "Me"),
+            P(text: "Thanks for hanging in there with me.", start: 140, end: 141.5, speaker: "Me"),
+            P(text: "I'm from Turkey, by the way.", start: 143, end: 145, speaker: "Me"),
+        ])
+        check("polish dedupe: whole echo drops, echo inside my line is cut, other lines stay",
+              polished.map(\.text) == ["Yes, I can hear you now, loud and clear. Thanks for hanging in there with me.",
+                                       "Hi, can you hear me now?", "I'm from Turkey, by the way."])
     }
 
     static func testWAVEncoder() {
@@ -2760,6 +2772,16 @@ enum ProfileTest {
         check("echo gate: on headphones, doing most of the talking reads as no bleed",
               !busyHeadphones.isEcho && busyHeadphones.bleed.follows < G.minBleed
                 && busyHeadphones.talkBleed.follows < G.minTalkBleed)
+
+        // The post-call polish runs the same gate on its re-decoded Me lines,
+        // placed by file time (16-18 s here, as in verdict()).
+        func polishedIsEcho(_ mic: [Float]) -> Bool {
+            TranscriptPolisher.isEcho(.init(text: "x", start: 16, end: 18, speaker: "Me"),
+                                      mic: mic, micLevels: G.envelope(mic[...]), themLevels: themEnv)
+        }
+        check("echo gate: polish drops a Me line that is their voice on speakers", polishedIsEcho(speakers))
+        check("echo gate: polish keeps my line over theirs on speakers", !polishedIsEcho(inClip(speakers, mix(speakers, me))))
+        check("echo gate: polish keeps a Me line on headphones", !polishedIsEcho(inClip(headphones, mix(shifted(them, frames: 3, gain: 0.08), hiss))))
     }
 
     static func testGlossaryPrompt() {

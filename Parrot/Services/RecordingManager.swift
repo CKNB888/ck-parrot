@@ -588,12 +588,14 @@ final class RecordingManager {
             // start (and fill liveAnchors) before this chain reaches diarization.
             let anchors = liveAnchors
             liveAnchors = [:]
+            // Read now: the next call resets it.
+            let micHeardSpeakers = transcriptionEngine.micHearsSpeakers
             chainsInFlight += 1
             Task {
                 // A private meeting's report and after-call actions stay on
                 // this Mac; a call recording meanwhile is unaffected.
                 await CloudGate.$scopeLocal.withValue(meetingRef.onDeviceOnly) {
-                    await self.runPostCallChain(meetingRef, anchors: anchors)
+                    await self.runPostCallChain(meetingRef, anchors: anchors, micHeardSpeakers: micHeardSpeakers)
                 }
             }
             justFinished = meeting
@@ -605,12 +607,12 @@ final class RecordingManager {
         AppUpdater.shared.becameIdle()
     }
 
-    private func runPostCallChain(_ meetingRef: Meeting, anchors: [String: [Float]]) async {
+    private func runPostCallChain(_ meetingRef: Meeting, anchors: [String: [Float]], micHeardSpeakers: Bool) async {
         defer {
             chainsInFlight -= 1
             AppUpdater.shared.becameIdle()
         }
-        let polishSeconds = await polishTranscript(meeting: meetingRef)
+        let polishSeconds = await polishTranscript(meeting: meetingRef, micHeardSpeakers: micHeardSpeakers)
         await postProcess(meeting: meetingRef, anchors: anchors)
         if callAnalysisEngine.isEnabled, callAnalysisEngine.provider.isConfigured {
             await generateSummary(meeting: meetingRef)
@@ -965,6 +967,20 @@ final class RecordingManager {
         return left.map { String(words[$0]) }.joined(separator: " ")
     }
 
+    /// The live dedupe over a whole transcript at once, for the post-call
+    /// polish: drop Me lines that are bleed, cut echoed runs from the rest.
+    nonisolated static func dedupedEcho(_ lines: [TranscriptPolisher.PolishedSegment]) -> [TranscriptPolisher.PolishedSegment] {
+        let others = lines.filter { $0.speaker != AudioSource.me.label }
+            .map { (line: BleedLine(($0.start, $0.end, $0.text)), label: Optional($0.speaker)) }
+        return lines.compactMap { s in
+            guard s.speaker == AudioSource.me.label else { return s }
+            let me: BleedLine = (s.start, s.end, s.text)
+            if others.contains(where: { isBleed(me: me, other: $0.line, otherLabel: $0.label) }) { return nil }
+            guard let kept = strippingEcho(me: me, others: others) else { return s }
+            return kept.isEmpty ? nil : .init(text: kept, start: s.start, end: s.end, speaker: s.speaker)
+        }
+    }
+
     private nonisolated static func echoKey(_ word: Substring) -> String {
         String(String.UnicodeScalarView(word.lowercased().unicodeScalars.filter(CharacterSet.alphanumerics.contains)))
     }
@@ -1102,8 +1118,13 @@ final class RecordingManager {
     /// leaves the live transcript untouched.
     /// Returns the seconds of audio billed (all tracks summed) for cost tracking,
     /// 0 when polish didn't run.
+    /// On speakers the re-decode hears the echo again, so it gets the live
+    /// echo handling: the echo gate per Me line (inside `polish`), then the
+    /// text dedupe. Only when the mic hears the speakers (`micHeardSpeakers`
+    /// is the live call's echo gate): today's isBleed also matches real
+    /// lines on headphone calls, and polish has been lossless there.
     @discardableResult
-    private func polishTranscript(meeting: Meeting) async -> Double {
+    private func polishTranscript(meeting: Meeting, micHeardSpeakers: Bool) async -> Double {
         guard UserDefaults.standard.bool(forKey: "polishAfterCall"),
               !meeting.onDeviceOnly, !CloudGate.forcesLocal,
               let key = APIKeyStore.load(account: TranscriptionBackend.groq.keychainAccount!),
@@ -1121,12 +1142,14 @@ final class RecordingManager {
                 apiKey: key,
                 timeline: { [transcriptionEngine] in await transcriptionEngine.speechTimeline(samples: $0) }
             )
-            guard !polished.isEmpty else { return 0 }
+            guard !polished.segments.isEmpty else { return 0 }
+            let lines = micHeardSpeakers || polished.micHearsSpeakers
+                ? Self.dedupedEcho(polished.segments) : polished.segments
 
             for old in meeting.segments {
                 modelContext.delete(old)
             }
-            for s in polished {
+            for s in lines {
                 let segment = TranscriptSegment(
                     startTime: s.start, endTime: s.end,
                     text: s.text, speakerLabel: s.speaker, confidence: nil)
@@ -1134,7 +1157,7 @@ final class RecordingManager {
                 segment.meeting = meeting
             }
             try? modelContext.save()
-            NSLog("Parrot: transcript polished — \(polished.count) segments")
+            NSLog("Parrot: transcript polished — \(lines.count) segments, \(polished.segments.count - lines.count) echo lines dropped by text")
             // Billed audio ≈ call duration per re-transcribed track.
             let tracks = [meeting.systemAudioPath.nilIfEmpty, meeting.micAudioPath?.nilIfEmpty]
                 .compactMap { $0 }.count
