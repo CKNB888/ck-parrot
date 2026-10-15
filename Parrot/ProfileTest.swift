@@ -2810,6 +2810,34 @@ enum ProfileTest {
         check("echo gate: polish keeps my line over theirs on speakers", !polishedIsEcho(inClip(speakers, mix(speakers, me))))
         check("echo gate: polish keeps a Me line on headphones", !polishedIsEcho(inClip(headphones, mix(shifted(them, frames: 3, gain: 0.08), hiss))))
 
+        // Deepgram keeps no audio: a streamed Me line is judged on the mic's
+        // own envelope, over the seconds its words were spoken.
+        func streamed(_ mic: [Float], _ seconds: ClosedRange<Double> = 16...18) -> G.Verdict {
+            G.check(seconds: seconds, mic: G.envelope(mic[...]), them: themEnv)
+        }
+        let talkOver = inClip(speakers, mix(speakers, me))
+        check("echo gate: Deepgram's envelope-only check scores like the audio clip",
+              [speakers, talkOver, headphones].allSatisfy { mic in
+                  let a = streamed(mic), b = verdict(mic)
+                  return a.clip.follows == b.clip.follows && a.bleed.follows == b.bleed.follows && a.isEcho == b.isEcho
+              })
+        check("echo gate: Deepgram drops a Me line that is their voice on speakers", streamed(speakers).isEcho)
+        check("echo gate: Deepgram keeps my line over theirs on speakers", !streamed(talkOver).isEcho)
+        check("echo gate: Deepgram keeps a Me line on headphones",
+              !streamed(inClip(headphones, mix(shifted(them, frames: 3, gain: 0.08), hiss))).isEcho)
+        check("echo gate: Deepgram keeps a line past the audio it has", !streamed(speakers, 30...32).isEcho)
+        // Deepgram's window runs back to the previous final: 10-18 s here is
+        // six seconds of their echo, then me. Judged whole, my words would go.
+        check("echo gate: Deepgram judges the words, not the window",
+              streamed(talkOver, 10...18).isEcho && !streamed(talkOver).isEcho)
+
+        let stream = DeepgramStreamer()
+        var spans: [ClosedRange<Double>] = []
+        stream.onFinal = { _, _, _, spoken in spans.append(spoken) }
+        stream.handle(#"{"type":"Results","is_final":true,"start":10.0,"duration":8.0,"channel":{"alternatives":[{"transcript":"Yeah, I see.","words":[{"word":"yeah","start":16.2,"end":16.5},{"word":"i","start":16.6,"end":16.7},{"word":"see","start":16.7,"end":17.1}]}]}}"#)
+        stream.handle(#"{"type":"Results","is_final":true,"start":10.0,"duration":8.0,"channel":{"alternatives":[{"transcript":"Yeah."}]}}"#)
+        check("deepgram: a final's spoken span is its words, else its window", spans == [16.2...17.1, 10...18])
+
         // #98: the minute log's echo numbers. Their audio reaches the mic at
         // 0.3x (-10.5 dB), 40 ms late, inside Speex's 128 ms tail, so a working
         // canceller takes most of it out. Fed in mic-tap-sized buffers.

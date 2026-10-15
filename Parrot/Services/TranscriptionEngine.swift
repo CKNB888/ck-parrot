@@ -64,8 +64,10 @@ final class TranscriptionEngine {
     /// over a long call; these running totals keep segment timestamps absolute.
     /// Guarded by `bufferLock` (the loop and `reanchorLocalClock` both touch it).
     private var consumedSamples: [AudioSource: Int] = [:]
-    /// Each stream's loudness per 20 ms, counted like `consumedSamples`, for
-    /// the echo gate. Guarded by `bufferLock`.
+    /// Each stream's loudness per 20 ms for the echo gate, over every sample
+    /// since the call started, whether it went to Deepgram or the local
+    /// buffer. Counted like `consumedSamples` until a stream falls off
+    /// Deepgram; the local gate sits out from then on. Guarded by `bufferLock`.
     private var levels: [AudioSource: EchoGate.Levels] = [:]
     private var meetingStartTime = Date()
 
@@ -547,8 +549,10 @@ final class TranscriptionEngine {
         }
 
         // Streaming backend: straight to the socket, no chunk buffering.
+        // Loudness first, on every path: the Deepgram Me finals are gated on it too.
         let streamer: DeepgramStreamer? = bufferLock.withLock {
-            deepgramFailedSources.contains(source) ? nil : deepgramStreamers[source]
+            levels[source, default: EchoGate.Levels()].add(samples[...])
+            return deepgramFailedSources.contains(source) ? nil : deepgramStreamers[source]
         }
         if let streamer {
             streamer.send(samples)
@@ -557,7 +561,6 @@ final class TranscriptionEngine {
 
         bufferLock.withLock {
             audioBuffers[source, default: []].append(contentsOf: samples)
-            levels[source, default: EchoGate.Levels()].add(samples[...])
         }
     }
 
@@ -1222,13 +1225,45 @@ final class TranscriptionEngine {
                 self?.currentSpeaker = source
             }
         }
-        streamer.onFinal = { [weak self] text, start, end in
+        streamer.onFinal = { [weak self] text, start, end, spoken in
             guard let self else { return }
             let cleanedText = Self.cleaned(text)
             // energy 1.0: Deepgram runs its own voice-activity detection,
             // so only punctuation-only junk is filtered here.
             guard !cleanedText.isEmpty,
                   !Self.isLikelyHallucination(cleanedText, energy: 1.0) else { return }
+            // Speakers (#98): the local loop's echo gate, judged over the
+            // words alone. Deepgram's window runs back to the previous final,
+            // so a window of their echo would take my "Yeah" at its end with it.
+            // ponytail: a socket opened by a language switch sits at a wall-clock
+            // offset, a little off the sample clock; that only shifts the stretch
+            // judged, mic and theirs stay aligned. Its interim still flashes.
+            if source == .me {
+                let tracks: (mic: [Float], them: [Float])? = self.bufferLock.withLock {
+                    guard let mic = self.levels[.me], let them = self.levels[.them] else { return nil }
+                    return (mic.frames, them.frames)
+                }
+                let span = (spoken.lowerBound + offset)...(spoken.upperBound + offset)
+                if let tracks {
+                    let verdict = EchoGate.check(seconds: span, mic: tracks.mic, them: tracks.them)
+                    if verdict.isEcho {
+                        AudioCaptureManager.oslog.log("echo gate skipped a Deepgram Me line at \(span.lowerBound, format: .fixed(precision: 1), privacy: .public) s (follows \(verdict.clip.follows, format: .fixed(precision: 2), privacy: .public), bleed \(verdict.bleed.follows, format: .fixed(precision: 2), privacy: .public))")
+                        if Self.loopTrace {
+                            print(String(format: "TRACE Me [%.2f-%.2f] Deepgram echo gate SKIP follows=%.2f bleed=%.2f lag=%d: %@",
+                                         span.lowerBound, span.upperBound, verdict.clip.follows, verdict.bleed.follows,
+                                         verdict.clip.lag, cleanedText))
+                        }
+                        Task { @MainActor in
+                            self.micHearsSpeakers = true
+                            if self.currentSpeaker == .me {
+                                self.currentText = ""
+                                self.currentSpeaker = nil
+                            }
+                        }
+                        return
+                    }
+                }
+            }
             Task { @MainActor in
                 // Same as the Whisper path: the final belongs to the committed
                 // segment; the interim line must clear or it duplicates.
