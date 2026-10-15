@@ -808,6 +808,33 @@ enum ProfileTest {
         check("bleed: long Me line around a short line is kept",
               !RecordingManager.isBleed(me: (95, 110, "Tamam, cuma gününe kadar dedin ama geçen hafta da öyle demiştin."),
                                         other: (104, 105, "Cuma gününe kadar."), otherLabel: "Speaker 2"))
+
+        // Echo and my own words in one Me line (speaker calls on the owner's store).
+        typealias Other = (line: RecordingManager.BleedLine, label: String?)
+        func strip(_ me: RecordingManager.BleedLine, _ others: Other...) -> String? {
+            RecordingManager.strippingEcho(me: me, others: others)
+        }
+        let loud: Other = ((138, 141.4, "Yes, I can hear you now, loud and clear. Thanks for hanging in there with me."), "Speaker 1")
+        check("partial echo: their sentence after my question is cut, my words stay",
+              strip((134, 139.8, "Hi, can you hear me now? Yes, I can hear you now, loud and clear."), loud)
+                == "Hi, can you hear me now?")
+        check("partial echo: Turkish, their words at the end of my line",
+              strip((217.4, 221.5, "Ya görüşüyoruz işte dün neydi? Dün pazar dün görüştük en son."),
+                    ((217.4, 229.4, "Dün pazar dün görüştük en son. Oturduk bir kahve mave içtik."), "Speaker 1"))
+                == "Ya görüşüyoruz işte dün neydi?")
+        check("partial echo: echo of two of their lines comes back empty",
+              strip((154.7, 158, "a UK company for e-commerce. That's exactly the kind of thing"),
+                    ((153, 156.3, "you're based in Turkey and want a UK company for e-commerce."), "Speaker 2"),
+                    ((156.3, 159.5, "That's exactly the kind of thing Lawn Cheese is built for."), "Speaker 2")) == "")
+        check("partial echo: three words in a row are not enough",
+              strip((10, 13, "Let's talk about it tomorrow, okay?"), ((10, 12, "Let's talk about pricing."), "Them")) == nil)
+        check("partial echo: the same words seconds apart are kept",
+              strip((20, 23, "Okay. Thank you so much for your time."),
+                    ((10, 22, "Thank you so much, I have to go now because the next meeting starts right away."), "Speaker 1")) == nil)
+        check("partial echo: lines apart in time are not compared",
+              strip((150, 153, "Hi, can you hear me now? Yes, I can hear you now, loud and clear."), loud) == nil)
+        check("partial echo: a Me line never strips against Me",
+              strip((134, 139.8, "Hi, can you hear me now? Yes, I can hear you now, loud and clear."), (loud.line, "Me")) == nil)
     }
 
     static func testWAVEncoder() {

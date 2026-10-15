@@ -827,18 +827,30 @@ final class RecordingManager {
                Self.isBleed(me: incoming, other: ($0.startTime, $0.endTime, $0.text), otherLabel: $0.speakerLabel) }) {
             return
         }
+        // Echo and my own words in one line: cut the echo (see strippingEcho).
+        let stripsEcho = transcriptionEngine.micHearsSpeakers
+        var text = result.text
+        if result.source == .me, stripsEcho,
+           let kept = Self.strippingEcho(me: incoming, others: meeting.segments.map {
+               (($0.startTime, $0.endTime, $0.text), $0.speakerLabel) }) {
+            guard !kept.isEmpty else { return }
+            text = kept
+        }
         if result.source == .them {
-            for stored in meeting.segments where stored.speakerLabel == AudioSource.me.label
-                && Self.isBleed(me: (stored.startTime, stored.endTime, stored.text), other: incoming,
-                                otherLabel: result.source.label) {
-                modelContext.delete(stored)
+            for stored in meeting.segments where stored.speakerLabel == AudioSource.me.label {
+                let me: BleedLine = (stored.startTime, stored.endTime, stored.text)
+                if Self.isBleed(me: me, other: incoming, otherLabel: result.source.label) {
+                    modelContext.delete(stored)
+                } else if stripsEcho, let kept = Self.strippingEcho(me: me, others: [(incoming, result.source.label)]) {
+                    if kept.isEmpty { modelContext.delete(stored) } else { stored.text = kept }
+                }
             }
         }
 
         let segment = TranscriptSegment(
             startTime: result.startTime,
             endTime: result.endTime,
-            text: result.text,
+            text: text,
             speakerLabel: result.source.label,
             confidence: result.confidence
         )
@@ -900,6 +912,61 @@ final class RecordingManager {
         Set(s.lowercased()
             .components(separatedBy: CharacterSet.alphanumerics.inverted)
             .filter { $0.count > 1 })
+    }
+
+    /// Words in a row a Me line must share with theirs to count as echo.
+    nonisolated static let echoRunWords = 4
+
+    /// One Me line can hold my words and an echo of theirs: I talk over the
+    /// end of their sentence and the mic clip decodes as one line, which
+    /// isBleed keeps whole. So cut the echoed part: 4+ words in a row that an
+    /// overlapping other-side line also says, at about the same moment
+    /// (placed by word position, 2 s apart at most). Returns the rest, ""
+    /// when the whole line was echo, nil when nothing matched.
+    /// Only on calls where the echo gate has fired: text alone can't tell an
+    /// echo from two people saying the same thing. Ungated, replayed over the
+    /// owner's store, it cut 7 real replies on headphone calls ("Thank you so
+    /// much" from both at the end, a number repeated back); gated, 0 there and
+    /// 15 echoes on speaker calls.
+    /// ponytail: exact words only, so a misheard echo word ends the run and
+    /// stays ("FBA rule" for "ACMI renewal"), as does a lone word between two
+    /// cut runs.
+    nonisolated static func strippingEcho(me: BleedLine, others: [(line: BleedLine, label: String?)]) -> String? {
+        let words = me.text.split(whereSeparator: \.isWhitespace)
+        let keys = words.map(echoKey)
+        let real = keys.indices.filter { !keys[$0].isEmpty }  // skips "—" and the like
+        let mine = real.map { keys[$0] }
+        func at(_ line: BleedLine, word k: Int, of count: Int) -> TimeInterval {
+            line.start + (Double(k) + 0.5) / Double(count) * (line.end - line.start)
+        }
+        var cut = Set<Int>()
+        for (other, label) in others where label != AudioSource.me.label
+            && other.start < me.end + 0.5 && other.end > me.start - 0.5 {
+            let theirs = other.text.split(whereSeparator: \.isWhitespace).map(echoKey).filter { !$0.isEmpty }
+            // run[i + 1][j + 1]: words in a row that end at my i-th and their j-th.
+            var run = Array(repeating: Array(repeating: 0, count: theirs.count + 2), count: mine.count + 2)
+            for i in mine.indices {
+                for j in theirs.indices where mine[i] == theirs[j] { run[i + 1][j + 1] = run[i][j] + 1 }
+            }
+            for i in mine.indices {
+                for j in theirs.indices {
+                    let n = run[i + 1][j + 1]
+                    // Judge each run once, where it ends.
+                    guard n >= echoRunWords, run[i + 2][j + 2] == 0 else { continue }
+                    let (a, b) = (i + 1 - n, j + 1 - n)
+                    guard abs(at(me, word: a, of: mine.count) - at(other, word: b, of: theirs.count)) <= 2 else { continue }
+                    cut.formUnion(real[a...i])
+                }
+            }
+        }
+        guard !cut.isEmpty else { return nil }
+        let left = words.indices.filter { !cut.contains($0) }
+        guard left.contains(where: { !keys[$0].isEmpty }) else { return "" }
+        return left.map { String(words[$0]) }.joined(separator: " ")
+    }
+
+    private nonisolated static func echoKey(_ word: Substring) -> String {
+        String(String.UnicodeScalarView(word.lowercased().unicodeScalars.filter(CharacterSet.alphanumerics.contains)))
     }
 
     // MARK: - Post-Call Summary
