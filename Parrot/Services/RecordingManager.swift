@@ -870,19 +870,25 @@ final class RecordingManager {
     /// with small variances ("I am" vs "I'm"), so exact equality is too strict.
     /// High token overlap + the tight time window keeps a human genuinely
     /// echoing the other side (rare inside 2.5s) from being eaten.
-    nonisolated static func isEchoDuplicate(_ a: String, _ b: String) -> Bool {
-        let ta = echoTokens(a), tb = echoTokens(b)
-        guard !ta.isEmpty, !tb.isEmpty else { return false }
-        let (small, big) = ta.count <= tb.count ? (ta, tb) : (tb, ta)
-        let exact = small.intersection(big).count
+    /// Scored against the Me line's own words: echo must explain most of mine.
+    /// Scoring against the shorter line let their "Evet." delete a whole Me
+    /// line that contained "evet" (44 real lines on headphone calls in the
+    /// owner's store). A Me line that's a piece of their longer line still drops.
+    /// ponytail: a Me echo that spans two of their lines (the system side split
+    /// the sentence) passes here; the echo gate drops those first on Whisper
+    /// calls (11 of 12 on the owner's speaker calls), Deepgram has no gate.
+    nonisolated static func isEchoDuplicate(_ other: String, _ me: String) -> Bool {
+        let theirs = echoTokens(other), mine = echoTokens(me)
+        guard !theirs.isEmpty, !mine.isEmpty else { return false }
+        let exact = mine.intersection(theirs).count
         // Misheard words only help a long line that's already mostly the same
         // words. Short replies reuse the other side's words with a new ending
         // ("görüyor musun?" "Görüyorum."), and counting those deleted real
         // answers when replayed over the owner's store.
-        let misheard = small.count >= 4 && Double(exact) / Double(small.count) >= 0.6
-            ? small.subtracting(big).filter { word in big.contains { isEchoWord(word, $0) } }.count
+        let misheard = mine.count >= 4 && Double(exact) / Double(mine.count) >= 0.6
+            ? mine.subtracting(theirs).filter { word in theirs.contains { isEchoWord(word, $0) } }.count
             : 0
-        return Double(exact + misheard) / Double(small.count) >= 0.8
+        return Double(exact + misheard) / Double(mine.count) >= 0.8
     }
 
     /// Whether two words are the same word heard twice. The echo canceller
