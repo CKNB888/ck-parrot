@@ -357,16 +357,25 @@ enum TranscriptPolisher {
     /// lines over stretches with no voice are dropped, since the upload
     /// includes every idle minute and Whisper fills silence with invented
     /// text. nil timeline = keep everything.
+    /// Me lines the live echo gate would skip are dropped too (#98: the
+    /// re-decode brought back the echo the live call had removed);
+    /// `micHearsSpeakers` says whether any was.
     static func polish(systemPath: String?, micPath: String?,
                        language: String?, apiKey: String,
-                       timeline: ([Float]) async -> [Float]? = { _ in nil }) async throws -> [PolishedSegment] {
+                       timeline: ([Float]) async -> [Float]? = { _ in nil })
+    async throws -> (segments: [PolishedSegment], micHearsSpeakers: Bool) {
         var out: [PolishedSegment] = []
+        var themLevels: [Float]?
+        var micHearsSpeakers = false
         for (path, speaker) in [(systemPath, "Them"), (micPath, "Me")] {
             guard let path, FileManager.default.fileExists(atPath: path) else { continue }
             guard let samples = try? AudioFileLoader.load16kMono(url: URL(fileURLWithPath: path)) else {
                 NSLog("Parrot: polish skipped \(speaker) track — unsupported format")
                 continue
             }
+            // The system track comes first; keep only its loudness for the Me pass.
+            let levels = EchoGate.envelope(samples[...])
+            if speaker == "Them" { themLevels = levels }
             let voice = await timeline(samples)
             let partLength = 16000 * partSeconds
             var offset = 0
@@ -383,13 +392,27 @@ enum TranscriptPolisher {
                     if let voice, !TranscriptionEngine.hasVoice(voice, from: s.start + shift, to: s.end + shift) {
                         continue
                     }
-                    out.append(PolishedSegment(text: text, start: s.start + shift,
-                                               end: s.end + shift, speaker: speaker))
+                    let line = PolishedSegment(text: text, start: s.start + shift, end: s.end + shift, speaker: speaker)
+                    if speaker == "Me", let themLevels,
+                       isEcho(line, mic: samples, micLevels: levels, themLevels: themLevels) {
+                        micHearsSpeakers = true
+                        continue
+                    }
+                    out.append(line)
                 }
                 offset += partLength
             }
         }
-        return out.sorted { $0.start < $1.start }
+        return (out.sorted { $0.start < $1.start }, micHearsSpeakers)
+    }
+
+    /// The live echo gate on one polished Me line. Both tracks start at the
+    /// same instant (since 0.24.0), so file times line up, as `--echo-replay`
+    /// assumes for new recordings.
+    static func isEcho(_ line: PolishedSegment, mic: [Float], micLevels: [Float], themLevels: [Float]) -> Bool {
+        let lo = max(0, Int(line.start * 16000)), hi = min(mic.count, Int(line.end * 16000))
+        guard hi > lo else { return false }
+        return EchoGate.check(clip: Array(mic[lo..<hi]), mic: micLevels, them: themLevels, at: lo / EchoGate.hop).isEcho
     }
 }
 
