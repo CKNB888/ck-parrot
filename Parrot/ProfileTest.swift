@@ -824,6 +824,45 @@ enum ProfileTest {
         check("bleed: my echo of the end of their line still drops",
               RecordingManager.isBleed(me: (32.6, 35.4, "What can I help you with today?"),
                                        other: (31.2, 33.7, "from Launchies. What can I help you with today?"), otherLabel: "Speaker 1"))
+
+        // Echo and my own words in one Me line (speaker calls on the owner's store).
+        typealias Other = (line: RecordingManager.BleedLine, label: String?)
+        func strip(_ me: RecordingManager.BleedLine, _ others: Other...) -> String? {
+            RecordingManager.strippingEcho(me: me, others: others)
+        }
+        let loud: Other = ((138, 141.4, "Yes, I can hear you now, loud and clear. Thanks for hanging in there with me."), "Speaker 1")
+        check("partial echo: their sentence after my question is cut, my words stay",
+              strip((134, 139.8, "Hi, can you hear me now? Yes, I can hear you now, loud and clear."), loud)
+                == "Hi, can you hear me now?")
+        check("partial echo: Turkish, their words at the end of my line",
+              strip((217.4, 221.5, "Ya görüşüyoruz işte dün neydi? Dün pazar dün görüştük en son."),
+                    ((217.4, 229.4, "Dün pazar dün görüştük en son. Oturduk bir kahve mave içtik."), "Speaker 1"))
+                == "Ya görüşüyoruz işte dün neydi?")
+        check("partial echo: echo of two of their lines comes back empty",
+              strip((154.7, 158, "a UK company for e-commerce. That's exactly the kind of thing"),
+                    ((153, 156.3, "you're based in Turkey and want a UK company for e-commerce."), "Speaker 2"),
+                    ((156.3, 159.5, "That's exactly the kind of thing Lawn Cheese is built for."), "Speaker 2")) == "")
+        check("partial echo: three words in a row are not enough",
+              strip((10, 13, "Let's talk about it tomorrow, okay?"), ((10, 12, "Let's talk about pricing."), "Them")) == nil)
+        check("partial echo: the same words seconds apart are kept",
+              strip((20, 23, "Okay. Thank you so much for your time."),
+                    ((10, 22, "Thank you so much, I have to go now because the next meeting starts right away."), "Speaker 1")) == nil)
+        check("partial echo: lines apart in time are not compared",
+              strip((150, 153, "Hi, can you hear me now? Yes, I can hear you now, loud and clear."), loud) == nil)
+        check("partial echo: a Me line never strips against Me",
+              strip((134, 139.8, "Hi, can you hear me now? Yes, I can hear you now, loud and clear."), (loud.line, "Me")) == nil)
+
+        // The post-call polish gets the same text dedupe, over the whole list.
+        typealias P = TranscriptPolisher.PolishedSegment
+        let polished = RecordingManager.dedupedEcho([
+            P(text: "Yes, I can hear you now, loud and clear. Thanks for hanging in there with me.", start: 138, end: 141.4, speaker: "Them"),
+            P(text: "Hi, can you hear me now? Yes, I can hear you now, loud and clear.", start: 134, end: 139.8, speaker: "Me"),
+            P(text: "Thanks for hanging in there with me.", start: 140, end: 141.5, speaker: "Me"),
+            P(text: "I'm from Turkey, by the way.", start: 143, end: 145, speaker: "Me"),
+        ])
+        check("polish dedupe: whole echo drops, echo inside my line is cut, other lines stay",
+              polished.map(\.text) == ["Yes, I can hear you now, loud and clear. Thanks for hanging in there with me.",
+                                       "Hi, can you hear me now?", "I'm from Turkey, by the way."])
     }
 
     static func testWAVEncoder() {
@@ -2749,6 +2788,16 @@ enum ProfileTest {
         check("echo gate: on headphones, doing most of the talking reads as no bleed",
               !busyHeadphones.isEcho && busyHeadphones.bleed.follows < G.minBleed
                 && busyHeadphones.talkBleed.follows < G.minTalkBleed)
+
+        // The post-call polish runs the same gate on its re-decoded Me lines,
+        // placed by file time (16-18 s here, as in verdict()).
+        func polishedIsEcho(_ mic: [Float]) -> Bool {
+            TranscriptPolisher.isEcho(.init(text: "x", start: 16, end: 18, speaker: "Me"),
+                                      mic: mic, micLevels: G.envelope(mic[...]), themLevels: themEnv)
+        }
+        check("echo gate: polish drops a Me line that is their voice on speakers", polishedIsEcho(speakers))
+        check("echo gate: polish keeps my line over theirs on speakers", !polishedIsEcho(inClip(speakers, mix(speakers, me))))
+        check("echo gate: polish keeps a Me line on headphones", !polishedIsEcho(inClip(headphones, mix(shifted(them, frames: 3, gain: 0.08), hiss))))
 
         // #98: the minute log's echo numbers. Their audio reaches the mic at
         // 0.3x (-10.5 dB), 40 ms late, inside Speex's 128 ms tail, so a working

@@ -588,12 +588,14 @@ final class RecordingManager {
             // start (and fill liveAnchors) before this chain reaches diarization.
             let anchors = liveAnchors
             liveAnchors = [:]
+            // Read now: the next call resets it.
+            let micHeardSpeakers = transcriptionEngine.micHearsSpeakers
             chainsInFlight += 1
             Task {
                 // A private meeting's report and after-call actions stay on
                 // this Mac; a call recording meanwhile is unaffected.
                 await CloudGate.$scopeLocal.withValue(meetingRef.onDeviceOnly) {
-                    await self.runPostCallChain(meetingRef, anchors: anchors)
+                    await self.runPostCallChain(meetingRef, anchors: anchors, micHeardSpeakers: micHeardSpeakers)
                 }
             }
             justFinished = meeting
@@ -605,12 +607,12 @@ final class RecordingManager {
         AppUpdater.shared.becameIdle()
     }
 
-    private func runPostCallChain(_ meetingRef: Meeting, anchors: [String: [Float]]) async {
+    private func runPostCallChain(_ meetingRef: Meeting, anchors: [String: [Float]], micHeardSpeakers: Bool) async {
         defer {
             chainsInFlight -= 1
             AppUpdater.shared.becameIdle()
         }
-        let polishSeconds = await polishTranscript(meeting: meetingRef)
+        let polishSeconds = await polishTranscript(meeting: meetingRef, micHeardSpeakers: micHeardSpeakers)
         await postProcess(meeting: meetingRef, anchors: anchors)
         if callAnalysisEngine.isEnabled, callAnalysisEngine.provider.isConfigured {
             await generateSummary(meeting: meetingRef)
@@ -827,18 +829,30 @@ final class RecordingManager {
                Self.isBleed(me: incoming, other: ($0.startTime, $0.endTime, $0.text), otherLabel: $0.speakerLabel) }) {
             return
         }
+        // Echo and my own words in one line: cut the echo (see strippingEcho).
+        let stripsEcho = transcriptionEngine.micHearsSpeakers
+        var text = result.text
+        if result.source == .me, stripsEcho,
+           let kept = Self.strippingEcho(me: incoming, others: meeting.segments.map {
+               (($0.startTime, $0.endTime, $0.text), $0.speakerLabel) }) {
+            guard !kept.isEmpty else { return }
+            text = kept
+        }
         if result.source == .them {
-            for stored in meeting.segments where stored.speakerLabel == AudioSource.me.label
-                && Self.isBleed(me: (stored.startTime, stored.endTime, stored.text), other: incoming,
-                                otherLabel: result.source.label) {
-                modelContext.delete(stored)
+            for stored in meeting.segments where stored.speakerLabel == AudioSource.me.label {
+                let me: BleedLine = (stored.startTime, stored.endTime, stored.text)
+                if Self.isBleed(me: me, other: incoming, otherLabel: result.source.label) {
+                    modelContext.delete(stored)
+                } else if stripsEcho, let kept = Self.strippingEcho(me: me, others: [(incoming, result.source.label)]) {
+                    if kept.isEmpty { modelContext.delete(stored) } else { stored.text = kept }
+                }
             }
         }
 
         let segment = TranscriptSegment(
             startTime: result.startTime,
             endTime: result.endTime,
-            text: result.text,
+            text: text,
             speakerLabel: result.source.label,
             confidence: result.confidence
         )
@@ -906,6 +920,75 @@ final class RecordingManager {
         Set(s.lowercased()
             .components(separatedBy: CharacterSet.alphanumerics.inverted)
             .filter { $0.count > 1 })
+    }
+
+    /// Words in a row a Me line must share with theirs to count as echo.
+    nonisolated static let echoRunWords = 4
+
+    /// One Me line can hold my words and an echo of theirs: I talk over the
+    /// end of their sentence and the mic clip decodes as one line, which
+    /// isBleed keeps whole. So cut the echoed part: 4+ words in a row that an
+    /// overlapping other-side line also says, at about the same moment
+    /// (placed by word position, 2 s apart at most). Returns the rest, ""
+    /// when the whole line was echo, nil when nothing matched.
+    /// Only on calls where the echo gate has fired: text alone can't tell an
+    /// echo from two people saying the same thing. Ungated, replayed over the
+    /// owner's store, it cut 7 real replies on headphone calls ("Thank you so
+    /// much" from both at the end, a number repeated back); gated, 0 there and
+    /// 15 echoes on speaker calls.
+    /// ponytail: exact words only, so a misheard echo word ends the run and
+    /// stays ("FBA rule" for "ACMI renewal"), as does a lone word between two
+    /// cut runs.
+    nonisolated static func strippingEcho(me: BleedLine, others: [(line: BleedLine, label: String?)]) -> String? {
+        let words = me.text.split(whereSeparator: \.isWhitespace)
+        let keys = words.map(echoKey)
+        let real = keys.indices.filter { !keys[$0].isEmpty }  // skips "—" and the like
+        let mine = real.map { keys[$0] }
+        func at(_ line: BleedLine, word k: Int, of count: Int) -> TimeInterval {
+            line.start + (Double(k) + 0.5) / Double(count) * (line.end - line.start)
+        }
+        var cut = Set<Int>()
+        for (other, label) in others where label != AudioSource.me.label
+            && other.start < me.end + 0.5 && other.end > me.start - 0.5 {
+            let theirs = other.text.split(whereSeparator: \.isWhitespace).map(echoKey).filter { !$0.isEmpty }
+            // run[i + 1][j + 1]: words in a row that end at my i-th and their j-th.
+            var run = Array(repeating: Array(repeating: 0, count: theirs.count + 2), count: mine.count + 2)
+            for i in mine.indices {
+                for j in theirs.indices where mine[i] == theirs[j] { run[i + 1][j + 1] = run[i][j] + 1 }
+            }
+            for i in mine.indices {
+                for j in theirs.indices {
+                    let n = run[i + 1][j + 1]
+                    // Judge each run once, where it ends.
+                    guard n >= echoRunWords, run[i + 2][j + 2] == 0 else { continue }
+                    let (a, b) = (i + 1 - n, j + 1 - n)
+                    guard abs(at(me, word: a, of: mine.count) - at(other, word: b, of: theirs.count)) <= 2 else { continue }
+                    cut.formUnion(real[a...i])
+                }
+            }
+        }
+        guard !cut.isEmpty else { return nil }
+        let left = words.indices.filter { !cut.contains($0) }
+        guard left.contains(where: { !keys[$0].isEmpty }) else { return "" }
+        return left.map { String(words[$0]) }.joined(separator: " ")
+    }
+
+    /// The live dedupe over a whole transcript at once, for the post-call
+    /// polish: drop Me lines that are bleed, cut echoed runs from the rest.
+    nonisolated static func dedupedEcho(_ lines: [TranscriptPolisher.PolishedSegment]) -> [TranscriptPolisher.PolishedSegment] {
+        let others = lines.filter { $0.speaker != AudioSource.me.label }
+            .map { (line: BleedLine(($0.start, $0.end, $0.text)), label: Optional($0.speaker)) }
+        return lines.compactMap { s in
+            guard s.speaker == AudioSource.me.label else { return s }
+            let me: BleedLine = (s.start, s.end, s.text)
+            if others.contains(where: { isBleed(me: me, other: $0.line, otherLabel: $0.label) }) { return nil }
+            guard let kept = strippingEcho(me: me, others: others) else { return s }
+            return kept.isEmpty ? nil : .init(text: kept, start: s.start, end: s.end, speaker: s.speaker)
+        }
+    }
+
+    private nonisolated static func echoKey(_ word: Substring) -> String {
+        String(String.UnicodeScalarView(word.lowercased().unicodeScalars.filter(CharacterSet.alphanumerics.contains)))
     }
 
     // MARK: - Post-Call Summary
@@ -1041,8 +1124,13 @@ final class RecordingManager {
     /// leaves the live transcript untouched.
     /// Returns the seconds of audio billed (all tracks summed) for cost tracking,
     /// 0 when polish didn't run.
+    /// On speakers the re-decode hears the echo again, so it gets the live
+    /// echo handling: the echo gate per Me line (inside `polish`), then the
+    /// text dedupe. Only when the mic hears the speakers (`micHeardSpeakers`
+    /// is the live call's echo gate): today's isBleed also matches real
+    /// lines on headphone calls, and polish has been lossless there.
     @discardableResult
-    private func polishTranscript(meeting: Meeting) async -> Double {
+    private func polishTranscript(meeting: Meeting, micHeardSpeakers: Bool) async -> Double {
         guard UserDefaults.standard.bool(forKey: "polishAfterCall"),
               !meeting.onDeviceOnly, !CloudGate.forcesLocal,
               let key = APIKeyStore.load(account: TranscriptionBackend.groq.keychainAccount!),
@@ -1060,12 +1148,14 @@ final class RecordingManager {
                 apiKey: key,
                 timeline: { [transcriptionEngine] in await transcriptionEngine.speechTimeline(samples: $0) }
             )
-            guard !polished.isEmpty else { return 0 }
+            guard !polished.segments.isEmpty else { return 0 }
+            let lines = micHeardSpeakers || polished.micHearsSpeakers
+                ? Self.dedupedEcho(polished.segments) : polished.segments
 
             for old in meeting.segments {
                 modelContext.delete(old)
             }
-            for s in polished {
+            for s in lines {
                 let segment = TranscriptSegment(
                     startTime: s.start, endTime: s.end,
                     text: s.text, speakerLabel: s.speaker, confidence: nil)
@@ -1073,7 +1163,7 @@ final class RecordingManager {
                 segment.meeting = meeting
             }
             try? modelContext.save()
-            NSLog("Parrot: transcript polished — \(polished.count) segments")
+            NSLog("Parrot: transcript polished — \(lines.count) segments, \(polished.segments.count - lines.count) echo lines dropped by text")
             // Billed audio ≈ call duration per re-transcribed track.
             let tracks = [meeting.systemAudioPath.nilIfEmpty, meeting.micAudioPath?.nilIfEmpty]
                 .compactMap { $0 }.count
