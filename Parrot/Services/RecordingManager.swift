@@ -878,8 +878,7 @@ final class RecordingManager {
     /// has skipped a Me clip): on headphones my "Okay." opens their "Okay,
     /// so..." all the time, and text alone can't tell it from echo. Replayed
     /// over the owner's store, that kept 74 real replies on headphone calls
-    /// and still caught 44 of 47 echoes on speaker calls. Deepgram streams
-    /// have no echo gate, so there only 3+ word lines drop.
+    /// and still caught 44 of 47 echoes on speaker calls.
     /// ponytail: a short echo before the gate's first skip (10 s+ in) stays.
     nonisolated static func isBleed(me: BleedLine, other: BleedLine, otherLabel: String?, micHearsSpeakers: Bool) -> Bool {
         guard otherLabel != AudioSource.me.label else { return false }
@@ -898,8 +897,8 @@ final class RecordingManager {
     /// line that contained "evet" (44 real lines on headphone calls in the
     /// owner's store). A Me line that's a piece of their longer line still drops.
     /// ponytail: a Me echo that spans two of their lines (the system side split
-    /// the sentence) passes here; the echo gate drops those first on Whisper
-    /// calls (11 of 12 on the owner's speaker calls), Deepgram has no gate.
+    /// the sentence) passes here; the echo gate drops those first (11 of 12
+    /// on the owner's speaker calls).
     nonisolated static func isEchoDuplicate(_ other: String, _ me: String) -> Bool {
         let theirs = echoTokens(other), mine = echoTokens(me)
         guard !theirs.isEmpty, !mine.isEmpty else { return false }

@@ -741,6 +741,9 @@ enum HelpShots {
 /// pins the language (with REALTIME: watch the mismatch switch fire). For idle-noise
 /// work: PARROT_LOOP_TRACE=1 prints each clip's voice score, and
 /// PARROT_VAD_THRESHOLD=0 turns the voice gate off for an A/B.
+/// Deepgram: run the signed dist/Parrot.app binary (the keychain trusts it)
+/// with LIVELOOP_REALTIME=1 and `-transcriptionBackend deepgram` after the
+/// model; a launch argument overrides the setting without saving it.
 /// Born from a real drop: the middle sentence of a three-sentence test never
 /// reached the transcript while both neighbors did (2026-08-01).
 enum LiveLoopTest {
@@ -822,6 +825,7 @@ enum LiveLoopTest {
             for seg in emitted {
                 print(String(format: "[%6.2f – %6.2f] %@%@", seg.start, seg.end, mic.isEmpty ? "" : seg.who + ": ", seg.text))
             }
+            if !mic.isEmpty { print("echo gate fired (mic hears speakers): \(engine.micHearsSpeakers)") }
             exit(0)
         }
         dispatchMain()

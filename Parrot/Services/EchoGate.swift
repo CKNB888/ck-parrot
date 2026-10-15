@@ -87,7 +87,19 @@ enum EchoGate {
     /// The live gate and `--echo-replay`: `mic` and `them` are whole-call
     /// envelopes on one clock, and the clip starts at frame `startFrame`.
     static func check(clip: [Float], mic: [Float], them: [Float], at startFrame: Int) -> Verdict {
-        let end = min(mic.count, startFrame + clip.count / hop)
+        check(clipLevels: envelope(clip[...]), mic: mic, them: them, at: startFrame)
+    }
+
+    /// A Deepgram Me line, spoken over `seconds` of the call. Deepgram keeps
+    /// no audio, so the clip is that stretch of `mic` itself.
+    static func check(seconds: ClosedRange<Double>, mic: [Float], them: [Float]) -> Verdict {
+        let from = min(mic.count, max(0, Int(seconds.lowerBound * 16000) / hop))
+        let to = min(mic.count, max(from, Int(seconds.upperBound * 16000) / hop))
+        return check(clipLevels: Array(mic[from..<to]), mic: mic, them: them, at: from)
+    }
+
+    private static func check(clipLevels: [Float], mic: [Float], them: [Float], at startFrame: Int) -> Verdict {
+        let end = min(mic.count, startFrame + clipLevels.count)
         let from = max(maxLag, end - bleedWindow)  // room for every delay before it
         let none = Score(follows: 0, lag: 0, themTalking: 0)
         let bleed = end - from < minBleedFrames ? none
@@ -101,7 +113,7 @@ enum EchoGate {
         // clips match by chance (best of 21 tries over 25 frames).
         let lag = (hears ?? bleed).lag
         let near = max(-maxLead, lag - 2)...min(maxLag, lag + 2)
-        let clip = follow(envelope(clip[...]), them: them, at: startFrame, lags: near)
+        let clip = follow(clipLevels, them: them, at: startFrame, lags: near)
         let echo = hears != nil && clip.themTalking >= minTalking && clip.follows >= minFollows
         return Verdict(clip: clip, bleed: bleed, talkBleed: talkBleed, isEcho: echo)
     }

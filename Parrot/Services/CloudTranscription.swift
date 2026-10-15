@@ -211,8 +211,10 @@ final class DeepgramStreamer {
 
     /// Called off-main with the latest interim transcript for the live line.
     var onInterim: ((String) -> Void)?
-    /// Called off-main with a finalized utterance (text, start, end seconds).
-    var onFinal: ((String, Double, Double) -> Void)?
+    /// Called off-main with a finalized utterance (text, start, end seconds)
+    /// and the span its words were spoken. start...end is Deepgram's window:
+    /// all the audio since the previous final, silences included.
+    var onFinal: ((String, Double, Double, ClosedRange<Double>) -> Void)?
     /// Called once on any socket/API failure; the engine falls back to local.
     var onError: ((String) -> Void)?
 
@@ -305,7 +307,8 @@ final class DeepgramStreamer {
     }
 
     private struct Response: Decodable {
-        struct Alternative: Decodable { let transcript: String }
+        struct Word: Decodable { let start: Double; let end: Double }
+        struct Alternative: Decodable { let transcript: String; let words: [Word]? }
         struct Channel: Decodable { let alternatives: [Alternative] }
         let type: String?
         let channel: Channel?
@@ -314,17 +317,21 @@ final class DeepgramStreamer {
         let duration: Double?
     }
 
-    private func handle(_ json: String) {
+    /// Internal, not private: `--profile-test` feeds it Deepgram messages.
+    func handle(_ json: String) {
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
         guard let response = try? decoder.decode(Response.self, from: Data(json.utf8)),
               response.type == "Results",
-              let transcript = response.channel?.alternatives.first?.transcript,
-              !transcript.isEmpty else { return }
+              let alternative = response.channel?.alternatives.first,
+              !alternative.transcript.isEmpty else { return }
+        let transcript = alternative.transcript
 
         if response.isFinal == true {
-            let start = response.start ?? 0
-            onFinal?(transcript, start, start + (response.duration ?? 0))
+            let start = response.start ?? 0, end = start + (response.duration ?? 0)
+            let words = alternative.words ?? []
+            let spoken = words.first.map { $0.start...max($0.start, words.last!.end) } ?? start...end
+            onFinal?(transcript, start, end, spoken)
         } else {
             onInterim?(transcript)
         }
