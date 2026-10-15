@@ -3,16 +3,16 @@
     <channel>
         <title>Parrot</title>
         <item>
-            <title>0.29.3</title>
-            <pubDate>Wed, 14 Oct 2026 13:02:29 +0100</pubDate>
+            <title>0.29.4</title>
+            <pubDate>Thu, 15 Oct 2026 09:23:48 +0100</pubDate>
             <sparkle:fullReleaseNotesLink>https://openparrot.app/changelog</sparkle:fullReleaseNotesLink>
-            <sparkle:version>202610141259</sparkle:version>
-            <sparkle:shortVersionString>0.29.3</sparkle:shortVersionString>
+            <sparkle:version>202610150923</sparkle:version>
+            <sparkle:shortVersionString>0.29.4</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <description><![CDATA[<h3>Parrot can perch in your menu bar</h3><ul><li>The Profiles page opens again in the Settings window you get with ⌘,.</li><li>Hide Parrot from the Dock while its window is closed, in Settings &gt; General.</li><li>The meeting window fits your screen again, and Detect speakers says who it heard.</li><li>Share a call's report with your team as a clean PDF, from the Share menu.</li></ul><p><a href="https://openparrot.app/changelog#v0.29.3">Read the full story</a></p>
+            <description><![CDATA[<h3>Parrot can perch in your menu bar</h3><ul><li>Gauges wait until the call gives them something to go on, so no more fake mood swings.</li><li>The Profiles page opens again in the Settings window you get with ⌘,.</li><li>Hide Parrot from the Dock while its window is closed, in Settings &gt; General.</li><li>Share a call's report with your team as a clean PDF, from the Share menu.</li></ul><p><a href="https://openparrot.app/changelog#v0.29.4">Read the full story</a></p>
 ]]></description>
-            <enclosure url="https://github.com/turantekin/Parrot/releases/download/v0.29.3/Parrot-0.29.3.dmg" length="26420071" type="application/octet-stream" sparkle:edSignature="R11YqtSXoEE49BWJ8Yxihi5gMq/y5fgxguNJ/IGK906fBCr+rGvqmpBeCDHoOqao0uHwbezWDSx11I5FVK7nAA=="/>
+            <enclosure url="https://github.com/turantekin/Parrot/releases/download/v0.29.4/Parrot-0.29.4.dmg" length="26432122" type="application/octet-stream" sparkle:edSignature="I6OAlqqnIo3gBNDCHcKexraxLm3ZzolxzT1pKiBZhzZHMsRWZWaHRu1eu60dryf76Gje6CVIyxZJQn+0Rm5OAA=="/>
         </item>
     </channel>
 </rss>
