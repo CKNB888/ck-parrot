@@ -13,9 +13,9 @@ struct WhatsNew: Equatable {
 
     /// The entry for the version being released. Empty highlights until the
     /// next release writes its own: no card, no notes.
-    static let current = WhatsNew(version: "0.29.4", headline: "Parrot can perch in your menu bar", highlights: [
+    static let current = WhatsNew(version: "0.29.5", headline: "Parrot stops parroting your speakers", highlights: [
+        "On speakers, their voice stays out of your mic far more often, so fewer echo lines.",
         "Gauges wait until the call gives them something to go on, so no more fake mood swings.",
-        "The Profiles page opens again in the Settings window you get with ⌘,.",
         "Hide Parrot from the Dock while its window is closed, in Settings > General.",
         "Share a call's report with your team as a clean PDF, from the Share menu.",
     ])
