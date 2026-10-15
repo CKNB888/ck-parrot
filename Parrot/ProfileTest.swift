@@ -789,41 +789,52 @@ enum ProfileTest {
         let line = "Raporu yarın sabah sana gönderirim, tamam mı?"
         let echo: RecordingManager.BleedLine = (10, 13, line), twin: RecordingManager.BleedLine = (10.1, 13, line)
         check("bleed: echo of a swept Speaker 1 line still drops",
-              RecordingManager.isBleed(me: echo, other: twin, otherLabel: "Speaker 1"))
+              RecordingManager.isBleed(me: echo, other: twin, otherLabel: "Speaker 1", micHearsSpeakers: false))
         check("bleed: echo of an unswept Them line still drops",
-              RecordingManager.isBleed(me: echo, other: twin, otherLabel: "Them"))
+              RecordingManager.isBleed(me: echo, other: twin, otherLabel: "Them", micHearsSpeakers: false))
         check("bleed: a Me line never dedupes against Me",
-              !RecordingManager.isBleed(me: echo, other: twin, otherLabel: "Me"))
+              !RecordingManager.isBleed(me: echo, other: twin, otherLabel: "Me", micHearsSpeakers: false))
         // The mic decodes only a piece of a long line, starting past 2.5 s.
         let long: RecordingManager.BleedLine =
             (100, 108.6, "Bu hafta çok yoğundum abi, raporu bitiremedim. Cuma gününe kadar sana gönderirim.")
         check("bleed: piece inside a longer line drops",
               RecordingManager.isBleed(me: (105.4, 108.5, "Cuma gününe kadar sana gönderirim."),
-                                       other: long, otherLabel: "Speaker 2"))
+                                       other: long, otherLabel: "Speaker 2", micHearsSpeakers: false))
         check("bleed: same piece outside the line's span is kept",
               !RecordingManager.isBleed(me: (110, 113, "Cuma gününe kadar sana gönderirim."),
-                                        other: long, otherLabel: "Speaker 2"))
+                                        other: long, otherLabel: "Speaker 2", micHearsSpeakers: false))
         check("bleed: one-word reply inside a long line is kept",
-              !RecordingManager.isBleed(me: (103, 103.6, "Abi."), other: long, otherLabel: "Speaker 2"))
+              !RecordingManager.isBleed(me: (103, 103.6, "Abi."), other: long, otherLabel: "Speaker 2", micHearsSpeakers: true))
         check("bleed: long Me line around a short line is kept",
               !RecordingManager.isBleed(me: (95, 110, "Tamam, cuma gününe kadar dedin ama geçen hafta da öyle demiştin."),
-                                        other: (104, 105, "Cuma gününe kadar."), otherLabel: "Speaker 2"))
+                                        other: (104, 105, "Cuma gününe kadar."), otherLabel: "Speaker 2", micHearsSpeakers: true))
         // A headphone call (m148): their short word starts with my longer line
         // and every word of it is in mine. Scored against their line, all three
         // of mine were deleted as echo.
         check("bleed: their 'Evet.' doesn't delete my longer line",
               !RecordingManager.isBleed(me: (200.3, 204.9, "Şey dedin orada evet nasıl etkiledi abi yani eğer özel değilse tabii ki. Değil"),
-                                        other: (202.2, 202.9, "Evet."), otherLabel: "Speaker 2"))
+                                        other: (202.2, 202.9, "Evet."), otherLabel: "Speaker 2", micHearsSpeakers: true))
         check("bleed: their 'bay bay.' doesn't delete my goodbye",
               !RecordingManager.isBleed(me: (2738.1, 2741.5, "Abi çok sağ ol. Gene görüşelim. Hadi kendine çok iyi bak. Bay bay bay."),
-                                        other: (2740.5, 2741.0, "bay bay."), otherLabel: "Speaker 1"))
+                                        other: (2740.5, 2741.0, "bay bay."), otherLabel: "Speaker 1", micHearsSpeakers: true))
         check("bleed: their 'Yani,' doesn't delete my line",
               !RecordingManager.isBleed(me: (255.5, 260.0, "Zor iş. Allah, Allah kolaylık versin abi yani"),
-                                        other: (253.3, 254.1, "Yani,"), otherLabel: "Speaker 2"))
+                                        other: (253.3, 254.1, "Yani,"), otherLabel: "Speaker 2", micHearsSpeakers: true))
         // A speaker call: the mic decoded the end of their line, starting together.
         check("bleed: my echo of the end of their line still drops",
               RecordingManager.isBleed(me: (32.6, 35.4, "What can I help you with today?"),
-                                       other: (31.2, 33.7, "from Launchies. What can I help you with today?"), otherLabel: "Speaker 1"))
+                                       other: (31.2, 33.7, "from Launchies. What can I help you with today?"),
+                                       otherLabel: "Speaker 1", micHearsSpeakers: false))
+        // #98, headphones: my one-word reply often opens their line too. Text
+        // can't tell that from echo, so a 1-2 word Me line is echo only once the
+        // echo gate has heard the speakers. 74 real replies on the owner's
+        // headphone calls were deleted before.
+        let okay: RecordingManager.BleedLine = (512.1, 512.6, "Okay.")
+        let theirOkay: RecordingManager.BleedLine = (512.0, 514.0, "Okay. All right. Perfect.")
+        check("bleed: my 'Okay.' at the start of their 'Okay. All right.' is kept on headphones",
+              !RecordingManager.isBleed(me: okay, other: theirOkay, otherLabel: "Speaker 1", micHearsSpeakers: false))
+        check("bleed: the same 'Okay.' drops once the mic hears the speakers",
+              RecordingManager.isBleed(me: okay, other: theirOkay, otherLabel: "Speaker 1", micHearsSpeakers: true))
     }
 
     static func testWAVEncoder() {

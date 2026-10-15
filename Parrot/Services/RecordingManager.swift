@@ -822,15 +822,17 @@ final class RecordingManager {
         // whichever order they decoded in. (Surfaced by the speakers-playback
         // live test 2026-08-01; previously masked by the glossary decode bug.)
         let incoming: BleedLine = (result.startTime, result.endTime, result.text)
+        let hearsSpeakers = transcriptionEngine.micHearsSpeakers
         if result.source == .me,
            meeting.segments.contains(where: {
-               Self.isBleed(me: incoming, other: ($0.startTime, $0.endTime, $0.text), otherLabel: $0.speakerLabel) }) {
+               Self.isBleed(me: incoming, other: ($0.startTime, $0.endTime, $0.text), otherLabel: $0.speakerLabel,
+                            micHearsSpeakers: hearsSpeakers) }) {
             return
         }
         if result.source == .them {
             for stored in meeting.segments where stored.speakerLabel == AudioSource.me.label
                 && Self.isBleed(me: (stored.startTime, stored.endTime, stored.text), other: incoming,
-                                otherLabel: result.source.label) {
+                                otherLabel: result.source.label, micHearsSpeakers: hearsSpeakers) {
                 modelContext.delete(stored)
             }
         }
@@ -858,12 +860,19 @@ final class RecordingManager {
     /// replies ("Okay", "Tabii") are what people say while the other side
     /// talks. A plain overlap test, without these limits, dropped real Me
     /// lines on the owner's store (a long Me line around a short "Okay. So").
-    nonisolated static func isBleed(me: BleedLine, other: BleedLine, otherLabel: String?) -> Bool {
+    /// A 1-2 word line also needs `micHearsSpeakers` (this call's echo gate
+    /// has skipped a Me clip): on headphones my "Okay." opens their "Okay,
+    /// so..." all the time, and text alone can't tell it from echo. Replayed
+    /// over the owner's store, that kept 74 real replies on headphone calls
+    /// and still caught 44 of 47 echoes on speaker calls. Deepgram streams
+    /// have no echo gate, so there only 3+ word lines drop.
+    /// ponytail: a short echo before the gate's first skip (10 s+ in) stays.
+    nonisolated static func isBleed(me: BleedLine, other: BleedLine, otherLabel: String?, micHearsSpeakers: Bool) -> Bool {
         guard otherLabel != AudioSource.me.label else { return false }
         let startsTogether = abs(me.start - other.start) <= 2.5
         let inside = me.start >= other.start - 0.5 && me.end <= other.end + 0.5
         guard startsTogether || inside, isEchoDuplicate(other.text, me.text) else { return false }
-        return startsTogether || echoTokens(me.text).count >= 3
+        return echoTokens(me.text).count >= 3 || (startsTogether && micHearsSpeakers)
     }
 
     /// Near-verbatim match for the echo-dedup above: Whisper decodes the bleed
