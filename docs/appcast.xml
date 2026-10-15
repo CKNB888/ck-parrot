@@ -3,16 +3,16 @@
     <channel>
         <title>Parrot</title>
         <item>
-            <title>0.29.5</title>
-            <pubDate>Thu, 15 Oct 2026 13:01:59 +0100</pubDate>
+            <title>0.29.6</title>
+            <pubDate>Thu, 15 Oct 2026 15:57:00 +0100</pubDate>
             <sparkle:fullReleaseNotesLink>https://openparrot.app/changelog</sparkle:fullReleaseNotesLink>
-            <sparkle:version>202610151301</sparkle:version>
-            <sparkle:shortVersionString>0.29.5</sparkle:shortVersionString>
+            <sparkle:version>202610151556</sparkle:version>
+            <sparkle:shortVersionString>0.29.6</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <description><![CDATA[<h3>Parrot stops parroting your speakers</h3><ul><li>On speakers, their voice stays out of your mic far more often, so fewer echo lines.</li><li>Gauges wait until the call gives them something to go on, so no more fake mood swings.</li><li>Hide Parrot from the Dock while its window is closed, in Settings &gt; General.</li><li>Share a call's report with your team as a clean PDF, from the Share menu.</li></ul><p><a href="https://openparrot.app/changelog#v0.29.5">Read the full story</a></p>
+            <description><![CDATA[<h3>Cleaner transcripts on speakers</h3><ul><li>On speakers, their voice stays out of your mic far more often, so fewer echo lines.</li><li>Echo caught inside one of your lines is cut out, and your own words stay.</li><li>Deepgram calls now catch echo on speakers too.</li><li>Short replies like &quot;Okay&quot; no longer go missing on headphone calls.</li></ul><p><a href="https://openparrot.app/changelog#v0.29.6">Read the full story</a></p>
 ]]></description>
-            <enclosure url="https://github.com/turantekin/Parrot/releases/download/v0.29.5/Parrot-0.29.5.dmg" length="26436711" type="application/octet-stream" sparkle:edSignature="sWN0VH+ZNKOq1J4KpevfXo+ZX1ZDfxvpcQ45Bx2Ch1Z0vJc9tE8u3qc47XonUfk/T9O7K667RDxEWRpUoOU1DA=="/>
+            <enclosure url="https://github.com/turantekin/Parrot/releases/download/v0.29.6/Parrot-0.29.6.dmg" length="26445986" type="application/octet-stream" sparkle:edSignature="45itP/mhs8TiKTuJzBOI+jc3wAWcHhFPZp9Wraip8OE3UDd0FqpYJF4d4GBCpO/vJ1CKvMrBCMjaPeQbvcPsAw=="/>
         </item>
     </channel>
 </rss>
