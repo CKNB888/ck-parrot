@@ -808,6 +808,22 @@ enum ProfileTest {
         check("bleed: long Me line around a short line is kept",
               !RecordingManager.isBleed(me: (95, 110, "Tamam, cuma gününe kadar dedin ama geçen hafta da öyle demiştin."),
                                         other: (104, 105, "Cuma gününe kadar."), otherLabel: "Speaker 2"))
+        // A headphone call (m148): their short word starts with my longer line
+        // and every word of it is in mine. Scored against their line, all three
+        // of mine were deleted as echo.
+        check("bleed: their 'Evet.' doesn't delete my longer line",
+              !RecordingManager.isBleed(me: (200.3, 204.9, "Şey dedin orada evet nasıl etkiledi abi yani eğer özel değilse tabii ki. Değil"),
+                                        other: (202.2, 202.9, "Evet."), otherLabel: "Speaker 2"))
+        check("bleed: their 'bay bay.' doesn't delete my goodbye",
+              !RecordingManager.isBleed(me: (2738.1, 2741.5, "Abi çok sağ ol. Gene görüşelim. Hadi kendine çok iyi bak. Bay bay bay."),
+                                        other: (2740.5, 2741.0, "bay bay."), otherLabel: "Speaker 1"))
+        check("bleed: their 'Yani,' doesn't delete my line",
+              !RecordingManager.isBleed(me: (255.5, 260.0, "Zor iş. Allah, Allah kolaylık versin abi yani"),
+                                        other: (253.3, 254.1, "Yani,"), otherLabel: "Speaker 2"))
+        // A speaker call: the mic decoded the end of their line, starting together.
+        check("bleed: my echo of the end of their line still drops",
+              RecordingManager.isBleed(me: (32.6, 35.4, "What can I help you with today?"),
+                                       other: (31.2, 33.7, "from Launchies. What can I help you with today?"), otherLabel: "Speaker 1"))
 
         // Echo and my own words in one Me line (speaker calls on the owner's store).
         typealias Other = (line: RecordingManager.BleedLine, label: String?)
