@@ -2733,6 +2733,81 @@ enum ProfileTest {
         check("echo gate: on headphones, doing most of the talking reads as no bleed",
               !busyHeadphones.isEcho && busyHeadphones.bleed.follows < G.minBleed
                 && busyHeadphones.talkBleed.follows < G.minTalkBleed)
+
+        // #98: the minute log's echo numbers. Their audio reaches the mic at
+        // 0.3x (-10.5 dB), 40 ms late, inside Speex's 128 ms tail, so a working
+        // canceller takes most of it out. Fed in mic-tap-sized buffers.
+        let played = speech(seed: 7, seconds: 10)
+        let heard = shifted(played, frames: 2, gain: 0.3)
+        let aec = EchoCanceller()
+        for start in stride(from: 0, to: played.count, by: 1024) {
+            let end = min(start + 1024, played.count)
+            aec.pushReference(Array(played[start..<end]))
+            _ = aec.process(mic: Array(heard[start..<end]))
+        }
+        let stats = aec.takeStats()
+        check("echo stats: counts the frames they talk", (stats?.frames ?? 0) >= 100)
+        check("echo stats: mic hears the speakers at about -10.5 dB", abs((stats?.hears ?? 0) + 10.5) < 2)
+        check("echo stats: the canceller removes 10+ dB", (stats?.removed ?? 0) >= 10)
+        check("echo stats: reading starts a new minute", aec.takeStats() == nil)
+        let quiet = EchoCanceller()
+        quiet.pushReference(Array(repeating: 0, count: 16000))
+        _ = quiet.process(mic: Array(heard.prefix(16000)))
+        check("echo stats: nothing while they're silent", quiet.takeStats() == nil)
+
+        // --aec-replay: a dump replayed as it was live, then shifted. The echo
+        // is 40 ms late: as recorded it cancels; with the reference 80 ms
+        // older, the echo arrives before its reference and can't be.
+        check("aec replay: as recorded, the filter cancels",
+              (AECReplay.score(mic: heard, ref: played).first??.filterAlone ?? 0) >= 15)
+        check("aec replay: reference 80 ms older, it can't",
+              (AECReplay.score(mic: heard, ref: played, offset: 1280).first??.filterAlone ?? 99) < 6)
+
+        // #98: live, each mic frame met the oldest system audio waiting, and on
+        // 3 of 5 runs that left the echo arriving just before its reference
+        // (3-4 dB). Replays of those runs cancel 13-19 dB with the reference
+        // 10-30 ms fresher. So the canceller starts 20 ms fresher and holds
+        // the mic until that reference is in. Here the reference sits 50 ms
+        // stale and the echo is 40 ms late: only the head start saves it.
+        func run(_ aec: EchoCanceller, mic: [Float], ref: [Float], micFirst: Bool = false) {
+            for start in stride(from: 0, to: min(mic.count, ref.count), by: 1024) {
+                let end = min(start + 1024, mic.count, ref.count)
+                if !micFirst { aec.pushReference(Array(ref[start..<end])) }
+                _ = aec.process(mic: Array(mic[start..<end]))
+                if micFirst { aec.pushReference(Array(ref[start..<end])) }
+            }
+        }
+        let behind = EchoCanceller()
+        behind.pushReference(Array(repeating: 0, count: 800))
+        run(behind, mic: heard, ref: played)
+        check("echo canceller: starts 20 ms fresher, so a stale start still cancels",
+              (behind.takeStats()?.filterAlone ?? 0) >= 15)
+
+        // The mic ahead of its system audio waits for it, instead of pairing
+        // with silence (each of those made the reference a frame staler).
+        let micFirst = EchoCanceller()
+        run(micFirst, mic: heard, ref: played, micFirst: true)
+        check("echo canceller: mic ahead of its system audio waits, never paired with silence",
+              micFirst.starvedFrames == 0 && (micFirst.takeStats()?.filterAlone ?? 0) >= 15)
+
+        // No system audio at all: the mic still comes out, never held hostage.
+        let alone = EchoCanceller()
+        check("echo canceller: without system audio the mic still comes out",
+              alone.process(mic: Array(heard.prefix(16000))).count >= 14400)
+
+        // A mic restart (AirPods, input change) used to leave the system
+        // audio that piled up during the gap in the queue: seconds stale, so
+        // no cancelling for the rest of the call.
+        let long = speech(seed: 8, seconds: 14)
+        let longHeard = shifted(long, frames: 2, gain: 0.3)
+        let restarted = EchoCanceller()
+        run(restarted, mic: Array(longHeard[0..<80_000]), ref: Array(long[0..<80_000]))
+        restarted.pushReference(Array(long[80_000..<112_000]))  // 2 s with the mic down
+        restarted.micRestarted()
+        _ = restarted.takeStats()
+        run(restarted, mic: Array(longHeard[112_000...]), ref: Array(long[112_000...]))
+        check("echo canceller: cancels again after a mic restart",
+              (restarted.takeStats()?.filterAlone ?? 0) >= 15)
     }
 
     static func testGlossaryPrompt() {
