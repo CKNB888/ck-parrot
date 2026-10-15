@@ -824,15 +824,16 @@ final class RecordingManager {
         // whichever order they decoded in. (Surfaced by the speakers-playback
         // live test 2026-08-01; previously masked by the glossary decode bug.)
         let incoming: BleedLine = (result.startTime, result.endTime, result.text)
+        let hearsSpeakers = transcriptionEngine.micHearsSpeakers
         if result.source == .me,
            meeting.segments.contains(where: {
-               Self.isBleed(me: incoming, other: ($0.startTime, $0.endTime, $0.text), otherLabel: $0.speakerLabel) }) {
+               Self.isBleed(me: incoming, other: ($0.startTime, $0.endTime, $0.text), otherLabel: $0.speakerLabel,
+                            micHearsSpeakers: hearsSpeakers) }) {
             return
         }
         // Echo and my own words in one line: cut the echo (see strippingEcho).
-        let stripsEcho = transcriptionEngine.micHearsSpeakers
         var text = result.text
-        if result.source == .me, stripsEcho,
+        if result.source == .me, hearsSpeakers,
            let kept = Self.strippingEcho(me: incoming, others: meeting.segments.map {
                (($0.startTime, $0.endTime, $0.text), $0.speakerLabel) }) {
             guard !kept.isEmpty else { return }
@@ -841,9 +842,10 @@ final class RecordingManager {
         if result.source == .them {
             for stored in meeting.segments where stored.speakerLabel == AudioSource.me.label {
                 let me: BleedLine = (stored.startTime, stored.endTime, stored.text)
-                if Self.isBleed(me: me, other: incoming, otherLabel: result.source.label) {
+                if Self.isBleed(me: me, other: incoming, otherLabel: result.source.label,
+                                micHearsSpeakers: hearsSpeakers) {
                     modelContext.delete(stored)
-                } else if stripsEcho, let kept = Self.strippingEcho(me: me, others: [(incoming, result.source.label)]) {
+                } else if hearsSpeakers, let kept = Self.strippingEcho(me: me, others: [(incoming, result.source.label)]) {
                     if kept.isEmpty { modelContext.delete(stored) } else { stored.text = kept }
                 }
             }
@@ -872,12 +874,19 @@ final class RecordingManager {
     /// replies ("Okay", "Tabii") are what people say while the other side
     /// talks. A plain overlap test, without these limits, dropped real Me
     /// lines on the owner's store (a long Me line around a short "Okay. So").
-    nonisolated static func isBleed(me: BleedLine, other: BleedLine, otherLabel: String?) -> Bool {
+    /// A 1-2 word line also needs `micHearsSpeakers` (this call's echo gate
+    /// has skipped a Me clip): on headphones my "Okay." opens their "Okay,
+    /// so..." all the time, and text alone can't tell it from echo. Replayed
+    /// over the owner's store, that kept 74 real replies on headphone calls
+    /// and still caught 44 of 47 echoes on speaker calls. Deepgram streams
+    /// have no echo gate, so there only 3+ word lines drop.
+    /// ponytail: a short echo before the gate's first skip (10 s+ in) stays.
+    nonisolated static func isBleed(me: BleedLine, other: BleedLine, otherLabel: String?, micHearsSpeakers: Bool) -> Bool {
         guard otherLabel != AudioSource.me.label else { return false }
         let startsTogether = abs(me.start - other.start) <= 2.5
         let inside = me.start >= other.start - 0.5 && me.end <= other.end + 0.5
         guard startsTogether || inside, isEchoDuplicate(other.text, me.text) else { return false }
-        return startsTogether || echoTokens(me.text).count >= 3
+        return echoTokens(me.text).count >= 3 || (startsTogether && micHearsSpeakers)
     }
 
     /// Near-verbatim match for the echo-dedup above: Whisper decodes the bleed
@@ -975,13 +984,16 @@ final class RecordingManager {
 
     /// The live dedupe over a whole transcript at once, for the post-call
     /// polish: drop Me lines that are bleed, cut echoed runs from the rest.
+    /// Only called once the call's echo gate has fired, so short lines count.
     nonisolated static func dedupedEcho(_ lines: [TranscriptPolisher.PolishedSegment]) -> [TranscriptPolisher.PolishedSegment] {
         let others = lines.filter { $0.speaker != AudioSource.me.label }
             .map { (line: BleedLine(($0.start, $0.end, $0.text)), label: Optional($0.speaker)) }
         return lines.compactMap { s in
             guard s.speaker == AudioSource.me.label else { return s }
             let me: BleedLine = (s.start, s.end, s.text)
-            if others.contains(where: { isBleed(me: me, other: $0.line, otherLabel: $0.label) }) { return nil }
+            if others.contains(where: { isBleed(me: me, other: $0.line, otherLabel: $0.label, micHearsSpeakers: true) }) {
+                return nil
+            }
             guard let kept = strippingEcho(me: me, others: others) else { return s }
             return kept.isEmpty ? nil : .init(text: kept, start: s.start, end: s.end, speaker: s.speaker)
         }
