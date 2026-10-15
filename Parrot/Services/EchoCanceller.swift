@@ -47,6 +47,17 @@ final class EchoCanceller {
         return reference.count - referenceHead
     }
 
+    /// How much echo came out while they talked, since the last read. Fed and
+    /// read on the mic thread only (`process` and the minute log), so no lock.
+    private var stats = EchoStats()
+
+    /// The minute's echo numbers, then start a new minute. nil: too little of
+    /// them talking to judge.
+    func takeStats() -> EchoStats.Summary? {
+        defer { stats = EchoStats() }
+        return stats.summary()
+    }
+
     init() {
         echoState = speex_echo_state_init(Int32(frameSize), Int32(filterTail))
         var rate = sampleRate
@@ -128,7 +139,9 @@ final class EchoCanceller {
                     speex_echo_cancellation(echoState, mic.baseAddress, ref.baseAddress, &outFrame)
                 }
             }
+            let filtered = outFrame
             _ = speex_preprocess_run(preprocess, &outFrame)
+            stats.add(mic: micFrame, ref: refFrame, filtered: filtered, out: outFrame)
             out.append(contentsOf: outFrame.map(Self.toFloat))
         }
         return out
@@ -148,5 +161,57 @@ final class EchoCanceller {
     }
     private static func toFloat(_ i: Int16) -> Float {
         Float(i) / 32767
+    }
+}
+
+/// #98: the alignment log proved the canceller was in step, never that it
+/// removed anything. This measures that, per 10 ms frame while they talk,
+/// in dB. Pure, so `--profile-test` checks it.
+struct EchoStats {
+    struct Summary {
+        /// Frames of them talking behind the numbers.
+        var frames: Int
+        /// Raw mic vs what reaches the file and the transcriber.
+        var removed: Float
+        /// Raw mic vs the linear filter alone, before Speex's suppressor:
+        /// says which stage is failing.
+        var filterAlone: Float
+        /// Raw mic vs their audio: how loud the speakers reach the mic.
+        var hears: Float
+    }
+
+    private var removed: [Float] = []
+    private var filterAlone: [Float] = []
+    private var hears: [Float] = []
+
+    /// Only while they talk: with them silent there's no echo to remove.
+    mutating func add(mic: [Int16], ref: [Int16], filtered: [Int16], out: [Int16]) {
+        let meanAbs = ref.reduce(0) { $0 + abs(Float($1)) } / Float(ref.count) / 32767
+        guard meanAbs > EchoGate.talkingFloor else { return }
+        let m = Self.power(mic)
+        removed.append(Self.dB(m, Self.power(out)))
+        filterAlone.append(Self.dB(m, Self.power(filtered)))
+        hears.append(Self.dB(m, Self.power(ref)))
+    }
+
+    /// Medians, not means: when I talk over them, the raw mic is my voice,
+    /// which the canceller rightly keeps, so those frames read as "removed
+    /// nothing". The median ignores them while they talk alone half the time.
+    func summary() -> Summary? {
+        // 1 s of them talking: less, and one "Yeah" of theirs fills the line.
+        guard removed.count >= 100 else { return nil }
+        func median(_ v: [Float]) -> Float { v.sorted()[v.count / 2] }
+        return Summary(frames: removed.count, removed: median(removed),
+                       filterAlone: median(filterAlone), hears: median(hears))
+    }
+
+    private static func power(_ frame: [Int16]) -> Double {
+        frame.reduce(0) { $0 + Double($1) * Double($1) } / Double(frame.count)
+    }
+
+    /// One step of Int16 (power 1) as the floor, so silence reads as a big
+    /// number instead of infinity: up to ~90 dB on a loud frame.
+    private static func dB(_ a: Double, _ b: Double) -> Float {
+        Float(10 * log10((a + 1) / (b + 1)))
     }
 }

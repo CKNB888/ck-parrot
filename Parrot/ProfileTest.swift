@@ -2733,6 +2733,27 @@ enum ProfileTest {
         check("echo gate: on headphones, doing most of the talking reads as no bleed",
               !busyHeadphones.isEcho && busyHeadphones.bleed.follows < G.minBleed
                 && busyHeadphones.talkBleed.follows < G.minTalkBleed)
+
+        // #98: the minute log's echo numbers. Their audio reaches the mic at
+        // 0.3x (-10.5 dB), 40 ms late, inside Speex's 128 ms tail, so a working
+        // canceller takes most of it out. Fed in mic-tap-sized buffers.
+        let played = speech(seed: 7, seconds: 10)
+        let heard = shifted(played, frames: 2, gain: 0.3)
+        let aec = EchoCanceller()
+        for start in stride(from: 0, to: played.count, by: 1024) {
+            let end = min(start + 1024, played.count)
+            aec.pushReference(Array(played[start..<end]))
+            _ = aec.process(mic: Array(heard[start..<end]))
+        }
+        let stats = aec.takeStats()
+        check("echo stats: counts the frames they talk", (stats?.frames ?? 0) >= 100)
+        check("echo stats: mic hears the speakers at about -10.5 dB", abs((stats?.hears ?? 0) + 10.5) < 2)
+        check("echo stats: the canceller removes 10+ dB", (stats?.removed ?? 0) >= 10)
+        check("echo stats: reading starts a new minute", aec.takeStats() == nil)
+        let quiet = EchoCanceller()
+        quiet.pushReference(Array(repeating: 0, count: 16000))
+        _ = quiet.process(mic: Array(heard.prefix(16000)))
+        check("echo stats: nothing while they're silent", quiet.takeStats() == nil)
     }
 
     static func testGlossaryPrompt() {
