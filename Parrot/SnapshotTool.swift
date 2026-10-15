@@ -194,13 +194,67 @@ enum EchoReplay {
         print("Me lines: \(mine) | the gate drops \(dropped)")
     }
 
-    private static func load(_ path: String) -> [Float]? {
+    static func load(_ path: String) -> [Float]? {
         guard let file = try? AVAudioFile(forReading: URL(fileURLWithPath: path)),
               file.processingFormat.sampleRate == 16000,
               let buffer = AVAudioPCMBuffer(pcmFormat: file.processingFormat, frameCapacity: AVAudioFrameCount(file.length)),
               (try? file.read(into: buffer)) != nil,
               let ch = buffer.floatChannelData?[0] else { return nil }
         return Array(UnsafeBufferPointer(start: ch, count: Int(buffer.frameLength)))
+    }
+}
+
+/// `--aec-replay <aec-mic.caf> <aec-ref.caf>` (#98): reruns the echo
+/// canceller on a `PARROT_AEC_DUMP=1` recording, first with the pairing it had
+/// live, then with the reference shifted and with other filter tails, so one
+/// recording answers timing vs reverb vs Speex. Numbers only: a reporter can
+/// run it on a private call and paste the output.
+enum AECReplay {
+    /// Pushing each reference chunk before its mic chunk pairs sample n with
+    /// sample n, as live. `offset` > 0 pairs each mic sample with reference
+    /// that many samples older; < 0, fresher. `every`: stats per that many
+    /// samples instead of one for the whole file.
+    static func score(mic: [Float], ref: [Float], offset: Int = 0, tail: Int = 2048,
+                      every: Int? = nil) -> [EchoStats.Summary?] {
+        let shifted = offset >= 0
+            ? Array(repeating: Float(0), count: offset) + ref.dropLast(offset)
+            : Array(ref.dropFirst(-offset)) + Array(repeating: Float(0), count: -offset)
+        let aec = EchoCanceller(filterTail: tail, lead: 0)  // the dump holds the live pairing
+        let n = min(mic.count, shifted.count)
+        var out: [EchoStats.Summary?] = []
+        var next = every ?? Int.max
+        for start in stride(from: 0, to: n, by: 1024) {
+            let end = min(start + 1024, n)
+            aec.pushReference(Array(shifted[start..<end]))
+            _ = aec.process(mic: Array(mic[start..<end]))
+            if let every, end >= next { out.append(aec.takeStats()); next += every }
+        }
+        if every == nil { out.append(aec.takeStats()) }
+        return out
+    }
+
+    static func run(micPath: String, refPath: String) {
+        guard let mic = EchoReplay.load(micPath), let ref = EchoReplay.load(refPath) else {
+            print("aec-replay: can't read the audio files"); exit(1)
+        }
+        func row(_ label: String, _ s: EchoStats.Summary??) {
+            let name = label.padding(toLength: 24, withPad: " ", startingAt: 0)
+            guard let s = s ?? nil else { print("\(name)-"); return }
+            print(name + String(format: "filter alone %5.1f dB   removed %5.1f dB   hears %5.1f dB   (%d frames)",
+                                s.filterAlone, s.removed, s.hears, s.frames))
+        }
+        print(String(format: "aec-replay: %.1f s", Double(mic.count) / 16000))
+        row("as live (0 ms, 2048)", score(mic: mic, ref: ref).first)
+        for ms in stride(from: -30, through: 50, by: 10) where ms != 0 {
+            row("reference \(ms > 0 ? "+" : "")\(ms) ms", score(mic: mic, ref: ref, offset: ms * 16).first)
+        }
+        for tail in [1024, 4096, 8192] {
+            row("tail \(tail)", score(mic: mic, ref: ref, tail: tail).first)
+        }
+        print("as live, per 10 s:")
+        for (i, s) in score(mic: mic, ref: ref, every: 160_000).enumerated() {
+            row("  \(i * 10)-\(i * 10 + 10) s", s)
+        }
     }
 }
 

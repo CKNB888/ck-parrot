@@ -29,6 +29,8 @@ final class AudioCaptureManager: NSObject {
     /// speaker bleed from the mic using the system audio as the reference. nil =
     /// disabled (mic passes through untouched).
     private var echoCanceller: EchoCanceller?
+    /// `PARROT_AEC_DUMP=1` only: what the canceller was fed, for `--aec-replay`.
+    private var aecDump: AECDump?
 
     /// Which system-audio engine is live. The Core Audio process tap (macOS 15+,
     /// audio-only TCC — no Screen Recording ask) is preferred; ScreenCaptureKit
@@ -65,6 +67,9 @@ final class AudioCaptureManager: NSObject {
     /// cleaned (post-AEC) mic level, all-zero buffer counts, and SCK delivery
     /// rate — enough to tell OS-delivered silence apart from AEC suppression.
     /// Enable: PARROT_AUDIO_DEBUG=1 env, or `defaults write ... audioDebug -bool YES`.
+    /// #98: save the canceller's raw mic + paired reference for `--aec-replay`.
+    /// Raw call audio, so env only: `open -a Parrot --env PARROT_AEC_DUMP=1`.
+    static let aecDumpEnabled = ProcessInfo.processInfo.environment["PARROT_AEC_DUMP"] != nil
     static let audioDebugEnabled =
         ProcessInfo.processInfo.environment["PARROT_AUDIO_DEBUG"] != nil
         || UserDefaults.standard.bool(forKey: "audioDebug")
@@ -263,6 +268,12 @@ final class AudioCaptureManager: NSObject {
         // Echo cancellation on by default (defeats speaker bleed without headphones).
         let aecEnabled = UserDefaults.standard.object(forKey: "echoCancellationEnabled") as? Bool ?? true
         echoCanceller = aecEnabled ? EchoCanceller() : nil
+        aecDump = nil
+        if Self.aecDumpEnabled, let echoCanceller, let dump = AECDump(dir: storageDir, timestamp: timestamp) {
+            aecDump = dump
+            echoCanceller.onPairs = { dump.write(mic: $0, ref: $1) }
+            Self.oslog.log("aec dump: aec-mic_\(timestamp, privacy: .public).caf + aec-ref_\(timestamp, privacy: .public).caf")
+        }
 
         // Reset the mic watchdog before any tap can fire.
         micWatchdog = MicSignalWatchdog()
@@ -343,6 +354,8 @@ final class AudioCaptureManager: NSObject {
         filesClosed = true
         systemWriteQueue.sync { systemAudioFile = nil }
         micWriteQueue.sync { micAudioFile = nil }
+        aecDump?.close()
+        aecDump = nil
 
         if let url = systemAudioURL {
             let attrs = try? FileManager.default.attributesOfItem(atPath: url.path)
@@ -644,6 +657,7 @@ final class AudioCaptureManager: NSObject {
         audioEngine?.stop()
         audioEngine?.inputNode.removeTap(onBus: 0)
         audioEngine = nil
+        echoCanceller?.micRestarted()
         do {
             try startMicCapture()
             micActive = true
@@ -1063,5 +1077,44 @@ extension AVAudioPCMBuffer {
         )
 
         return sampleBuffer
+    }
+}
+
+/// `PARROT_AEC_DUMP=1` (#98): the echo canceller's raw mic and the exact
+/// reference paired with each frame, as aec-mic_/aec-ref_<ts>.caf next to the
+/// recording, so `--aec-replay` can rerun Speex offline on what it saw live.
+private final class AECDump {
+    private let queue = DispatchQueue(label: "com.uygar.parrot.audio.aecdump")
+    private let format = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: 16000,
+                                       channels: 1, interleaved: false)!
+    private var mic: AVAudioFile?
+    private var ref: AVAudioFile?
+
+    init?(dir: URL, timestamp: String) {
+        guard let mic = try? AVAudioFile(forWriting: dir.appendingPathComponent("aec-mic_\(timestamp).caf"),
+                                         settings: format.settings),
+              let ref = try? AVAudioFile(forWriting: dir.appendingPathComponent("aec-ref_\(timestamp).caf"),
+                                         settings: format.settings) else { return nil }
+        self.mic = mic
+        self.ref = ref
+    }
+
+    /// Mic thread; the writes go to a queue of their own.
+    func write(mic m: [Int16], ref r: [Int16]) {
+        queue.async { [self] in
+            for (file, samples) in [(mic, m), (ref, r)] {
+                guard let file, let buffer = AVAudioPCMBuffer(pcmFormat: format,
+                                                              frameCapacity: AVAudioFrameCount(samples.count)),
+                      let channel = buffer.floatChannelData?[0] else { continue }
+                for (i, x) in samples.enumerated() { channel[i] = Float(x) / 32767 }
+                buffer.frameLength = AVAudioFrameCount(samples.count)
+                try? file.write(from: buffer)
+            }
+        }
+    }
+
+    /// Flushes pending writes; the .caf headers are finalized on release.
+    func close() {
+        queue.sync { mic = nil; ref = nil }
     }
 }

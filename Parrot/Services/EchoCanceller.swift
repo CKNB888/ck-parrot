@@ -18,7 +18,7 @@ final class EchoCanceller {
     private var preprocess: OpaquePointer?
 
     private let frameSize = 160          // 10 ms @ 16 kHz
-    private let filterTail = 2048        // ~128 ms echo tail
+    private let filterTail: Int          // 2048 = ~128 ms echo tail
     private let sampleRate: Int32 = 16000
 
     /// Far-end reference (system audio) waiting to be paired with mic frames, and
@@ -34,8 +34,8 @@ final class EchoCanceller {
 
     var isActive: Bool { echoState != nil }
 
-    /// Mic frames paired with silence because no reference had arrived yet
-    /// (the mic is ahead of system audio). Diagnostic, read with
+    /// Mic frames let through uncancelled because no reference came for
+    /// `maxHold` (system audio stopped, or a gap). Diagnostic, read with
     /// `referenceBacklog` for the once-a-minute alignment log (#98).
     private(set) var starvedFrames = 0
 
@@ -58,7 +58,35 @@ final class EchoCanceller {
         return stats.summary()
     }
 
-    init() {
+    /// Debug (#98, `PARROT_AEC_DUMP`): each batch's raw mic frames and the
+    /// exact reference frames they were paired with (zeros when starved),
+    /// so `--aec-replay` can feed Speex what it saw live. Mic thread.
+    var onPairs: ((_ mic: [Int16], _ ref: [Int16]) -> Void)?
+
+    /// #98: live, each mic frame met the oldest reference waiting, and on 3
+    /// of 5 speaker runs that left the echo reaching the mic just before its
+    /// reference, which a causal filter can't model (3-4 dB instead of 18).
+    /// Replays of those runs cancel 13-19 dB with the reference 10-30 ms
+    /// fresher, and every run fails 10 ms staler. So the first pairing skips
+    /// `lead` of reference, and the mic waits for the reference it needs
+    /// instead of pairing with silence (each of those made the reference a
+    /// frame staler for good). The mic comes out ~20 ms later.
+    private let lead: Int
+    /// No reference for this long (system audio stopped, a gap): stop
+    /// waiting, let all the held mic through uncancelled, start over.
+    private let maxHold = 1600  // 100 ms
+    // Under `lock`:
+    private var leadApplied = false
+    /// Reference waiting at the very first mic buffer: the startup state a
+    /// mic restart goes back to.
+    private var startBacklog: Int?
+    private var resyncPending = false
+
+    /// `filterTail` and `lead` are for `--aec-replay`, whose dumps already
+    /// hold the live pairing; the app always uses 2048 and 320 (20 ms).
+    init(filterTail: Int = 2048, lead: Int = 320) {
+        self.filterTail = filterTail
+        self.lead = lead
         echoState = speex_echo_state_init(Int32(frameSize), Int32(filterTail))
         var rate = sampleRate
         if let echoState {
@@ -102,33 +130,56 @@ final class EchoCanceller {
 
         // Pair each mic frame with a reference frame under the lock, then run the
         // (heavier) DSP outside it so pushReference isn't blocked.
-        // ponytail: FIFO pairing has no time alignment — mic/system clock drift
-        // walks it past the filter tail on long calls and cancellation decays to
-        // a no-op. Upgrade path: align via CMSampleBuffer PTS + mic AVAudioTime
-        // with periodic re-anchoring.
+        // ponytail: FIFO pairing with a fixed 20 ms head start, no timestamps;
+        // measured on one MacBook Pro. Upgrade path: estimate the echo delay
+        // per call (`--aec-replay` shows the window) or PTS + AVAudioTime.
         var pairs: [([Int16], [Int16])] = []
         lock.lock()
+        // Mic still waiting from before a restart's gap goes through
+        // uncancelled: its reference is long gone. (A part frame stays and
+        // joins the new audio: that pairing starts under 10 ms off.)
+        var preGap = 0
+        if resyncPending, let startBacklog {
+            // Back to the startup state: drop what piled up while the mic was down.
+            preGap = micAccum.count / frameSize * frameSize
+            referenceHead += max(0, reference.count - referenceHead - startBacklog)
+            leadApplied = false
+            resyncPending = false
+        }
         micAccum.append(contentsOf: micInts)
+        if startBacklog == nil { startBacklog = reference.count - referenceHead }
         var micIndex = 0
+        var outage = false
         while micAccum.count - micIndex >= frameSize {
-            let micFrame = Array(micAccum[micIndex ..< micIndex + frameSize])
-            micIndex += frameSize
-            let refFrame: [Int16]
-            if reference.count - referenceHead >= frameSize {
+            if micIndex >= preGap, !leadApplied, reference.count - referenceHead >= lead + frameSize {
+                referenceHead += lead
+                leadApplied = true
+            }
+            var refFrame = [Int16](repeating: 0, count: frameSize)
+            if micIndex < preGap {
+                // through as is
+            } else if !outage, leadApplied, reference.count - referenceHead >= frameSize {
                 refFrame = Array(reference[referenceHead ..< referenceHead + frameSize])
                 referenceHead += frameSize
-            } else {
-                refFrame = [Int16](repeating: 0, count: frameSize)
+            } else if outage || micAccum.count - micIndex > maxHold {
+                // All of it, not just the excess: mic held back while the
+                // reference was missing would leave every later pairing stale.
+                outage = true
+                leadApplied = false
                 starvedFrames += 1
+            } else {
+                break  // its reference is on the way
             }
-            pairs.append((micFrame, refFrame))
+            pairs.append((Array(micAccum[micIndex ..< micIndex + frameSize]), refFrame))
+            micIndex += frameSize
         }
-        // Leftover mic samples are < one frame, so this shift is cheap.
+        // At most `maxHold` of mic stays waiting, so this shift is cheap.
         if micIndex > 0 { micAccum.removeFirst(micIndex) }
         compactReferenceIfNeeded()
         lock.unlock()
 
         guard !pairs.isEmpty else { return [] }
+        onPairs?(pairs.flatMap(\.0), pairs.flatMap(\.1))
 
         var out: [Float] = []
         out.reserveCapacity(pairs.count * frameSize)
@@ -145,6 +196,15 @@ final class EchoCanceller {
             out.append(contentsOf: outFrame.map(Self.toFloat))
         }
         return out
+    }
+
+    /// The mic engine restarted (AirPods, an input change): the reference
+    /// that piles up while it's down would leave every pairing seconds stale
+    /// for the rest of the call. The next mic buffer starts over instead.
+    func micRestarted() {
+        lock.lock()
+        resyncPending = true
+        lock.unlock()
     }
 
     /// Reclaim the consumed reference prefix once it's at least half the buffer,

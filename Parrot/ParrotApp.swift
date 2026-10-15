@@ -61,6 +61,10 @@ struct ParrotMain {
                            linesPath: i + 3 < args.count ? args[i + 3] : nil)
             return
         }
+        if let i = args.firstIndex(of: "--aec-replay"), i + 2 < args.count {
+            AECReplay.run(micPath: args[i + 1], refPath: args[i + 2])
+            return
+        }
         if let i = args.firstIndex(of: "--capture-test") {
             let seconds = (i + 1 < args.count) ? (Double(args[i + 1]) ?? 10) : 10
             CaptureTest.run(seconds: seconds)
