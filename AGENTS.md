@@ -50,7 +50,7 @@ bundle time by the Makefile, not by Xcode.
 - Test via the CLI harnesses in `SnapshotTool.swift` / `ProfileTest.swift` /
   `CopilotHarness.swift` (`--profile-test`, `--snapshot`, `--copilot-snapshot`,
   `--sidebar-snapshot`, `--transcribe-test`, `--language-test`, `--analyze-test`, `--capture-test`,
-  `--kb-add`, `--doc-answer-eval`, `--echo-replay`, `--copilot-replay`, `--ask-chat-test`,
+  `--kb-add`, `--doc-answer-eval`, `--echo-replay`, `--aec-replay`, `--copilot-replay`, `--ask-chat-test`,
   `--store-upgrade-test <copy of an old .store>`, `--nudge-replay`,
   `--tone-snapshot`, `--pill-test`, `--report-pdf`). There is no
   XCTest target. `--capture-test` does live audio capture — run it from the
