@@ -57,6 +57,21 @@ enum SpeakerProfileStore {
         return invited.contains { !words($0).isDisjoint(with: mine) }
     }
 
+    /// Names given to voices in other meetings, plus remembered voices, most
+    /// recent first: a name typed once is offered again (#142). Fetches only
+    /// the names and dates, once per popover, never the transcripts.
+    static func knownNames(in context: ModelContext, excluding meetingID: UUID? = nil) -> [String] {
+        var descriptor = FetchDescriptor<Meeting>()
+        descriptor.propertiesToFetch = [\.id, \.date, \.speakerNamesData]
+        var dated = profiles(in: context).map { (date: $0.updatedAt, name: $0.name) }
+        for meeting in (try? context.fetch(descriptor)) ?? [] where meeting.id != meetingID {
+            for (label, name) in meeting.speakerNames where label != "Me" {
+                dated.append((meeting.date, name))
+            }
+        }
+        return dated.sorted { $0.date > $1.date }.map(\.name)
+    }
+
     /// Create or reinforce the profile named `name` with one more voice sample.
     static func remember(name: String, embedding: [Float], in context: ModelContext) {
         guard !embedding.isEmpty else { return }

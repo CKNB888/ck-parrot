@@ -70,6 +70,7 @@ enum ProfileTest {
         testCalendarText()
         testCalendarProfileMatch()
         testMeetingAttendees()
+        testSpeakerNameOptions()
         testCalendarPromptSafety()
         testMemoryChunks()
         testMemoryIndex()
@@ -3525,9 +3526,6 @@ enum ProfileTest {
         check("event names a generated title", m.title == "Acme renewal")
         check("event id kept", m.calendarEventID == "evt-1")
         check("attendees round-trip", m.attendees.count == 3 && m.attendees.first?.email == "j@acme.com")
-        check("naming suggestions dedupe case-insensitively", m.unassignedAttendeeNames == ["Jeremy", "Ana"])
-        m.speakerNames = ["Speaker 1": "Jeremy"]
-        check("a named voice leaves the suggestions", m.unassignedAttendeeNames == ["Ana"])
 
         let typed = Meeting(title: "My own title")
         ctx.insert(typed)
@@ -3540,6 +3538,93 @@ enum ProfileTest {
         check("a blank event title changes nothing", blank.title == original)
         blank.attendees = []
         check("clearing attendees clears storage", blank.attendeesData == nil)
+    }
+
+    /// The naming popover's list (#142): every invitee, used names to join,
+    /// past names, one entry per person, and a clash saved as two names.
+    @MainActor
+    static func testSpeakerNameOptions() {
+        let invite = [Attendee(name: "John Smith", email: "john.smith@acme.com"),
+                      Attendee(name: "Dana Whitfield", email: "dana@acme.com"),
+                      Attendee(name: "", email: "priya.raman@acme.com"),
+                      Attendee(name: "Marcus Oyelaran-Brooks", email: nil),
+                      Attendee(name: "Lena Vogt", email: nil),
+                      Attendee(name: "Gürkan Yılmaz", email: "gurkan@northwind.io")]
+        let names = ["Speaker 1": "Dana Whitfield", "Speaker 2": "Sam", "Me": "Uygar"]
+        func build(_ label: String = "Speaker 3", past: [String] = [], filter: String = "",
+                   attendees: [Attendee] = invite, speakerNames: [String: String] = names) -> [SpeakerNameOption] {
+            SpeakerNameOptions.build(label: label, speakerNames: speakerNames, attendees: attendees,
+                                     pastNames: past, filter: filter)
+        }
+        let all = build()
+        check("names: every invitee offered, no cap of 4",
+              all.filter { $0.group == .invite }.map(\.name)
+                == ["John Smith", "priya.raman", "Marcus Oyelaran-Brooks", "Lena Vogt", "Gürkan Yılmaz"])
+        check("names: a used invitee is offered to join, once",
+              all.filter { $0.name == "Dana Whitfield" }.map(\.group) == [.thisCall])
+        check("names: other voices' names come first, Me never",
+              all.prefix(2).map(\.name) == ["Dana Whitfield", "Sam"] && !all.contains { $0.name == "Uygar" })
+        check("names: the voice's own name is left out", !build("Speaker 2").contains { $0.name == "Sam" })
+        let past = build(past: [" mary ", "Mary", "SAM", "Speaker 4", "Them", "", "Lena Vogt", "Jeremy"])
+        check("names: past names trimmed, deduped, after the invite",
+              past.filter { $0.group == .past }.map(\.name) == ["mary", "Jeremy"])
+        check("names: a past name an invitee has stays an invitee",
+              past.filter { $0.name == "Lena Vogt" }.map(\.group) == [.invite])
+        check("names: placeholders never offered",
+              !past.contains { SpeakerNameOptions.isPlaceholder($0.name) })
+        check("names: filter ignores accents and case", build(filter: "gurkan").map(\.name) == ["Gürkan Yılmaz"])
+        check("names: filter reads ı as i (yilmaz finds Yılmaz)", build(filter: "yilmaz").map(\.name) == ["Gürkan Yılmaz"])
+        check("names: filter matches the email too", build(filter: "northwind").map(\.name) == ["Gürkan Yılmaz"])
+        check("names: filter keeps groups in order",
+              build(past: ["Danny"], filter: "dan").map(\.group) == [.thisCall, .past])
+        check("names: Return reuses an offered spelling", SpeakerNameOptions.resolve(" sam ", among: all) == "Sam")
+        check("names: Return keeps a new name as typed", SpeakerNameOptions.resolve("Mary Chen ", among: all) == "Mary Chen")
+        check("names: list and merge share one key", SpeakerNameOptions.key("  Sam\n") == SpeakerNameOptions.key("sAM"))
+
+        // Two Johns: both offered, saved apart, each with its email shown.
+        let johns = build(attendees: [Attendee(name: "John", email: "john@acme.com"),
+                                      Attendee(name: "john", email: "jpark@northwind.io"),
+                                      Attendee(name: "Ana", email: "ana@acme.com")],
+                          speakerNames: [:])
+        let johnRows = johns.filter(\.showsEmail)
+        check("names: clashing invitees both offered", johnRows.count == 2)
+        check("names: clashing invitees saved under different names",
+              Set(johnRows.map { SpeakerNameOptions.key($0.name) }).count == 2)
+        check("names: clashing invitees show their email",
+              johnRows.map(\.email) == ["john@acme.com", "jpark@northwind.io"])
+        check("names: no email shown without a clash", johns.last?.name == "Ana" && !(johns.last?.showsEmail ?? true))
+        check("names: a clash adds the email's start, or its domain when that's the name",
+              johnRows.map(\.name) == ["John (acme.com)", "john (jpark)"])
+        let mails = build(attendees: [Attendee(name: "", email: "sam@acme.com"),
+                                      Attendee(name: "", email: "sam@northwind.io")], speakerNames: [:])
+        check("names: two email-only guests get their domains",
+              mails.map(\.name) == ["sam (acme.com)", "sam (northwind.io)"])
+        let noMail = SpeakerNameOptions.savedName(for: Attendee(name: "John", email: nil), clashes: true)
+        check("names: a clash with no email keeps the plain name", noMail == "John")
+        let named = SpeakerNameOptions.savedName(for: Attendee(name: "Ana", email: "ana@acme.com"), clashes: false)
+        check("names: no clash saves the plain name", named == "Ana")
+
+        // Past names come from other meetings and remembered voices, newest first.
+        let schema = Schema([Meeting.self, TranscriptSegment.self, CallInsight.self, CallProfile.self, SpeakerProfile.self])
+        guard let container = try? ModelContainer(
+            for: schema, configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)]
+        ) else { check("names: container builds", false); return }
+        let ctx = ModelContext(container)
+        let old = Meeting(title: "Old")
+        old.date = .now.addingTimeInterval(-3 * 86_400)
+        old.speakerNames = ["Speaker 1": "Mary", "Me": "Uygar"]
+        let recent = Meeting(title: "Recent")
+        recent.date = .now.addingTimeInterval(-86_400)
+        recent.speakerNames = ["Speaker 1": "Bob"]
+        let current = Meeting(title: "Now")
+        current.speakerNames = ["Speaker 1": "Not offered"]
+        let voice = SpeakerProfile(name: "Jeremy", embedding: [0.1])
+        voice.updatedAt = .now.addingTimeInterval(-2 * 86_400)
+        [old, recent, current].forEach { ctx.insert($0) }
+        ctx.insert(voice)
+        try? ctx.save()
+        check("names: past calls and remembered voices, newest first",
+              SpeakerProfileStore.knownNames(in: ctx, excluding: current.id) == ["Bob", "Jeremy", "Mary"])
     }
 
     @MainActor

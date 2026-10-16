@@ -328,15 +328,6 @@ final class Meeting {
         set { attendeesData = newValue.isEmpty ? nil : try? JSONEncoder().encode(newValue) }
     }
 
-    /// Invitee names not yet given to a voice — the naming UI's suggestions.
-    var unassignedAttendeeNames: [String] {
-        let used = Set(speakerNames.values.map { $0.lowercased() })
-        var seen = Set<String>()
-        return attendees.map(\.displayName).filter {
-            !$0.isEmpty && !used.contains($0.lowercased()) && seen.insert($0.lowercased()).inserted
-        }
-    }
-
     /// Takes a calendar event's title and invitees. A title the user already
     /// typed is kept; only the generated "Meeting <date>" one is replaced.
     func apply(_ event: CalendarEventInfo) {
@@ -415,9 +406,8 @@ final class Meeting {
         let names = speakerNames
         let labels = names.keys.filter { $0 != "Me" }
             .sorted { $0.localizedStandardCompare($1) == .orderedAscending }
-        let groups = Dictionary(grouping: labels) {
-            names[$0, default: ""].trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        }.filter { !$0.key.isEmpty && $0.value.count > 1 }
+        let groups = Dictionary(grouping: labels) { SpeakerNameOptions.key(names[$0, default: ""]) }
+            .filter { !$0.key.isEmpty && $0.value.count > 1 }
         guard !groups.isEmpty else { return false }
         var speech: [String: TimeInterval] = [:]
         for s in segments { if let l = s.speakerLabel { speech[l, default: 0] += s.endTime - s.startTime } }
