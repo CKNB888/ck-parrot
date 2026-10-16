@@ -13,11 +13,11 @@ struct WhatsNew: Equatable {
 
     /// The entry for the version being released. Empty highlights until the
     /// next release writes its own: no card, no notes.
-    static let current = WhatsNew(version: "0.29.6", headline: "Cleaner transcripts on speakers", highlights: [
-        "On speakers, their voice stays out of your mic far more often, so fewer echo lines.",
-        "Echo caught inside one of your lines is cut out, and your own words stay.",
-        "Deepgram calls now catch echo on speakers too.",
-        "Short replies like \"Okay\" no longer go missing on headphone calls.",
+    static let current = WhatsNew(version: "0.29.7", headline: "Parrot learned everyone's name", highlights: [
+        "Naming a voice lists everyone on the invite, with full names.",
+        "Pick a name another voice already has to join the two into one person.",
+        "Names you gave voices on earlier calls are offered again.",
+        "Two people with the same name stay two people.",
     ])
 
     /// For the help shot and the harness.
