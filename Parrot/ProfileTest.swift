@@ -3573,6 +3573,7 @@ enum ProfileTest {
         check("names: placeholders never offered",
               !past.contains { SpeakerNameOptions.isPlaceholder($0.name) })
         check("names: filter ignores accents and case", build(filter: "gurkan").map(\.name) == ["Gürkan Yılmaz"])
+        check("names: filter reads ı as i (yilmaz finds Yılmaz)", build(filter: "yilmaz").map(\.name) == ["Gürkan Yılmaz"])
         check("names: filter matches the email too", build(filter: "northwind").map(\.name) == ["Gürkan Yılmaz"])
         check("names: filter keeps groups in order",
               build(past: ["Danny"], filter: "dan").map(\.group) == [.thisCall, .past])

@@ -87,8 +87,11 @@ enum SpeakerNameOptions {
         return options.first { key($0.name) == key(typed) }?.name ?? typed
     }
 
+    /// Latin-ASCII first: some letters have no accent to strip, so "yilmaz"
+    /// would never find "Yılmaz" (ı), nor "lodz" "Łódź" (ł).
     private static func fold(_ s: String) -> String {
-        s.trimmingCharacters(in: .whitespacesAndNewlines)
+        let s = s.trimmingCharacters(in: .whitespacesAndNewlines)
+        return (s.applyingTransform(StringTransform("Latin-ASCII"), reverse: false) ?? s)
             .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil)
     }
 }

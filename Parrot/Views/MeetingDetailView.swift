@@ -1351,6 +1351,9 @@ struct SpeakerNamePopover: View {
     /// Names from past calls and remembered voices, read once on open.
     @State private var pastNames: [String] = []
     @State private var hovered: SpeakerNameOption?
+    /// Typing goes to the field from the start, not to whatever had focus
+    /// behind the popover (it was the sidebar search, which then filtered).
+    @FocusState private var fieldFocused: Bool
 
     private func options(filter: String = "") -> [SpeakerNameOption] {
         SpeakerNameOptions.build(label: label, speakerNames: meeting.speakerNames,
@@ -1426,6 +1429,7 @@ struct SpeakerNamePopover: View {
 
             TextField("Type or pick a name", text: $name)
                 .textFieldStyle(.roundedBorder)
+                .focused($fieldFocused)
                 .onSubmit {
                     assign(SpeakerNameOptions.resolve(name, among: options()))
                 }
@@ -1443,6 +1447,8 @@ struct SpeakerNamePopover: View {
             name = meeting.speakerNames[label] ?? ""
             openedWith = name
             pastNames = SpeakerProfileStore.knownNames(in: modelContext, excluding: meeting.id)
+            // Next tick: the popover's window isn't up yet on appear.
+            DispatchQueue.main.async { fieldFocused = true }
         }
     }
 
