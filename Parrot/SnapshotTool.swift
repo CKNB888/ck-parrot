@@ -592,6 +592,32 @@ enum HelpShots {
         shot("call-saved.png", size: .init(width: 440, height: 340),
              CallFinishedSheet(meeting: finished) {}.background(Theme.Colors.panel).modelContainer(container))
 
+        // Naming a voice on a big call (#142): six invitees, two of them John,
+        // one voice already named.
+        let team = Meeting(title: "Launch review")
+        team.status = .done
+        team.duration = 2400
+        team.attendees = [Attendee(name: "John Smith", email: "john.smith@acme.com"),
+                          Attendee(name: "John Park", email: "jpark@northwind.io"),
+                          Attendee(name: "Dana Whitfield", email: "dana@acme.com"),
+                          Attendee(name: "", email: "priya.raman@acme.com"),
+                          Attendee(name: "Marcus Oyelaran-Brooks", email: "marcus@acme.com"),
+                          Attendee(name: "Lena Vogt", email: "lena@acme.com")]
+        context.insert(team)
+        for (start, label, text) in [(10.0, "Speaker 1", "Let's go through the launch checklist."),
+                                     (18.0, "Speaker 2", "Pricing page is ready, the docs need a day."),
+                                     (26.0, "Speaker 3", "Support has the FAQ, we're waiting on legal.")] {
+            let seg = TranscriptSegment(startTime: start, endTime: start + 6, text: text, speakerLabel: label, confidence: nil)
+            context.insert(seg)
+            seg.meeting = team
+        }
+        team.speakerNames = ["Speaker 1": "Dana Whitfield"]
+        // A name typed on an earlier call comes back (Sam is from the call above).
+        context.insert(SpeakerProfile(name: "Mary", embedding: [0.1, 0.2]))
+        shot("name-speaker.png", size: .init(width: 300, height: 400),
+             SpeakerNamePopover(meeting: team, label: "Speaker 2", playClip: { _, _ in })
+                .background(Theme.Colors.panel).modelContainer(container))
+
         // Onboarding, real sheet geometry (600x680): if a step ever outgrows
         // it, these shots show the clipping before a user does. Repeated
         // register(defaults:) calls replace the keys, picking step and path.

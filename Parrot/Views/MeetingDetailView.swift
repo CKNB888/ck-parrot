@@ -1346,6 +1346,16 @@ struct SpeakerNamePopover: View {
     @Environment(\.modelContext) private var modelContext
     @AppStorage("rememberVoices") private var rememberVoices = false
     @State private var name = ""
+    /// The name the field opened with: until it changes, the list isn't filtered.
+    @State private var openedWith = ""
+    /// Names from past calls and remembered voices, read once on open.
+    @State private var pastNames: [String] = []
+    @State private var hovered: SpeakerNameOption?
+
+    private func options(filter: String = "") -> [SpeakerNameOption] {
+        SpeakerNameOptions.build(label: label, speakerNames: meeting.speakerNames,
+                                 attendees: meeting.attendees, pastNames: pastNames, filter: filter)
+    }
 
     /// "Sounds like X" from remembered voices — suggestion only, the click
     /// below is the confirmation (confirm-first rule).
@@ -1395,23 +1405,6 @@ struct SpeakerNamePopover: View {
                 .tint(Theme.Colors.accent)
             }
 
-            // Invitees from the calendar event, not yet given to a voice.
-            let invited = meeting.unassignedAttendeeNames
-            if !invited.isEmpty {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("On the invite")
-                        .font(Theme.Typography.caption)
-                        .foregroundStyle(Theme.Colors.ink2)
-                    HStack(spacing: 6) {
-                        ForEach(invited.prefix(4), id: \.self) { person in
-                            Button(person) { assign(person) }
-                                .controlSize(.small)
-                                .help("This voice is \(person)")
-                        }
-                    }
-                }
-            }
-
             ForEach(playClip == nil ? [] : meeting.longestSegments(for: label), id: \.id) { clip in
                 Button {
                     playClip?(clip.startTime, min(clip.endTime, clip.startTime + 8))
@@ -1431,20 +1424,88 @@ struct SpeakerNamePopover: View {
                 .background(Theme.Colors.chip.opacity(0.4), in: RoundedRectangle(cornerRadius: 6))
             }
 
-            TextField("Type a name — e.g. Gürkan", text: $name)
+            TextField("Type or pick a name", text: $name)
                 .textFieldStyle(.roundedBorder)
                 .onSubmit {
-                    assign(name.trimmingCharacters(in: .whitespaces))
+                    assign(SpeakerNameOptions.resolve(name, among: options()))
                 }
+
+            nameList(options(filter: name == openedWith ? "" : name))
 
             Text("Renames every line from this voice. A single wrong line can be moved from the line’s right-click menu.")
                 .font(Theme.Typography.caption)
                 .foregroundStyle(Theme.Colors.ink3)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(12)
+        .padding(Theme.Metrics.popoverPad)
         .frame(width: 300)
-        .onAppear { name = meeting.speakerNames[label] ?? "" }
+        .onAppear {
+            name = meeting.speakerNames[label] ?? ""
+            openedWith = name
+            pastNames = SpeakerProfileStore.knownNames(in: modelContext, excluding: meeting.id)
+        }
+    }
+
+    /// Everyone this voice could be, grouped. Scrolls once it gets long.
+    @ViewBuilder
+    private func nameList(_ shown: [SpeakerNameOption]) -> some View {
+        if !shown.isEmpty {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 2) {
+                    ForEach(SpeakerNameOption.Group.allCases, id: \.self) { group in
+                        let rows = shown.filter { $0.group == group }
+                        if !rows.isEmpty {
+                            Text(Self.title(group))
+                                .font(Theme.Typography.sectionLabel)
+                                .foregroundStyle(Theme.Colors.ink2)
+                                .padding(.top, Theme.Metrics.tagInsetV)
+                            if group == .thisCall {
+                                Text("Same person? Pick their name to join the two.")
+                                    .font(Theme.Typography.caption)
+                                    .foregroundStyle(Theme.Colors.ink3)
+                            }
+                            ForEach(rows, id: \.self) { nameRow($0) }
+                        }
+                    }
+                }
+            }
+            .frame(maxHeight: 220)
+            .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private func nameRow(_ option: SpeakerNameOption) -> some View {
+        Button { assign(option.name) } label: {
+            VStack(alignment: .leading, spacing: 0) {
+                Text(option.name)
+                    .font(Theme.Typography.body)
+                    .foregroundStyle(Theme.Colors.ink)
+                if option.showsEmail, let email = option.email {
+                    Text(email)
+                        .font(Theme.Typography.caption)
+                        .foregroundStyle(Theme.Colors.ink2)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, Theme.Metrics.tagInsetH)
+            .padding(.vertical, Theme.Metrics.tagInsetV)
+            .background(hovered == option ? Theme.Colors.selection : .clear,
+                        in: RoundedRectangle(cornerRadius: Theme.Metrics.radius))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .onHover { hovered = $0 ? option : (hovered == option ? nil : hovered) }
+        .help(option.group == .thisCall
+              ? "Join this voice with \(option.name)’s lines"
+              : "This voice is \(option.name)")
+    }
+
+    private static func title(_ group: SpeakerNameOption.Group) -> String {
+        switch group {
+        case .thisCall: "In this call"
+        case .invite: "On the invite"
+        case .past: "From past calls"
+        }
     }
 }
 
