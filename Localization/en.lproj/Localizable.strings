@@ -422,3 +422,7 @@
 "“All audio stays on your Mac. Only the text goes to the AI.”" = "“All audio stays on your Mac. Only the text goes to the AI.”";
 "On-device, private meeting recorder." = "On-device, private meeting recorder.";
 "Chinese localization: 传康Kk (github.com/cknb6)" = "Chinese localization: 传康Kk (github.com/cknb6)";
+"This call sounds like %@, but Parrot is set to %@." = "This call sounds like %@, but Parrot is set to %@.";
+"This call sounds like %@." = "This call sounds like %@.";
+"Keep %@" = "Keep %@";
+"Switch to %@" = "Switch to %@";

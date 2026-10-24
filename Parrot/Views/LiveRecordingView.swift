@@ -780,8 +780,8 @@ struct LanguageMismatchBanner: View {
                 .font(.appTitle3)
                 .foregroundStyle(Theme.Colors.warn)
             VStack(alignment: .leading, spacing: 2) {
-                Text(currentName.map { "This call sounds like \(name), but Parrot is set to \($0)." }
-                     ?? "This call sounds like \(name).")
+                Text(currentName.map { String(localized: "This call sounds like \(name), but Parrot is set to \($0).") }
+                     ?? String(localized: "This call sounds like \(name)."))
                     .font(Theme.Typography.cardTitle)
                     .foregroundStyle(Theme.Colors.ink)
                 Text("Lines come out wrong until you switch. Your next calls use it too.")
@@ -791,10 +791,12 @@ struct LanguageMismatchBanner: View {
             Spacer(minLength: Theme.Metrics.controlGap)
             if let currentName {
                 Button("Keep \(currentName)", action: onKeep)
+                    .fixedSize()
             }
             // No Return shortcut: typing notes mid-call must never switch it.
             Button("Switch to \(name)", action: onSwitch)
                 .buttonStyle(.borderedProminent)
+                .fixedSize()
         }
         .padding(.horizontal, Theme.Metrics.pad)
         .padding(.vertical, Theme.Metrics.bannerInsetV)
