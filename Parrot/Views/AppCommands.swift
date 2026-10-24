@@ -106,7 +106,8 @@ enum MeetingActions {
         NSApp.activate(ignoringOtherApps: true)
         NSApp.orderFrontStandardAboutPanel(options: [
             .credits: NSAttributedString(
-                string: "On-device, private meeting recorder.\n\(repoURL)",
+                string: String(localized: "On-device, private meeting recorder.") + "\n\(repoURL)\n\n"
+                    + String(localized: "Chinese localization: 传康Kk (github.com/cknb6)"),
                 attributes: [
                     .font: NSFont.systemFont(ofSize: 11),
                     .foregroundColor: NSColor.secondaryLabelColor,

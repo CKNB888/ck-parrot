@@ -8,6 +8,8 @@
   <a href="https://github.com/turantekin/Parrot/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/turantekin/Parrot?style=flat&color=e3503c"></a>
 </p>
 
+<p align="center"><a href="README.zh-CN.md">简体中文</a></p>
+
 <p align="center">
   <a href="https://openparrot.app"><b>Website</b></a> ·
   <a href="https://github.com/turantekin/Parrot/releases"><b>Download</b></a> ·
@@ -296,6 +298,10 @@ Seriously, if you're into Swift/macOS development, audio processing, or on-devic
 - **Just vibes.** Even "cool project" or "this is dumb, do it this way instead". I'm all ears.
 
 The easiest way to report anything: click the little ladybug in the bottom right corner of the app (or **Help > Report a Bug...**). Start with [CONTRIBUTING.md](CONTRIBUTING.md), and please be kind ([Code of Conduct](CODE_OF_CONDUCT.md)). Stuck? See [SUPPORT.md](SUPPORT.md).
+
+### Contributors
+
+- [传康Kk (@cknb6)](https://github.com/cknb6): Simplified Chinese localization and bug fixes
 
 ## Known issues (I'm working on it)
 

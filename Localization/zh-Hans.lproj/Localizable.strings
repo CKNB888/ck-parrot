@@ -420,3 +420,5 @@
 "show more" = "显示更多";
 "unverified" = "未核实";
 "“All audio stays on your Mac. Only the text goes to the AI.”" = "“所有音频都保留在你的 Mac 上。只有文字会发送给 AI。”";
+"On-device, private meeting recorder." = "本机运行的私密会议录音工具。";
+"Chinese localization: 传康Kk (github.com/cknb6)" = "简体中文本地化：传康Kk（github.com/cknb6）";

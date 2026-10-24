@@ -38,6 +38,9 @@ jobs:
           key: spm-${{ runner.os }}-${{ hashFiles('Package.resolved') }}
           restore-keys: spm-${{ runner.os }}-
 
+      - name: Lint localizations
+        run: for f in Localization/*.lproj/Localizable.strings; do plutil -lint "$f"; done
+
       - name: Build (debug)
         run: swift build -c debug --force-resolved-versions
 
