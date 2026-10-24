@@ -31,6 +31,6 @@ Parrot 是 macOS 原生（SwiftUI）会议录音工具：同时录制系统音�
 
 ## 贡献者
 
-- [传康Kk](https://github.com/cknb6)：简体中文本地化与 Bug 修复
+- [CKNB](https://github.com/cknb6)：简体中文本地化与 Bug 修复
 
 更新记录见 [CHANGELOG.zh-CN.md](CHANGELOG.zh-CN.md)。许可证：GPL-3.0。
