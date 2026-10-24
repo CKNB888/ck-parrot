@@ -301,7 +301,7 @@ The easiest way to report anything: click the little ladybug in the bottom right
 
 ### Contributors
 
-- [传康Kk (@cknb6)](https://github.com/cknb6): Simplified Chinese localization and bug fixes
+- [CKNB (@cknb6)](https://github.com/cknb6): Simplified Chinese localization and bug fixes
 
 ## Known issues (I'm working on it)
 

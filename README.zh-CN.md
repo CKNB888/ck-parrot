@@ -29,7 +29,7 @@ CI（GitHub Actions，macOS runner）会自动构建、运行测试并产出可�
 
 ## 贡献者
 
-- [传康Kk (@cknb6)](https://github.com/cknb6)：简体中文本地化与问题修复
+- [CKNB (@cknb6)](https://github.com/cknb6)：简体中文本地化与问题修复
 
 ## 许可证
 
