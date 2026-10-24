@@ -404,7 +404,22 @@ final class OpenAICompatibleProvider: AnalysisProvider {
         let usage: Usage?
     }
 
+    /// Reasoning models (e.g. via OpenRouter) can spend the whole `max_tokens`
+    /// budget on hidden thinking and come back with `finish_reason: "length"`
+    /// and no usable text (#146). Retry once with a larger budget before
+    /// surfacing the truncation error.
     private func send(body: [String: Any], config: Config) async throws -> String {
+        do {
+            return try await sendOnce(body: body, config: config)
+        } catch AnalysisError.badResponse(let message) where message.hasPrefix("Response truncated") {
+            guard let current = body["max_tokens"] as? Int, current < 8192 else { throw AnalysisError.badResponse(message) }
+            var retry = body
+            retry["max_tokens"] = min(current * 4, 8192)
+            return try await sendOnce(body: retry, config: config)
+        }
+    }
+
+    private func sendOnce(body: [String: Any], config: Config) async throws -> String {
         var request = URLRequest(url: config.baseURL.appendingPathComponent("chat/completions"))
         request.httpMethod = "POST"
         // Local models can take a while on first token (model load); generous cap.
