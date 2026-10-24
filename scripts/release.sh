@@ -76,6 +76,9 @@ plutil -replace LSMinimumSystemVersion    -string "14.0"            "$PLIST"
 
 # Resources: SwiftPM resource bundles + the UI fonts (ATSApplicationFontsPath ".")
 cp -R .build/release/*.bundle "$APP/Contents/Resources/"
+# UI translations (SwiftUI looks them up in the main bundle).
+cp -R Localization/*.lproj "$APP/Contents/Resources/"
+plutil -replace CFBundleLocalizations -json '["en","zh-Hans"]' "$PLIST"
 cp Parrot/Fonts/*.otf "$APP/Contents/Resources/"
 
 # Sparkle is a binary XCFramework — swift build links it but never embeds it.
