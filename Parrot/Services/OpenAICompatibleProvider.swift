@@ -89,7 +89,7 @@ enum OllamaProbe {
             let models: [Entry]
         }
         var request = URLRequest(url: URL(string: "http://localhost:11434/api/tags")!)
-        request.timeoutInterval = 3
+        request.timeoutInterval = 30  // ck-parrot: 3 s was too short on slow networks
         guard let (data, response) = try? await URLSession.shared.data(for: request),
               (response as? HTTPURLResponse)?.statusCode == 200,
               let tags = try? JSONDecoder().decode(Tags.self, from: data) else { return nil }
@@ -209,7 +209,7 @@ final class OpenAICompatibleProvider: AnalysisProvider {
             user: ClaudeAnalysisProvider.summaryUserContent(
                 transcript: transcript, insightTitles: insightTitles,
                 bookmarks: bookmarks, instructions: instructions),
-            maxTokens: 1700, config: config)
+            maxTokens: 4096, config: config)
     }
 
     func coachingReport(transcript: String, talkPercentMe: Int, instructions: String,
@@ -222,7 +222,7 @@ final class OpenAICompatibleProvider: AnalysisProvider {
             user: ClaudeAnalysisProvider.coachingUserContent(
                 transcript: transcript, talkPercentMe: talkPercentMe,
                 instructions: instructions, counterpart: counterpart),
-            maxTokens: 1400, config: config)
+            maxTokens: 4096, config: config)
     }
 
     func complete(system: String, user: String, maxTokens: Int) async throws -> String {
@@ -432,13 +432,24 @@ final class OpenAICompatibleProvider: AnalysisProvider {
 
         // ponytail: single retry with fixed backoff on transient failures,
         // mirroring ClaudeAnalysisProvider.
-        for attempt in 0..<2 {
-            let (data, response) = try await URLSession.shared.data(for: request)
+        // ck-parrot: up to 3 attempts, exponential backoff, transient network errors too.
+        for attempt in 0..<ProviderNet.maxAttempts {
+            let result: (Data, URLResponse)
+            do {
+                result = try await URLSession.shared.data(for: request)
+            } catch {
+                if attempt < ProviderNet.maxAttempts - 1, ProviderNet.isTransient(error) {
+                    try await ProviderNet.backoff(attempt)
+                    continue
+                }
+                throw ProviderNet.friendly(error)
+            }
+            let (data, response) = result
             guard let http = response as? HTTPURLResponse else {
                 throw AnalysisError.badResponse("No HTTP response")
             }
-            if attempt == 0, http.statusCode == 429 || http.statusCode >= 500 {
-                try await Task.sleep(for: .seconds(2))
+            if attempt < ProviderNet.maxAttempts - 1, http.statusCode == 429 || http.statusCode >= 500 {
+                try await ProviderNet.backoff(attempt)
                 continue
             }
             guard http.statusCode == 200 else {

@@ -508,3 +508,14 @@
 "Try:" = "Try:";
 "Why:" = "Why:";
 "🎉" = "🎉";
+
+/* ck-parrot round 2 */
+"Model download failed. Check your network, or switch the download source in Settings, then retry. (%@)" = "Model download failed. Check your network, or switch the download source in Settings, then retry. (%@)";
+"Backup speech model failed to load: %@" = "Backup speech model failed to load: %@";
+"No internet connection." = "No internet connection.";
+"Can't reach the provider. Check your network or proxy." = "Can't reach the provider. Check your network or proxy.";
+"The provider timed out. Check your network or proxy, then retry." = "The provider timed out. Check your network or proxy, then retry.";
+"Download source" = "Download source";
+"Automatic (mirror in mainland China)" = "Automatic (mirror in mainland China)";
+"hf-mirror.com (China mirror)" = "hf-mirror.com (China mirror)";
+"huggingface.co (official)" = "huggingface.co (official)";

@@ -52,6 +52,7 @@ struct SettingsView: View {
 
     @Environment(RecordingManager.self) private var recordingManager
     @AppStorage("whisperModel") private var selectedModel = "base"
+    @AppStorage(TranscriptionEngine.hubEndpointKey) private var hubEndpoint = ""
     @AppStorage("appearance") private var appearance = Appearance.system
     @AppStorage(ParrotAppDelegate.hideDockKey) private var hideDock = false
     @AppStorage("copilotEnabled") private var copilotEnabled = false
@@ -380,6 +381,15 @@ struct SettingsView: View {
                              ? "Calls in other languages, like Turkish, switch to Whisper Large V3 Turbo Compressed on their own."
                              : "Parakeet can't do \(TranscriptionLanguage.name(transcriptionLanguage)), so calls use Whisper.")
                     }
+                }
+                SettingsBlockRow(title: "Download source") {
+                    Picker("", selection: $hubEndpoint) {
+                        Text("Automatic (mirror in mainland China)").tag("")
+                        Text("hf-mirror.com (China mirror)").tag(TranscriptionEngine.mirrorHub)
+                        Text("huggingface.co (official)").tag(TranscriptionEngine.officialHub)
+                    }
+                    .pickerStyle(.radioGroup)
+                    .labelsHidden()
                 }
                 SettingsRow {
                     HStack(spacing: 12) {

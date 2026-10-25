@@ -28,7 +28,32 @@ final class AudioCaptureManager: NSObject {
     /// Acoustic echo canceller, created per recording when enabled. Removes the
     /// speaker bleed from the mic using the system audio as the reference. nil =
     /// disabled (mic passes through untouched).
-    private var echoCanceller: EchoCanceller?
+    /// ck-parrot R2-1: read from the mic tap thread and the system-audio queue
+    /// while main sets/clears it — guard the reference with a lock so a reader
+    /// always gets a retained object (never a half-released one).
+    private let echoCancellerLock = OSAllocatedUnfairLock<EchoCanceller?>(uncheckedState: nil)
+    private var echoCanceller: EchoCanceller? {
+        get { echoCancellerLock.withLockUnchecked { $0 } }
+        set { echoCancellerLock.withLockUnchecked { $0 = newValue } }
+    }
+
+    /// ck-parrot R2-7: lock-protected mirrors of the main-thread flags that the
+    /// audio threads read. The observed properties stay for SwiftUI; the audio
+    /// threads only read these.
+    private struct AudioThreadFlags: Sendable {
+        var capturing = false
+        var muted = false
+        var tapSignal = false
+    }
+    private let threadFlags = OSAllocatedUnfairLock(initialState: AudioThreadFlags())
+    private var capturingNow: Bool { threadFlags.withLock { $0.capturing } }
+    private var mutedNow: Bool { threadFlags.withLock { $0.muted } }
+    private func syncThreadFlags() {
+        let capturing = isCapturing, muted = micMuted
+        threadFlags.withLock { $0.capturing = capturing; $0.muted = muted }
+    }
+    /// ck-parrot R2-2: SCStream sample handlers must run on a serial queue.
+    private let sckQueue = DispatchQueue(label: "io.github.cknb6.ckparrot.sck", qos: .userInteractive)
     /// `PARROT_AEC_DUMP=1` only: what the canceller was fed, for `--aec-replay`.
     private var aecDump: AECDump?
 
@@ -46,7 +71,10 @@ final class AudioCaptureManager: NSObject {
     /// unauthorized tap "works" but produces exact zeros forever (measured, no
     /// error/status API exists), so first real audio is the only proof of the
     /// "System Audio Recording Only" grant — it also feeds the silence rescue.
-    @ObservationIgnored private var tapEverHadSignal = false
+    private var tapEverHadSignal: Bool {
+        get { threadFlags.withLock { $0.tapSignal } }
+        set { threadFlags.withLock { $0.tapSignal = newValue } }
+    }
 
     /// The recording clock both tracks are placed on (monotonic seconds, set as
     /// capture goes live), and each stream's frames handed to its file and to
@@ -211,6 +239,7 @@ final class AudioCaptureManager: NSObject {
 
     func setMicMuted(_ muted: Bool) {
         micMuted = muted
+        syncThreadFlags()
         if !muted { lastMicSignalAt = Date() }  // a fresh 15 s before "not hearing you"
     }
 
@@ -238,6 +267,7 @@ final class AudioCaptureManager: NSObject {
         outputDeviceName = output
         micActive = true
         isCapturing = true
+        syncThreadFlags()
         micEverHadSignal = true
         lastMicSignalAt = Date()
         self.micLevel = micLevel
@@ -310,6 +340,7 @@ final class AudioCaptureManager: NSObject {
         micFramesOut = 0
         captureOrigin = ProcessInfo.processInfo.systemUptime
         isCapturing = true
+        syncThreadFlags()
         Self.oslog.log("capture live — \(self.captureBackend.rawValue, privacy: .public) up in \(Int((t1 - t0) * 1000), privacy: .public) ms, mic in \(Int((self.captureOrigin - t1) * 1000), privacy: .public) ms")
     }
 
@@ -322,10 +353,10 @@ final class AudioCaptureManager: NSObject {
         micEverHadSignal = false
         micSignalLost = false
         micMuted = false
+        syncThreadFlags()
         audioLevel = 0
         micLevel = 0
         micPeakLevel = 0
-        echoCanceller = nil
 
         // Stop system audio stream (whichever backend is live)
         if #available(macOS 15.0, *), let tap = processTap as? SystemAudioTap {
@@ -345,6 +376,8 @@ final class AudioCaptureManager: NSObject {
         audioEngine?.stop()
         audioEngine?.inputNode.removeTap(onBus: 0)
         audioEngine = nil
+        // R2-1: release the canceller only after every audio source is stopped.
+        echoCanceller = nil
 
         // Flush queued writes, then close the files. AVAudioFile finalizes the
         // .caf header when it deallocates; the sync barrier guarantees every
@@ -403,7 +436,7 @@ final class AudioCaptureManager: NSObject {
         )!
         let tap = SystemAudioTap(targetFormat: targetFormat)
         tap.onBuffer = { [weak self] buffer in
-            guard let self, self.isCapturing else { return }
+            guard let self, self.capturingNow else { return }
             self.handleSystemAudio(buffer)
         }
         try tap.start()
@@ -478,7 +511,7 @@ final class AudioCaptureManager: NSObject {
 
         let t1 = ProcessInfo.processInfo.systemUptime
         let stream = SCStream(filter: filter, configuration: config, delegate: nil)
-        try stream.addStreamOutput(self, type: .audio, sampleHandlerQueue: .global(qos: .userInteractive))
+        try stream.addStreamOutput(self, type: .audio, sampleHandlerQueue: sckQueue)
         try await stream.startCapture()
         self.stream = stream
         captureBackend = .sck
@@ -512,13 +545,14 @@ final class AudioCaptureManager: NSObject {
 
         // Feed the same audio to the echo canceller as the far-end reference, so it
         // can subtract this from the mic. Only when it's the expected 16 kHz mono.
+        let aec = echoCanceller
         if pcmBuffer.format.sampleRate == sampleRate, pcmBuffer.format.channelCount == channels {
-            echoCanceller?.pushReference(Self.floats(from: pcmBuffer))
-        } else if echoCanceller != nil, !echoCancellerStarved {
+            aec?.pushReference(Self.floats(from: pcmBuffer))
+        } else if aec != nil, !echoCancellerStarved {
             // Without a reference the AEC is silently a no-op and speaker bleed
             // transcribes as "Me" — surface it once instead of hiding it.
             NSLog("Parrot: echo canceller starved — system audio is \(pcmBuffer.format.sampleRate) Hz ×\(pcmBuffer.format.channelCount)ch, expected \(sampleRate) Hz mono")
-            DispatchQueue.main.async { self.echoCancellerStarved = true }
+            DispatchQueue.main.async { [weak self] in self?.echoCancellerStarved = true }
         }
 
         // Update audio level
@@ -562,7 +596,8 @@ final class AudioCaptureManager: NSObject {
         let converter = AVAudioConverter(from: inputFormat, to: targetFormat)
 
         inputNode.installTap(onBus: 0, bufferSize: 1024, format: inputFormat) { [weak self] buffer, _ in
-            guard let self, self.isCapturing else { return }
+            guard let self, self.capturingNow else { return }
+            let echoCanceller = self.echoCanceller  // R2-1: one retained snapshot per buffer
 
             // Convert to target format
             guard let converter else { return }
@@ -598,15 +633,15 @@ final class AudioCaptureManager: NSObject {
                 // empty/quiet frames, but only the OS produces exact zeros.
                 let verdict = self.micWatchdog.observe(meanAbs: Self.meanAbs(micFloats), at: Date())
                 if verdict != .ok { self.handleMicWatchdog(verdict) }
-                let cleaned = Self.micOut(self.echoCanceller?.process(mic: micFloats) ?? micFloats,
-                                          muted: self.micMuted)
+                let cleaned = Self.micOut(echoCanceller?.process(mic: micFloats) ?? micFloats,
+                                          muted: self.mutedNow)
                 // #98: the canceller only removes echo that lands within its
                 // 128 ms tail (2048 samples). A backlog past that, or frames
                 // fed silence, means it's blind and speaker echo reaches Me.
                 // In step isn't enough: it also says how much echo it took out
                 // while they talked, and the mic slider call apps can move.
                 // Same line start, so the grep in the #98 thread still finds it.
-                if let aec = self.echoCanceller, Date().timeIntervalSince(self.lastAlignmentLogAt) >= 60 {
+                if let aec = echoCanceller, Date().timeIntervalSince(self.lastAlignmentLogAt) >= 60 {
                     self.lastAlignmentLogAt = Date()
                     let echo = aec.takeStats().map {
                         String(format: "while they talk (%d frames): removed %.0f dB, filter alone %.0f dB, mic hears speakers at %.0f dB",
@@ -619,7 +654,7 @@ final class AudioCaptureManager: NSObject {
                     self.dbgMic.add(
                         raw: Self.meanAbs(micFloats),
                         clean: cleaned.isEmpty ? nil : Self.meanAbs(cleaned),
-                        refBacklog: self.echoCanceller?.referenceBacklog,
+                        refBacklog: echoCanceller?.referenceBacklog,
                         extra: String(format: " devfmt=%.0fHz", inputFormat.sampleRate))
                 }
                 guard !cleaned.isEmpty,
@@ -944,7 +979,7 @@ final class AudioCaptureManager: NSObject {
 
 extension AudioCaptureManager: SCStreamOutput {
     func stream(_ stream: SCStream, didOutputSampleBuffer sampleBuffer: CMSampleBuffer, of type: SCStreamOutputType) {
-        guard type == .audio, isCapturing else { return }
+        guard type == .audio, capturingNow else { return }
 
         // Convert CMSampleBuffer to AVAudioPCMBuffer for WhisperKit
         guard let pcmBuffer = sampleBuffer.toAVAudioPCMBuffer(sampleRate: sampleRate, channels: channels) else {

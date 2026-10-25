@@ -507,7 +507,7 @@ final class ClaudeAnalysisProvider: AnalysisProvider {
                                               bookmarks: bookmarks, instructions: instructions)
         let body: [String: Any] = [
             "model": Self.model,
-            "max_tokens": 1700,
+            "max_tokens": 4096,
             "system": Self.summarySystemPrompt(counterpart: counterpart, template: template),
             "messages": [["role": "user", "content": content]],
         ]
@@ -566,7 +566,7 @@ final class ClaudeAnalysisProvider: AnalysisProvider {
         let body: [String: Any] = [
             "model": Self.model,
             // Receipts add a stamp per bullet — a little more room than before.
-            "max_tokens": 1400,
+            "max_tokens": 4096,
             "system": Self.coachingSystemPrompt(counterpart: counterpart, template: template),
             "messages": [["role": "user", "content": content]],
         ]
@@ -616,14 +616,25 @@ final class ClaudeAnalysisProvider: AnalysisProvider {
 
         // ponytail: single retry with fixed backoff on transient failures; add
         // jitter / Retry-After parsing if rate limits persist.
-        for attempt in 0..<2 {
-            let (data, response) = try await URLSession.shared.data(for: request)
+        // ck-parrot: up to 3 attempts, exponential backoff, transient network errors too.
+        for attempt in 0..<ProviderNet.maxAttempts {
+            let result: (Data, URLResponse)
+            do {
+                result = try await URLSession.shared.data(for: request)
+            } catch {
+                if attempt < ProviderNet.maxAttempts - 1, ProviderNet.isTransient(error) {
+                    try await ProviderNet.backoff(attempt)  // throws on cancel — aborts the retry
+                    continue
+                }
+                throw ProviderNet.friendly(error)
+            }
+            let (data, response) = result
 
             guard let http = response as? HTTPURLResponse else {
                 throw AnalysisError.badResponse("No HTTP response")
             }
-            if attempt == 0, http.statusCode == 429 || http.statusCode >= 500 {
-                try await Task.sleep(for: .seconds(2))  // throws on cancel — aborts the retry
+            if attempt < ProviderNet.maxAttempts - 1, http.statusCode == 429 || http.statusCode >= 500 {
+                try await ProviderNet.backoff(attempt)  // throws on cancel — aborts the retry
                 continue
             }
             guard http.statusCode == 200 else {
@@ -797,5 +808,42 @@ enum APIKeyStore {
         ]
         SecItemDelete(query as CFDictionary)
         cache.withLock { _ = $0.updateValue(nil, forKey: account) }
+    }
+}
+
+// MARK: - Shared retry policy (ck-parrot)
+
+/// Provider HTTP calls: up to 3 attempts with 1 s / 2 s backoff on 429, 5xx
+/// and transient network errors, and Chinese-friendly messages for the
+/// common offline / DNS / timeout failures.
+enum ProviderNet {
+    static let maxAttempts = 3
+
+    static func isTransient(_ error: Error) -> Bool {
+        guard let urlError = error as? URLError else { return false }
+        switch urlError.code {
+        case .timedOut, .networkConnectionLost, .cannotConnectToHost, .dnsLookupFailed:
+            return true
+        default:
+            return false
+        }
+    }
+
+    static func backoff(_ attempt: Int) async throws {
+        try await Task.sleep(for: .seconds(1 << attempt))
+    }
+
+    static func friendly(_ error: Error) -> Error {
+        guard let urlError = error as? URLError else { return error }
+        switch urlError.code {
+        case .notConnectedToInternet:
+            return AnalysisError.badResponse(String(localized: "No internet connection."))
+        case .cannotFindHost, .dnsLookupFailed:
+            return AnalysisError.badResponse(String(localized: "Can't reach the provider. Check your network or proxy."))
+        case .timedOut:
+            return AnalysisError.badResponse(String(localized: "The provider timed out. Check your network or proxy, then retry."))
+        default:
+            return error
+        }
     }
 }

@@ -270,9 +270,17 @@ struct DashboardView: View {
                 .foregroundStyle(Theme.Colors.good)
                 .font(.appCaption)
         case .error(let message):
-            Label(message, systemImage: "xmark.circle")
-                .foregroundStyle(Theme.Colors.stop)
-                .font(.appCaption)
+            HStack {
+                Label(message, systemImage: "xmark.circle")
+                    .foregroundStyle(Theme.Colors.stop)
+                Button("Retry") {
+                    Task {
+                        await recordingManager.transcriptionEngine.loadModel(
+                            UserDefaults.standard.string(forKey: "whisperModel") ?? "base")
+                    }
+                }
+            }
+            .font(.appCaption)
         }
     }
 

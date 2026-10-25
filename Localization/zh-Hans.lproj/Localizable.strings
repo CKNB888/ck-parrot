@@ -508,3 +508,14 @@
 "Try:" = "试试：";
 "Why:" = "原因：";
 "🎉" = "🎉";
+
+/* ck-parrot round 2 */
+"Model download failed. Check your network, or switch the download source in Settings, then retry. (%@)" = "模型下载失败，请检查网络，或在设置中切换下载源后重试。（%@）";
+"Backup speech model failed to load: %@" = "备用语音模型加载失败：%@";
+"No internet connection." = "没有网络连接。";
+"Can't reach the provider. Check your network or proxy." = "无法连接服务商，请检查网络或代理。";
+"The provider timed out. Check your network or proxy, then retry." = "服务商响应超时，请检查网络或代理后重试。";
+"Download source" = "下载源";
+"Automatic (mirror in mainland China)" = "自动（中国大陆使用镜像）";
+"hf-mirror.com (China mirror)" = "hf-mirror.com（国内镜像）";
+"huggingface.co (official)" = "huggingface.co（官方）";

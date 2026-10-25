@@ -186,6 +186,7 @@ final class TranscriptionEngine {
     @MainActor
     private func performLoad(_ modelName: String, generation: Int) async {
         isReady = false
+        Self.applyModelEndpoint()
         loadingModelName = Self.displayName(for: modelName)
         currentModel = modelName
         // Download progress lands on the main actor, for this load only.
@@ -241,13 +242,7 @@ final class TranscriptionEngine {
         if let localFolder = localModelFolder(for: modelName) {
             modelFolder = localFolder
         } else {
-            modelFolder = try await withStallTimeout(seconds: 60) { tick in
-                try await WhisperKit.download(variant: resolvedModelName) { download in
-                    let fraction = min(max(download.fractionCompleted, 0), 1)
-                    tick(fraction)
-                    progress?(fraction)
-                }
-            }
+            modelFolder = try await downloadWhisperModel(resolvedModelName, progress: progress)
         }
         await loading?()
         let config = WhisperKitConfig(
@@ -260,6 +255,61 @@ final class TranscriptionEngine {
             download: false
         )
         return try await withTimeout(seconds: 300) { try await WhisperKit(config) }
+    }
+
+    // MARK: - Model download source (ck-parrot R2-3)
+
+    nonisolated static let officialHub = "https://huggingface.co"
+    nonisolated static let mirrorHub = "https://hf-mirror.com"
+    /// Settings → "Model download source". Empty = automatic: the mirror for
+    /// Chinese-language systems or region CN (huggingface.co is blocked there).
+    nonisolated static let hubEndpointKey = "hfEndpoint"
+
+    nonisolated static var modelEndpoint: String {
+        if let custom = UserDefaults.standard.string(forKey: hubEndpointKey)?
+            .trimmingCharacters(in: .whitespacesAndNewlines), !custom.isEmpty {
+            return custom.hasSuffix("/") ? String(custom.dropLast()) : custom
+        }
+        let chinese = Locale.preferredLanguages.first?.hasPrefix("zh") == true
+            || Locale.current.region?.identifier == "CN"
+        return chinese ? mirrorHub : officialHub
+    }
+
+    /// FluidAudio (Parakeet, VAD) reads its hub from a static.
+    nonisolated static func applyModelEndpoint() {
+        ModelRegistry.baseURL = modelEndpoint
+    }
+
+    struct ModelDownloadError: LocalizedError {
+        let detail: String
+        var errorDescription: String? {
+            String(localized: "Model download failed. Check your network, or switch the download source in Settings, then retry. (\(detail))")
+        }
+    }
+
+    /// Try the chosen source, then the other one once, before giving up.
+    nonisolated private static func downloadWhisperModel(_ variant: String,
+                                                         progress: (@Sendable (Double) -> Void)?) async throws -> URL {
+        let primary = modelEndpoint
+        let secondary = primary == mirrorHub ? officialHub : mirrorHub
+        var lastError: Error?
+        for endpoint in [primary, secondary] {
+            do {
+                return try await withStallTimeout(seconds: 60) { tick in
+                    try await WhisperKit.download(variant: variant, endpoint: endpoint) { download in
+                        let fraction = min(max(download.fractionCompleted, 0), 1)
+                        tick(fraction)
+                        progress?(fraction)
+                    }
+                }
+            } catch is CancellationError {
+                throw CancellationError()
+            } catch {
+                lastError = error
+                AudioCaptureManager.oslog.error("Model download from \(endpoint, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")
+            }
+        }
+        throw ModelDownloadError(detail: lastError?.localizedDescription ?? "-")
     }
 
     /// What answers "which language is this?": Tiny while Parakeet is the
@@ -275,7 +325,17 @@ final class TranscriptionEngine {
         // One load however many callers (the loop, an import, the preload).
         let load: Task<WhisperKit?, Never> = bufferLock.withLock {
             if let whisperLoad { return whisperLoad }
-            let fresh = Task { try? await Self.makeWhisperKit(Self.fallbackWhisper) }
+            // ck-parrot R2-5: don't swallow the failure — log it and tell the UI.
+            let fresh = Task { () -> WhisperKit? in
+                do {
+                    return try await Self.makeWhisperKit(Self.fallbackWhisper)
+                } catch {
+                    AudioCaptureManager.oslog.error("Fallback Whisper load failed: \(error.localizedDescription, privacy: .public)")
+                    let notice = String(localized: "Backup speech model failed to load: \(error.localizedDescription)")
+                    await MainActor.run { self.cloudNotice = notice }
+                    return nil
+                }
+            }
             whisperLoad = fresh
             return fresh
         }
@@ -300,6 +360,7 @@ final class TranscriptionEngine {
     /// polish or import passes that wait on it.
     func loadSpeechDetector() async {
         guard bufferLock.withLock({ speechDetector }) == nil else { return }
+        Self.applyModelEndpoint()
         do {
             let detector = try await Self.withTimeout(seconds: 60) { try await VadManager() }
             bufferLock.withLock { speechDetector = detector }
