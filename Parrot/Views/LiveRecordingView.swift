@@ -120,7 +120,7 @@ struct LiveRecordingView: View {
                         showCopilot.toggle()
                     }
                 } label: {
-                    Image(systemName: "sparkles")
+                    Image(systemName: "waveform")
                         .font(.appHeadline)
                         .foregroundStyle(showCopilot ? Theme.Colors.accent : Theme.Colors.ink2)
                 }

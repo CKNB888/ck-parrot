@@ -64,7 +64,7 @@ struct CopilotPanelView: View {
 
     private var header: some View {
         HStack(spacing: 8) {
-            Image(systemName: "sparkles")
+            Image(systemName: "waveform")
                 .foregroundStyle(Theme.Colors.accent)
 
             Text("Assistant")

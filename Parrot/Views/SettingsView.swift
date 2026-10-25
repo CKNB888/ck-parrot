@@ -29,7 +29,7 @@ enum SettingsSection: String, CaseIterable, Identifiable {
         case .general: "gearshape"
         case .recording: "mic"
         case .transcription: "text.quote"
-        case .copilot: "sparkles"
+        case .copilot: "waveform"
         case .apiKeys: "key"
         case .knowledge: "books.vertical"
         case .profiles: "person.2"

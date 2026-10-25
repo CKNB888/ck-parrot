@@ -16,7 +16,7 @@ enum KindResolver {
     static func fallbackStyle(forKey key: String) -> KindStyle {
         switch key {
         case "suggestion":
-            return KindStyle(label: "Suggested answer", color: Theme.Colors.subtle, iconSystemName: "lightbulb.fill", isPinned: false)
+            return KindStyle(label: "Suggested answer", color: Theme.Colors.subtle, iconSystemName: "text.bubble.fill", isPinned: false)
         case "question":
             return KindStyle(label: "Open question", color: Theme.Colors.accent, iconSystemName: "questionmark.circle.fill", isPinned: false)
         case "blocker":

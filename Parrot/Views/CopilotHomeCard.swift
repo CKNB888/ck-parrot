@@ -58,7 +58,7 @@ struct CopilotHomeCard: View {
                 closeButton { dismissed = true }
             }
             HStack(alignment: .top, spacing: 8) {
-                Image(systemName: "lightbulb")
+                Image(systemName: "text.bubble")
                     .foregroundStyle(Theme.Colors.accent)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("They ask about security. The Assistant suggests:")

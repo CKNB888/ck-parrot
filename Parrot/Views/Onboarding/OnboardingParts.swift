@@ -32,7 +32,7 @@ struct CopilotHeroCard<Accessory: View>: View {
 
     var body: some View {
         HStack(spacing: 14) {
-            Image(systemName: "sparkles")
+            Image(systemName: "waveform")
                 .font(.appTitle2)
                 .foregroundStyle(Theme.Colors.accent)
                 .frame(width: 44, height: 44)

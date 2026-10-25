@@ -223,7 +223,7 @@ struct ProfileSuggestionBanner: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            Image(systemName: "sparkles").foregroundStyle(Theme.Colors.accent)
+            Image(systemName: "text.magnifyingglass").foregroundStyle(Theme.Colors.accent)
             Text(text).font(Theme.Typography.body).foregroundStyle(Theme.Colors.ink)
             Spacer(minLength: 12)
             Button("Later", action: later)

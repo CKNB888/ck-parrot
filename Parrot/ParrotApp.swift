@@ -348,7 +348,7 @@ struct ParrotApp: App {
             )
         }
 
-        // A real menu, not a floating panel: instant, keyboard-navigable, native.
+        // A panel, not an NSMenu: menus cannot be hidden from screen sharing.
         MenuBarExtra {
             MenuBarView()
                 .parrotEnvironment(recordingManager, appSession)
@@ -356,7 +356,7 @@ struct ParrotApp: App {
         } label: {
             MenuBarLabel(recordingManager: recordingManager)
         }
-        .menuBarExtraStyle(.menu)
+        .menuBarExtraStyle(.window)
 
         Settings {
             SettingsView()

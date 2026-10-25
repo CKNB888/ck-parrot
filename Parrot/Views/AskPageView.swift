@@ -209,7 +209,7 @@ struct AskPageView: View {
             Divider()
             Button("AI Settings…") { SettingsView.open(.copilot, with: openSettings) }
         } label: {
-            Label(label(for: askProvider), systemImage: "sparkles")
+            Label(label(for: askProvider), systemImage: "text.magnifyingglass")
         }
         .menuStyle(.borderlessButton)
         .fixedSize()

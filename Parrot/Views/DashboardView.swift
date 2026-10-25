@@ -207,7 +207,7 @@ struct DashboardView: View {
         let docs = recordingManager.knowledgeBase.documentsInPlay(for: profileStore.activeProfile?.id)
         return VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 6) {
-                Image(systemName: "sparkles")
+                Image(systemName: "waveform")
                     .font(.appCaption)
                     .foregroundStyle(Theme.Colors.accent)
                 Text("Brief the Assistant")

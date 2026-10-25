@@ -19,8 +19,9 @@ struct ReadyStep: View {
             ollamaPulling: ollama.isPulling, ollamaProgress: ollama.pullProgress, hasClaudeKey: hasClaudeKey)
         let copy = Self.copy(status, path: model.path, ollamaModel: ollamaModel)
         VStack(spacing: 16) {
-            Text("🎉")
-                .font(.system(size: 56))
+            Image(systemName: "checkmark.circle")
+                .font(.system(size: 44, weight: .light))
+                .foregroundStyle(.tint)
                 .scaleEffect(celebrate ? 1.0 : 0.4)
                 .opacity(celebrate ? 1 : 0)
             StepHeader(title: Self.title(status, mode: model.mode),

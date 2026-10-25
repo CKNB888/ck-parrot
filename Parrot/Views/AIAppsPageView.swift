@@ -453,7 +453,7 @@ struct AIAppsReportTip: View {
         Group {
             if visible {
                 HStack(alignment: .top, spacing: 10) {
-                    Image(systemName: "lightbulb")
+                    Image(systemName: "text.bubble")
                         .foregroundStyle(Theme.Colors.accent)
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Claude can turn this call into a follow-up email, a second opinion or a list of who owes what.")

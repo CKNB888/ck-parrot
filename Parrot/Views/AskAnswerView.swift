@@ -44,7 +44,7 @@ struct ParrotAvatar: View {
             .frame(width: Theme.Metrics.avatar, height: Theme.Metrics.avatar)
             .clipShape(Circle())
             .overlay(alignment: .bottomTrailing) {
-                Image(systemName: "sparkles")
+                Image(systemName: "text.magnifyingglass")
                     .font(.system(size: Theme.Metrics.avatarBadge * 0.6, weight: .bold))
                     .foregroundStyle(Theme.Colors.canvas)
                     .frame(width: Theme.Metrics.avatarBadge, height: Theme.Metrics.avatarBadge)

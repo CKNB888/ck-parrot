@@ -58,7 +58,7 @@ enum ProfilePresets {
             counterpart: "the other person",
             allowGeneralKnowledge: allowGeneralKnowledge, presetVersion: presetVersion,
             kinds: [
-                kind("suggestion", "Suggested answer", "4F6FB0", "lightbulb.fill", "The other person asked something or raised a topic. Draft a short, concrete line to say now."),
+                kind("suggestion", "Suggested answer", "4F6FB0", "text.bubble.fill", "The other person asked something or raised a topic. Draft a short, concrete line to say now."),
                 kind("question", "Open question", "2F7E96", "questionmark.circle.fill", "The other person asked a direct question that hasn't been answered yet. Surface it briefly."),
                 kind("blocker", "Blocker", "E8943A", "exclamationmark.triangle.fill", "An objection or obstacle came up (price, timing, decision maker, competitor) that isn't resolved.", pinned: true, priority: 10),
                 kind("action_item", "Action item", "3F9168", "checkmark.circle.fill", "The user committed to do something after the call. Include any date or time mentioned."),
@@ -78,10 +78,10 @@ enum ProfilePresets {
                 tone: "", counterpart: "the prospect", allowGeneralKnowledge: true,
                 presetVersion: presetVersion,
                 kinds: [
-                    kind("suggestion", "Suggested answer", "4F6FB0", "lightbulb.fill", "The prospect asked something. Draft a short, concrete line to say now."),
+                    kind("suggestion", "Suggested answer", "4F6FB0", "text.bubble.fill", "The prospect asked something. Draft a short, concrete line to say now."),
                     kind("objection", "Objection", "E8943A", "hand.raised.fill", "The prospect raised a concern (price, timing, competitor, authority) that isn't resolved.", pinned: true, priority: 10),
                     kind("unanswered_question", "Unanswered question", "C0563B", "questionmark.bubble.fill", "The prospect asked a question and the conversation moved on without really answering it. Flag it so the user can circle back.", pinned: true, priority: 9),
-                    kind("opportunity", "Opportunity", "7A5FB0", "sparkles", "The prospect revealed a pain, goal or need the user's offering could solve. Suggest how to position a solution, grounded in the user's documents when they cover it.", priority: 7),
+                    kind("opportunity", "Opportunity", "7A5FB0", "scope", "The prospect revealed a pain, goal or need the user's offering could solve. Suggest how to position a solution, grounded in the user's documents when they cover it.", priority: 7),
                     kind("buying_signal", "Buying signal", "3F9168", "arrow.up.right.circle.fill", "The prospect showed interest or intent. Flag it so the user can move the deal forward."),
                     kind("next_step", "Next step", "2F7E96", "calendar.badge.plus", "A concrete next step or commitment to propose or confirm."),
                     kind("discovery_gap", "Ask this next", "C29218", "magnifyingglass", "An important unknown (budget, timeline, decision maker, success criteria) the user hasn't asked about yet. Phrase the title as the question to ask."),
@@ -99,7 +99,7 @@ enum ProfilePresets {
                     kind("open_question", "Open question", "2F7E96", "questionmark.circle.fill", "A non-leading open question the user could ask to deepen the conversation."),
                     kind("emotional_cue", "Emotional cue", "E8943A", "waveform.path.ecg", "The person expressed a notable emotion (frustration, relief, worry) worth acknowledging.", pinned: false, priority: 5),
                     kind("commitment", "Commitment", "3F9168", "checkmark.circle.fill", "Either side committed to a concrete next step; include any timing."),
-                    kind("coaching_moment", "Coaching moment", "5F6470", "lightbulb.fill", "An opening for the user to offer guidance or a useful reframe."),
+                    kind("coaching_moment", "Coaching moment", "5F6470", "text.bubble.fill", "An opening for the user to offer guidance or a useful reframe."),
                 ],
                 gauges: [gauge("client_openness", "Openness", "Guarded", "Open", "2F7E96"),
                          gauge("my_dominance", "You're talking", "Balanced", "Dominating", "5F6470")]),
@@ -125,7 +125,7 @@ enum ProfilePresets {
                 tone: "", counterpart: "the customer", allowGeneralKnowledge: true,
                 presetVersion: presetVersion,
                 kinds: [
-                    kind("answer", "Answer", "4F6FB0", "lightbulb.fill", "The customer asked something. Draft a clear, accurate answer the user can give."),
+                    kind("answer", "Answer", "4F6FB0", "text.bubble.fill", "The customer asked something. Draft a clear, accurate answer the user can give."),
                     kind("unresolved_issue", "Unresolved issue", "E8943A", "exclamationmark.triangle.fill", "An issue the customer raised that isn't resolved yet.", pinned: true, priority: 10),
                     kind("frustration_cue", "Frustration cue", "C0563B", "waveform.path.ecg", "The customer is getting frustrated. Flag it so the user can calm things down."),
                     kind("follow_up", "Follow-up", "3F9168", "arrow.uturn.right", "A follow-up action the user should take or promise."),
@@ -139,7 +139,7 @@ enum ProfilePresets {
                 tone: "", counterpart: "the other person", allowGeneralKnowledge: true,
                 presetVersion: presetVersion,
                 kinds: [
-                    kind("suggestion", "Suggestion", "4F6FB0", "lightbulb.fill", "A useful thing the user could say in response to the recent conversation."),
+                    kind("suggestion", "Suggestion", "4F6FB0", "text.bubble.fill", "A useful thing the user could say in response to the recent conversation."),
                     kind("question", "Open question", "2F7E96", "questionmark.circle.fill", "A direct question the other person asked that hasn't been answered."),
                     kind("action_item", "Action item", "3F9168", "checkmark.circle.fill", "Something the user committed to. Include any timing."),
                     kind("note", "Note", "5F6470", "note.text", "A neutral observation worth capturing."),
@@ -168,7 +168,7 @@ enum ProfilePresets {
                 tone: "", counterpart: "the investor", allowGeneralKnowledge: true,
                 presetVersion: presetVersion,
                 kinds: [
-                    kind("suggestion", "Suggested answer", "4F6FB0", "lightbulb.fill", "The investor asked something. Draft a short, confident answer the user can give now, with a number when one is known."),
+                    kind("suggestion", "Suggested answer", "4F6FB0", "text.bubble.fill", "The investor asked something. Draft a short, confident answer the user can give now, with a number when one is known."),
                     kind("objection", "Objection", "E8943A", "hand.raised.fill", "The investor pushed back on market size, team, traction, competition or terms, and it isn't resolved.", pinned: true, priority: 10),
                     kind("unanswered_question", "Unanswered question", "C0563B", "questionmark.bubble.fill", "The investor asked a question and the conversation moved on without a real answer. Flag it so the user can come back to it.", pinned: true, priority: 9),
                     kind("interest_signal", "Interest signal", "3F9168", "arrow.up.right.circle.fill", "The investor showed interest: asked about terms, a next meeting, partners or diligence."),

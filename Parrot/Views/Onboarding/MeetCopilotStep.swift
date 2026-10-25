@@ -20,7 +20,7 @@ struct MeetCopilotStep: View {
                 demo
                     .frame(width: 260)
                 VStack(alignment: .leading, spacing: 14) {
-                    benefit("lightbulb", "Know what to say", "Answers pop up when they ask, from your own documents.")
+                    benefit("text.bubble", "Know what to say", "Answers pop up when they ask, from your own documents.")
                     benefit("exclamationmark.triangle", "Catch deal-breakers", "Blockers stay pinned until you handle them.")
                     benefit("gauge.with.needle", "See how it's going", "A live score and one line of coaching.")
                     benefit("doc.text", "Leave with a report", "Summary, action items and a follow-up email.")
@@ -49,7 +49,7 @@ struct MeetCopilotStep: View {
         let shown = min(phase, 3)
         return VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
-                Image(systemName: "sparkles")
+                Image(systemName: "waveform")
                     .foregroundStyle(Theme.Colors.accent)
                 Text("Assistant")
                     .font(Theme.Typography.cardTitle)

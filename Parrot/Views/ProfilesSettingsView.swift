@@ -534,12 +534,12 @@ struct IconSwatchGrid: View {
     /// Card-kind icons: every symbol the built-in presets use, plus common
     /// call-moment metaphors. 3 rows of 8.
     static let kindIcons = [
-        "lightbulb.fill", "questionmark.circle.fill", "questionmark.bubble.fill", "quote.bubble.fill",
+        "text.bubble.fill", "questionmark.circle.fill", "questionmark.bubble.fill", "quote.bubble.fill",
         "exclamationmark.triangle.fill", "hand.raised.fill", "checkmark.circle.fill", "flag.fill",
         "star.fill", "arrow.up.right.circle.fill", "chart.line.uptrend.xyaxis", "magnifyingglass",
         "bolt.fill", "target", "clock.fill", "calendar",
         "pin.fill", "dollarsign.circle.fill", "person.fill.questionmark", "bubble.left.fill",
-        "shield.fill", "book.fill", "heart.fill", "sparkles",
+        "shield.fill", "book.fill", "heart.fill", "scope",
     ]
 
     /// Profile icons: what a call *type* looks like. 2 rows of 8.

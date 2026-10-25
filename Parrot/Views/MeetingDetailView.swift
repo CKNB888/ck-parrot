@@ -13,7 +13,7 @@ enum ReportTab: String, CaseIterable, Identifiable {
         switch self {
         case .report: "doc.text"
         case .transcript: "text.bubble"
-        case .insights: "sparkles"
+        case .insights: "list.bullet.rectangle"
         case .notes: "square.and.pencil"
         }
     }
@@ -179,7 +179,7 @@ struct MeetingDetailView: View {
                 Button {
                     appSession.askRequest = AppSession.AskRequest(scope: meeting.id, scopeTitle: meeting.title)
                 } label: {
-                    Label("Ask", systemImage: "sparkles")
+                    Label("Ask", systemImage: "text.magnifyingglass")
                 }
                 .help("Ask about this call, or all of them")
                 .disabled(meeting.status != .done)

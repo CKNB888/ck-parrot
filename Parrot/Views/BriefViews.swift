@@ -80,7 +80,7 @@ struct LiveBriefCard: View {
                 expandedOverride = !expanded
             } label: {
                 HStack(spacing: 8) {
-                    Image(systemName: profile?.iconSystemName ?? "sparkles")
+                    Image(systemName: profile?.iconSystemName ?? "text.magnifyingglass")
                         .font(.appCaption)
                         .foregroundStyle(Theme.Colors.accent)
                     Text("Briefed")
