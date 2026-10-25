@@ -205,7 +205,7 @@ struct ParrotCommands: Commands {
                     } catch {
                         NSApp.activate(ignoringOtherApps: true)
                         let alert = NSAlert()
-                        alert.messageText = "Couldn't start recording"
+                        alert.messageText = String(localized: "Couldn't start recording")
                         alert.informativeText = error.localizedDescription
                         alert.runModal()
                     }

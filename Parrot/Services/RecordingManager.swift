@@ -768,7 +768,9 @@ final class RecordingManager {
 
     nonisolated static func idleReminderBody(silentFor seconds: TimeInterval) -> String {
         let minutes = Int(seconds / 60)
-        return "Nobody has spoken for \(minutes <= 1 ? "a minute" : "\(minutes) minutes"). Parrot is still recording."
+        return minutes <= 1
+            ? String(localized: "Nobody has spoken for a minute. Parrot is still recording.")
+            : String(localized: "Nobody has spoken for \(minutes) minutes. Parrot is still recording.")
     }
 
     /// A notification (it replaces the previous one, so they never pile up)
@@ -778,7 +780,7 @@ final class RecordingManager {
         NSLog("Parrot: idle reminder, no speech for \(Int(seconds)) s")
         NSApp.requestUserAttention(.informationalRequest)
         let content = UNMutableNotificationContent()
-        content.title = "Still recording?"
+        content.title = String(localized: "Still recording?")
         content.body = idleReminderBody(silentFor: seconds)
         content.sound = .default
         Task {

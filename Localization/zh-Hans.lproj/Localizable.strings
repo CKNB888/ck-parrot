@@ -498,3 +498,9 @@
 "WhisperKit model" = "WhisperKit 模型";
 "model" = "模型";
 "Default" = "默认";
+
+/* Idle reminder notification and recording-start error */
+"Still recording?" = "还在录音吗？";
+"Nobody has spoken for a minute. Parrot is still recording." = "已经一分钟没人说话了，Parrot 仍在录音。";
+"Nobody has spoken for %lld minutes. Parrot is still recording." = "已经 %lld 分钟没人说话了，Parrot 仍在录音。";
+"Couldn't start recording" = "无法开始录音";
