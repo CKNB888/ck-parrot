@@ -367,7 +367,22 @@ extension View {
 /// ck-parrot: Chinese-first defaults. `register(defaults:)` never overrides a
 /// value the user already picked; it only changes the first-run fallback.
 enum CKDefaults {
+    static let languageSeededKey = "ckUILanguageSeeded"
+
     static func register() {
+        // UI language: Simplified Chinese on first launch regardless of the
+        // system locale. Seeded once into the app's own domain; afterwards a
+        // per-app choice (System Settings → Language & Region → Applications)
+        // is respected and never overwritten.
+        let defaults = UserDefaults.standard
+        let isHarness = CommandLine.arguments.dropFirst().contains { $0.hasPrefix("--") }
+        if !isHarness && !defaults.bool(forKey: languageSeededKey) {
+            let domain = Bundle.main.bundleIdentifier.flatMap { defaults.persistentDomain(forName: $0) }
+            if domain?["AppleLanguages"] == nil {
+                defaults.set(["zh-Hans"], forKey: "AppleLanguages")
+            }
+            defaults.set(true, forKey: languageSeededKey)
+        }
         let preferred = Locale.preferredLanguages.first?.lowercased() ?? ""
         // Unknown system language or Chinese → transcribe as Chinese by default.
         if preferred.isEmpty || preferred.hasPrefix("zh") {
