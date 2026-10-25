@@ -1095,7 +1095,7 @@ enum ProfileTest {
 
         let url = BugReport.issueURL(kind: .idea, title: "Tabs & spaces #1", body: "one\ntwo")
         check("issue url targets the repo's new-issue form",
-              url?.absoluteString.hasPrefix("https://github.com/NEWUSER/ck-parrot/issues/new?") == true)
+              url?.absoluteString.hasPrefix("https://github.com/CKNB888/ck-parrot/issues/new?") == true)
         check("issue url labels an idea as enhancement",
               url?.absoluteString.contains("labels=enhancement") == true)
         check("issue url labels a bug as bug",

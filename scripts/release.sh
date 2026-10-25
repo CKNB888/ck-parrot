@@ -167,7 +167,7 @@ if [ -x "$GENERATE_APPCAST" ]; then
   # Sparkle embeds an HTML fragment named like the DMG as this update's notes.
   [ -n "$WHATS_NEW_HTML" ] && printf '%s\n' "$WHATS_NEW_HTML" > "$DIST/Parrot-$VERSION.html"
   "$GENERATE_APPCAST" \
-    --download-url-prefix "https://github.com/NEWUSER/ck-parrot/releases/download/v$VERSION/" \
+    --download-url-prefix "https://github.com/CKNB888/ck-parrot/releases/download/v$VERSION/" \
     --full-release-notes-url "https://openparrot.app/changelog" \
     --maximum-versions 1 \
     "$DIST"
@@ -200,16 +200,16 @@ SHA="$(shasum -a 256 "$MCPB" | cut -d' ' -f1)"
 cat > server.json <<JSON
 {
   "\$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.NEWUSER/ck-parrot",
+  "name": "io.github.CKNB888/ck-parrot",
   "title": "Parrot",
   "description": "Your recorded Mac meetings in Claude: search, promises with owners, follow-ups. Local, read-only.",
   "version": "$VERSION",
   "websiteUrl": "https://openparrot.app",
-  "repository": { "url": "https://github.com/NEWUSER/ck-parrot", "source": "github" },
+  "repository": { "url": "https://github.com/CKNB888/ck-parrot", "source": "github" },
   "packages": [
     {
       "registryType": "mcpb",
-      "identifier": "https://github.com/NEWUSER/ck-parrot/releases/download/v$VERSION/Parrot.mcpb",
+      "identifier": "https://github.com/CKNB888/ck-parrot/releases/download/v$VERSION/Parrot.mcpb",
       "fileSha256": "$SHA",
       "transport": { "type": "stdio" }
     }

@@ -1,6 +1,6 @@
 # CK Parrot v1.0.0
 
-基于 Parrot（GPL-3.0）的中文优先独立版，维护者 CKNB（github.com/cknb6）。
+基于 Parrot（GPL-3.0）的中文优先独立版，维护者 CKNB（github.com/CKNB888）。
 
 ## 新功能 / 改进
 - 更名 CK Parrot（io.github.cknb6.ckparrot），可与上游共存

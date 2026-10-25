@@ -51,7 +51,7 @@ extension Notification.Name {
 /// and the detail toolbar. Exports write to Downloads and reveal in Finder.
 @MainActor
 enum MeetingActions {
-    nonisolated static let repoURL = "https://github.com/NEWUSER/ck-parrot"
+    nonisolated static let repoURL = "https://github.com/CKNB888/ck-parrot"
     /// The landing page: a scrolling demo, the honest privacy list, and the download.
     nonisolated static let websiteURL = "https://openparrot.app"
     nonisolated static let xURL = "https://x.com/OpenParrotHQ"
@@ -107,7 +107,7 @@ enum MeetingActions {
         NSApp.orderFrontStandardAboutPanel(options: [
             .credits: NSAttributedString(
                 string: String(localized: "On-device, private meeting recorder.") + "\n\(repoURL)\n\n"
-                    + String(localized: "Chinese localization: CKNB (github.com/cknb6)"),
+                    + String(localized: "Chinese localization: CKNB (github.com/CKNB888)"),
                 attributes: [
                     .font: NSFont.systemFont(ofSize: 11),
                     .foregroundColor: NSColor.secondaryLabelColor,
@@ -249,7 +249,7 @@ struct ParrotCommands: Commands {
                 NSApp.showHelp(nil)
             }
             Button("Parrot Help on the Web") {
-                MeetingActions.open("https://NEWUSER.github.io/ck-parrot/help/")
+                MeetingActions.open("https://CKNB888.github.io/ck-parrot/help/")
             }
             Button("Parrot Website") {
                 MeetingActions.open(MeetingActions.websiteURL)

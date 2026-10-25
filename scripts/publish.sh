@@ -29,8 +29,8 @@ VERSION="${1:?usage: scripts/publish.sh <version, e.g. 0.14.1> [notes-file] [sit
 NOTES_FILE="${2:-}"
 PLAN_FILE="${3:-}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-REPO="NEWUSER/ck-parrot"
-FEED="https://NEWUSER.github.io/ck-parrot/appcast.xml"
+REPO="CKNB888/ck-parrot"
+FEED="https://CKNB888.github.io/ck-parrot/appcast.xml"
 cd "$ROOT"
 
 # GitHub Pages serves the feed from master:/docs, so an appcast committed
@@ -131,7 +131,7 @@ echo "  Installed copies will offer it within a day."
 #    Help sync copies docs/help from this tag (it also runs daily).
 #    Site draft writes the copy from the site plan, and runs only with one.
 #    The deploy hook rebuilds openparrot.app, so it shows the new version now.
-SITE="NEWUSER/ck-parrot-site"
+SITE="CKNB888/ck-parrot-site"
 echo
 if gh workflow run help-sync.yml --repo "$SITE" >/dev/null 2>&1; then
   echo "==> started the help sync on parrot-site"
