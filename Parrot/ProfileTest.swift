@@ -735,6 +735,9 @@ enum ProfileTest {
         check("halluc: real sentence kept", !TranscriptionEngine.isLikelyHallucination("Can you hear me?", energy: 0.002))
         check("halluc: loud 'Okay.' kept", !TranscriptionEngine.isLikelyHallucination("Okay.", energy: 0.02))
         check("halluc: loud 'Thank you.' kept", !TranscriptionEngine.isLikelyHallucination("Thank you.", energy: 0.03))
+        check("halluc: quiet '谢谢观看。' dropped", TranscriptionEngine.isLikelyHallucination("谢谢观看。", energy: 0.002))
+        check("halluc: loud '谢谢。' kept", !TranscriptionEngine.isLikelyHallucination("谢谢。", energy: 0.03))
+        check("halluc: quiet real Chinese question kept", !TranscriptionEngine.isLikelyHallucination("你最大的优势是什么？", energy: 0.002))
 
         // Glossary echo stripping: a prompt leak PREFIXING real speech must not
         // take the speech with it (the live segment-drop of 2026-08-01).

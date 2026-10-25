@@ -1818,6 +1818,9 @@ final class TranscriptionEngine {
         "you", "okay", "ok", "thank you", "thanks", "bye", "bye-bye",
         "thank you for watching", "thanks for watching", "hmm", "mm-hmm",
         "uh", "um", "the end", "subtitles by", "1", "2",
+        // Seen live from Groq Whisper on silence / room noise (ck-parrot v1.0.3).
+        "obrigado", "谢谢", "谢谢观看", "谢谢大家", "嗯", "啊",
+        "请不吝点赞 订阅 转发 打赏支持明镜与点点栏目", "字幕由amara.org社区提供",
     ]
 
     // MARK: Why there is no confidence-based noise filter
@@ -1851,7 +1854,7 @@ final class TranscriptionEngine {
     static func isLikelyHallucination(_ text: String, energy: Float) -> Bool {
         let normalized = text.lowercased()
             .trimmingCharacters(in: .whitespacesAndNewlines)
-            .trimmingCharacters(in: CharacterSet(charactersIn: ".,!?…-—"))
+            .trimmingCharacters(in: CharacterSet(charactersIn: ".,!?…-—。，！？、"))
             .trimmingCharacters(in: .whitespaces)
         if normalized.isEmpty { return true }  // "." and friends, at any volume
         // ponytail: 0.006 mean-abs ≈ room noise ceiling; speech runs 0.01+.
@@ -1872,8 +1875,15 @@ final class TranscriptionEngine {
     /// ck-parrot: Whisper often emits Traditional characters for Mandarin.
     /// When transcription language is Chinese, convert to Simplified (ICU).
     static func simplifiedIfChinese(_ text: String) -> String {
-        guard UserDefaults.standard.string(forKey: "transcriptionLanguage") == "zh",
-              !text.isEmpty else { return text }
+        guard !text.isEmpty else { return text }
+        let lang = UserDefaults.standard.string(forKey: "transcriptionLanguage")
+        // Auto mode: Groq whisper-large-v3 returned Traditional for Mandarin on
+        // noisy audio. Convert when the text has Han characters and no kana
+        // (kana means Japanese, whose kanji must not be rewritten).
+        let auto = lang == nil || lang == "auto"
+        let hasKana = text.unicodeScalars.contains { (0x3040...0x30FF).contains($0.value) }
+        let hasHan = text.unicodeScalars.contains { (0x4E00...0x9FFF).contains($0.value) }
+        guard lang == "zh" || (auto && hasHan && !hasKana) else { return text }
         return text.applyingTransform(StringTransform("Hant-Hans"), reverse: false) ?? text
     }
 }
