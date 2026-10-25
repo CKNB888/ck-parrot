@@ -17,3 +17,9 @@
 
 ## 安装
 ad-hoc 签名未公证：`xattr -cr "/Applications/CK Parrot.app"`。仅支持 macOS 14+ Apple Silicon。
+
+## 已知限制与需真机验证
+- 本 fork 的 Swift 代码未在 macOS 上编译验证，请先 `make` / Xcode 构建。
+- 第二轮审计项（回声消除加锁、模型下载镜像、token 上限、备用模型报错、服务商超时 3s→30s）未改动代码，留待真机调试后处理。
+- macOS 15+ 屏幕共享隐身、腾讯会议的音频采集需实测。
+- 自动更新已关闭（未配置 Sparkle 源）。
