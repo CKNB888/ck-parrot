@@ -79,5 +79,63 @@ enum MachineFit {
     private static func isLarge(_ memoryGB: Int) -> Bool { memoryGB >= 12 }
 
     static func whisperModel(memoryGB: Int) -> String { isLarge(memoryGB) ? "large-v3-turbo" : "base" }
+
+    /// What this Mac has, read once.
+    struct Machine {
+        var memoryGB: Int
+        var cores: Int
+        var appleSilicon: Bool
+        var freeDiskGB: Double
+        static func current() -> Machine {
+            #if arch(arm64)
+            let arm = true
+            #else
+            let arm = false
+            #endif
+            return Machine(memoryGB: MachineFit.memoryGB(),
+                           cores: ProcessInfo.processInfo.activeProcessorCount,
+                           appleSilicon: arm,
+                           freeDiskGB: Double(MachineFit.freeDiskBytes() ?? 0) / 1_073_741_824)
+        }
+    }
+
+    /// Free space on the volume that holds the models, in bytes.
+    static func freeDiskBytes() -> Int64? {
+        let url = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+            ?? URL(fileURLWithPath: NSHomeDirectory())
+        let values = try? url.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey])
+        return values?.volumeAvailableCapacityForImportantUsage
+    }
+
+    /// Approximate download size of a local model, in GB.
+    static func downloadGB(_ model: String) -> Double {
+        switch model {
+        case "tiny": return 0.04
+        case "base": return 0.14
+        case "small": return 0.46
+        case "large-v3-v20240930_626MB": return 0.63
+        case "large-v3-turbo": return 1.6
+        default: return model.lowercased().contains("parakeet") ? 0.5 : 1.6
+        }
+    }
+
+    /// Whisper size for this machine, with the reason in plain Chinese.
+    static func whisperModel(for m: Machine) -> (model: String, reason: String) {
+        let spec = "\(m.appleSilicon ? "Apple 芯片" : "Intel 处理器")，\(m.cores) 核，内存 \(m.memoryGB) GB，可用磁盘 \(String(format: "%.1f", m.freeDiskGB)) GB"
+        if m.freeDiskGB < 1 {
+            return ("tiny", spec + "。磁盘空间紧张，选用最小的模型。")
+        }
+        if m.freeDiskGB < 3 {
+            return ("base", spec + "。磁盘空间有限，选用体积较小的模型。")
+        }
+        if !m.appleSilicon {
+            let model = m.memoryGB >= 16 && m.cores >= 8 ? "small" : "base"
+            return (model, spec + "。Intel Mac 没有神经网络引擎，大模型会明显变慢，选用速度和准确度均衡的模型。")
+        }
+        if isLarge(m.memoryGB) {
+            return ("large-v3-turbo", spec + "。内存充足，选用准确度最高的模型。")
+        }
+        return ("base", spec + "。内存较少，选用占用更低的模型，避免会议中卡顿。")
+    }
     static func ollamaModel(memoryGB: Int) -> String { isLarge(memoryGB) ? "gemma3:4b" : "llama3.2:3b" }
 }

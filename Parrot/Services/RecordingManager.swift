@@ -363,11 +363,12 @@ final class RecordingManager {
         // start two recordings / two transcription loops. Also blocked while a
         // file import is running — both drive the same shared WhisperKit.
         guard !isRecording, !isStarting, !isStopping, importProgress == nil else { return }
+        isStarting = true
+        defer { isStarting = false }
+        await transcriptionEngine.ensureResident()
         guard transcriptionEngine.isReady else {
             throw RecordingError.modelNotReady
         }
-        isStarting = true
-        defer { isStarting = false }
 
         // Create meeting
         let meeting = Meeting()
@@ -691,6 +692,7 @@ final class RecordingManager {
         // 1. Whole-file, on-device transcription. Every segment is "Them" (one
         //    mixed track, no mic channel to tag "Me"); diarization splits it below.
         do {
+            await transcriptionEngine.ensureResident()
             let results = try await transcriptionEngine.transcribeFile(url: audioURL)
             guard !results.isEmpty else {
                 meeting.status = .failed

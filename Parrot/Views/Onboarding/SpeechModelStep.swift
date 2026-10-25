@@ -11,6 +11,7 @@ struct SpeechModelStep: View {
     /// Past calls, when the tour is shown again: a Turkish call means Whisper.
     @Query(sort: \Meeting.date, order: .reverse) private var meetings: [Meeting]
     private let memoryGB = MachineFit.memoryGB()
+    private let machine = MachineFit.Machine.current()
 
     /// Same six the Settings picker offers, same order. Sizes are what the
     /// hub actually serves, not what the folder is called.
@@ -25,14 +26,20 @@ struct SpeechModelStep: View {
     private static let shortList: Set<String> = [ParakeetTranscriber.modelID, "base", "large-v3-v20240930_626MB", "large-v3-turbo"]
 
     var body: some View {
-        let recommended = EngineRecommendation.recommend(
+        let pick = EngineRecommendation.recommend(
             preferredLanguages: Locale.preferredLanguages,
             pastCallLanguages: EngineRecommendation.pastCallLanguages(
                 meetings.prefix(20).map { $0.sortedSegments.prefix(40).map(\.text).joined(separator: " ") }),
-            memoryGB: memoryGB)
+            machine: machine)
+        let recommended = pick.model
         VStack(spacing: 14) {
             StepHeader(title: "Speech to text",
                        subtitle: "Turns what's said into text, right on this Mac.\nPicked for your Mac's languages and \(memoryGB) GB of memory:")
+            Text(pick.reason)
+                .font(.callout)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: 460)
             VStack(spacing: 8) {
                 ForEach(Self.modelChoices.filter { showAll || Self.shortList.contains($0.tag) || $0.tag == selectedModel },
                         id: \.tag) { choice in

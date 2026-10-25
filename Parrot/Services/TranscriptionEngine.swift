@@ -150,6 +150,52 @@ final class TranscriptionEngine {
         let confidence: Float?
     }
 
+    /// Checked before a download starts, so it never fails half way for space.
+    nonisolated static func diskSpaceProblem(for modelName: String, freeBytes: Int64? = MachineFit.freeDiskBytes()) -> String? {
+        guard let freeBytes else { return nil }
+        let needGB = MachineFit.downloadGB(modelName) + 0.5
+        let freeGB = Double(freeBytes) / 1_073_741_824
+        guard freeGB < needGB else { return nil }
+        return String(format: "磁盘空间不足：下载此模型约需 %.1f GB，当前可用 %.1f GB。请清理空间或选择更小的模型。", needGB, freeGB)
+    }
+
+    // MARK: - Memory release
+
+    /// The local model leaves RAM a while after transcription stops; the
+    /// files stay on disk and the next call loads them again (offline).
+    @ObservationIgnored private var releaseTask: Task<Void, Never>?
+    @ObservationIgnored private(set) var memoryReleased = false
+    static let releaseDelay: Duration = .seconds(90)
+
+    @MainActor
+    func scheduleRelease(after delay: Duration = TranscriptionEngine.releaseDelay) {
+        releaseTask?.cancel()
+        releaseTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: delay)
+            guard !Task.isCancelled, let self, !self.isTranscribing else { return }
+            self.releaseModelMemory()
+        }
+    }
+
+    @MainActor
+    func releaseModelMemory() {
+        guard !isTranscribing, whisperKit != nil || parakeet != nil || tinyDetector != nil else { return }
+        whisperKit = nil
+        parakeet = nil
+        tinyDetector = nil
+        memoryReleased = true
+    }
+
+    /// Load the model again if it was released. Call before any local use.
+    @MainActor
+    func ensureResident() async {
+        releaseTask?.cancel()
+        releaseTask = nil
+        guard memoryReleased, !currentModel.isEmpty else { return }
+        memoryReleased = false
+        await loadModel(currentModel)
+    }
+
     // MARK: - Model Management
 
     /// Load WhisperKit with the specified model.
@@ -196,6 +242,13 @@ final class TranscriptionEngine {
                       case .downloading(let current) = self.modelState else { return }
                 self.modelState = .downloading(progress: max(current, fraction))
             }
+        }
+        let needsDownload = Self.isParakeet(modelName)
+            ? !ParakeetTranscriber.isDownloaded : Self.localModelFolder(for: modelName) == nil
+        if needsDownload, let message = Self.diskSpaceProblem(for: modelName) {
+            modelState = .error(message)
+            isReady = false
+            return
         }
         do {
             if Self.isParakeet(modelName) {
@@ -1797,6 +1850,7 @@ final class TranscriptionEngine {
         currentText = ""
         currentSpeaker = nil
         isHearingSpeech = false
+        scheduleRelease()
     }
 
     /// The classic Whisper silence hallucinations — phrases the model invents

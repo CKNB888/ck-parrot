@@ -4746,6 +4746,13 @@ enum ProfileTest {
         check("fit: 8 GB → base + llama", MachineFit.whisperModel(memoryGB: 8) == "base" && MachineFit.ollamaModel(memoryGB: 8) == "llama3.2:3b")
         check("fit: 16 GB → turbo + gemma", MachineFit.whisperModel(memoryGB: 16) == "large-v3-turbo" && MachineFit.ollamaModel(memoryGB: 16) == "gemma3:4b")
         check("fit: bytes round to whole GB", MachineFit.memoryGB(17_179_869_184) == 16)
+        check("fit: M-series 16 GB, roomy disk → turbo", MachineFit.whisperModel(for: .init(memoryGB: 16, cores: 10, appleSilicon: true, freeDiskGB: 100)).model == "large-v3-turbo")
+        check("fit: Intel 16 GB 8 cores → small", MachineFit.whisperModel(for: .init(memoryGB: 16, cores: 8, appleSilicon: false, freeDiskGB: 100)).model == "small")
+        check("fit: Intel 8 GB → base", MachineFit.whisperModel(for: .init(memoryGB: 8, cores: 4, appleSilicon: false, freeDiskGB: 100)).model == "base")
+        check("disk: turbo refused with 1 GB free", TranscriptionEngine.diskSpaceProblem(for: "large-v3-turbo", freeBytes: 1_073_741_824) != nil)
+        check("disk: base fine with 10 GB free", TranscriptionEngine.diskSpaceProblem(for: "base", freeBytes: 10_737_418_240) == nil)
+        check("fit: low disk → tiny", MachineFit.whisperModel(for: .init(memoryGB: 32, cores: 12, appleSilicon: true, freeDiskGB: 0.5)).model == "tiny")
+        check("fit: reason is Chinese, no exclamation", MachineFit.whisperModel(for: .init(memoryGB: 8, cores: 8, appleSilicon: true, freeDiskGB: 50)).reason.contains("内存 8 GB") && !MachineFit.whisperModel(for: .init(memoryGB: 8, cores: 8, appleSilicon: true, freeDiskGB: 50)).reason.contains("！"))
     }
 
     @MainActor
