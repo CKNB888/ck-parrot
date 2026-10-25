@@ -55,6 +55,7 @@ struct SettingsView: View {
     @AppStorage(TranscriptionEngine.hubEndpointKey) private var hubEndpoint = ""
     @AppStorage("appearance") private var appearance = Appearance.system
     @AppStorage(ParrotAppDelegate.hideDockKey) private var hideDock = false
+    @AppStorage(ParrotAppDelegate.hideFromShareKey) private var hideFromShare = true
     @AppStorage("copilotEnabled") private var copilotEnabled = false
     @AppStorage(LiveNudgeSession.defaultsKey) private var liveNudges = true
     @AppStorage("copilotProvider") private var copilotProvider = CopilotProviderKind.claude.rawValue
@@ -221,6 +222,11 @@ struct SettingsView: View {
                     title: "Hide from the Dock when the window is closed",
                     detail: "Parrot stays in the menu bar. Choose Open Parrot there, and the Dock icon is back while the window is open.",
                     isOn: $hideDock
+                )
+                SettingsToggleRow(
+                    title: "Hide Parrot windows from screen sharing",
+                    detail: "Others in Tencent Meeting, DingTalk or Zoom don't see Parrot while you do. On macOS 15+ full-screen sharing may still show it; share a single window instead.",
+                    isOn: $hideFromShare
                 )
             }
 

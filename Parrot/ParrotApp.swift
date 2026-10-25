@@ -192,7 +192,32 @@ final class ParrotAppDelegate: NSObject, NSApplicationDelegate {
     /// Settings → General: leave the Dock while the window is closed (#118).
     static let hideDockKey = "hideDockWhenClosed"
 
+    /// Settings → General: keep every Parrot window/panel out of screen
+    /// sharing and recordings (NSWindow.sharingType = .none). Default on.
+    static let hideFromShareKey = "hideFromScreenShare"
+
+    /// Applies the screen-share setting to every window, including panels
+    /// and sheets created later (called on each key/visibility change).
+    static func applyShareProtection() {
+        let hide = UserDefaults.standard.object(forKey: hideFromShareKey) as? Bool ?? true
+        let type: NSWindow.SharingType = hide ? .none : .readOnly
+        for window in NSApp.windows where window.sharingType != type {
+            window.sharingType = type
+        }
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // 共享屏幕隐私：新窗口出现或变为前台时重新施加
+        for name in [NSWindow.didBecomeKeyNotification, NSWindow.didChangeOcclusionStateNotification,
+                     NSWindow.didBecomeMainNotification] {
+            NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { _ in
+                Task { @MainActor in Self.applyShareProtection() }
+            }
+        }
+        NotificationCenter.default.addObserver(forName: UserDefaults.didChangeNotification, object: nil, queue: .main) { _ in
+            Task { @MainActor in Self.applyShareProtection() }
+        }
+        Self.applyShareProtection()
         // After the close has finished: until then the window still counts.
         NotificationCenter.default.addObserver(forName: NSWindow.willCloseNotification, object: nil, queue: .main) { _ in
             Task { @MainActor in Self.hideFromDockIfClosed() }

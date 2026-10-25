@@ -1123,3 +1123,6 @@
 "API key" = "API 密钥";
 "No folder chosen" = "未选择文件夹";
 "Folder" = "文件夹";
+
+"Hide Parrot windows from screen sharing" = "共享屏幕时隐藏 Parrot 窗口";
+"Others in Tencent Meeting, DingTalk or Zoom don't see Parrot while you do. On macOS 15+ full-screen sharing may still show it; share a single window instead." = "腾讯会议、钉钉、Zoom 中的其他人看不到 Parrot，你自己仍能看到。macOS 15 及以上整屏共享可能仍会显示，建议改为共享单个窗口。";
