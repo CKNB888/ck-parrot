@@ -1,36 +1,43 @@
-# Parrot 中文版
+# CK Parrot —— 中文优先的 macOS 本地会议转写与 AI 助手
 
-[English README](README.en.md) · 上游项目：[turantekin/Parrot](https://github.com/turantekin/Parrot)
+**简体中文** | [English](#english)
 
-## 项目简介
+> **基于 [Parrot](https://github.com/turantekin/Parrot)（作者 turantekin / Uygar，GPL-3.0）二次开发。**
+> 维护者：**CKNB**（[github.com/cknb6](https://github.com/cknb6)）。仓库：<https://github.com/NEWUSER/ck-parrot>
+> 包标识 `io.github.cknb6.ckparrot`，可与上游 Parrot 同时安装。
 
-Parrot 是 macOS 原生（SwiftUI）会议录音工具：同时录制系统音频和麦克风，在本机实时转录，并在通话中由 AI 助手结合你的文档给出提示。本仓库是 **简体中文本地化 + Bug 修复** 版本，改动以 PR 形式回馈上游。
+## 简介
+macOS 原生（SwiftUI）会议工具：同时录制系统音频和麦克风，**在本机实时转写**（WhisperKit），通话中由 AI 助手（Parrot 原有的实时 Copilot，支持 Ollama / OpenAI 兼容接口等）结合你的文档给出提示，会后可导出 Markdown / TXT / SRT。
 
-- 平台：macOS 14+，Apple Silicon（原生 Mac 应用，不支持 Windows / Linux）
-- 界面：英文 / 简体中文，跟随系统语言
+- 系统要求：macOS 14+，Apple Silicon
+- 界面：简体中文为开发语言（zh-Hans），保留 English
 
-## 修复的 bug
+## v1.0.0 主要改动
+- 更名 CK Parrot，新包标识，可与上游共存
+- **中文优先**：开发区域 zh-Hans；系统语言为中文或未知时，转写语言默认「中文」
+- **繁转简**：中文转写结果自动从繁体转换为简体（ICU Hant-Hans）
+- 系统权限弹窗（麦克风 / 屏幕录制 / 系统录音 / 日历 / 提醒事项）全部中文
+- 关闭指向上游的 Sparkle 自动更新（移除上游 feed 与公钥）
+- 稳定性：数据库打开失败不再启动即崩（自动备份旧库并重建 / 退回内存模式）；引导页越界崩溃修复
+- 术语统一（转写、服务商…），见 [docs/i18n-glossary.zh-CN.md](docs/i18n-glossary.zh-CN.md)
+- 继承中文版修复：#146 推理模型截断自动重试、语言横幅截断等
 
-- [#146](https://github.com/turantekin/Parrot/issues/146) OpenRouter 等推理模型把 token 预算耗在思考上导致“Response truncated”：截断时自动以更大预算重试一次。
-- 语言不匹配横幅文字未本地化，中文下按钮被截断：已本地化并防止截断。
+## 安装
+从 [Releases](https://github.com/NEWUSER/ck-parrot/releases) 下载 `ck-parrot_*_macOS_arm64.dmg`。构建为 ad-hoc 签名、未公证：
+首次请右键 → 打开，或执行 `xattr -cr "/Applications/CK Parrot.app"`。然后在 系统设置 → 隐私与安全性 授予麦克风与“屏幕与系统录音”权限。
 
-## 新增功能
+**中文转写建议**：在引导或设置中选择 Large V3 Turbo（或其压缩版）模型，`base` 模型对中文效果较差；语言选择「中文」。
 
-- 简体中文界面（`Localization/zh-Hans.lproj`，400+ 条界面文字）
-- 关于面板显示本地化贡献者
-- CI 增加本地化文件校验
-- 中文 README
+## 从源码构建
+```bash
+brew install xcodegen && xcodegen generate
+make bundle CONFIG=release SIGN_IDENTITY=-
+```
 
-开发分支：[`feat/i18n-zh-bugfixes`](https://github.com/cknb6/Parrot/tree/feat/i18n-zh-bugfixes)
+## 许可证
+GPL-3.0（见 [LICENSE](LICENSE)）。上游版权归 Parrot 原作者所有；修改部分 © CKNB。
 
-## 下载 / 构建
+---
 
-- 测试包：在本仓库 [Actions](https://github.com/cknb6/Parrot/actions) 中打开最新一次 CI 运行，下载 `Parrot-test-build`（ad-hoc 签名，首次打开需右键 → 打开）。
-- 正式版：[上游 Releases](https://github.com/turantekin/Parrot/releases)
-- 源码构建：`make app`（需要 Xcode 16）
-
-## 贡献者
-
-- [CKNB](https://github.com/cknb6)：简体中文本地化与 Bug 修复
-
-更新记录见 [CHANGELOG.zh-CN.md](CHANGELOG.zh-CN.md)。许可证：GPL-3.0。
+## English
+**CK Parrot** is a Chinese-first fork of [Parrot](https://github.com/turantekin/Parrot) (GPL-3.0), maintained by **CKNB** ([github.com/cknb6](https://github.com/cknb6)). Bundle id `io.github.cknb6.ckparrot`; installs alongside upstream. Changes: zh-Hans development region, Chinese transcription default with Traditional→Simplified conversion, Chinese permission prompts, upstream Sparkle feed removed, crash-safe store fallback. Ad-hoc signed: run `xattr -cr "/Applications/CK Parrot.app"`. Upstream docs: [README.en.md](README.en.md).

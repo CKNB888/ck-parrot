@@ -45,7 +45,8 @@ enum OnboardingFlow {
 
     /// The step `offset` away, clamped to the list.
     static func step(_ offset: Int, from step: OnboardingStep, in steps: [OnboardingStep]) -> OnboardingStep {
-        let index = steps.firstIndex(of: resolve(step, in: steps))! + offset
+        guard let base = steps.firstIndex(of: resolve(step, in: steps)) else { return steps.first ?? step }
+        let index = base + offset
         return steps[min(max(index, 0), steps.count - 1)]
     }
 

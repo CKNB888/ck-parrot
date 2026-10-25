@@ -1,0 +1,6 @@
+"NSMicrophoneUsageDescription" = "CK Parrot 需要使用麦克风，在本机转写你在会议中的发言。";
+"NSScreenCaptureUsageDescription" = "CK Parrot 通过屏幕录制权限采集会议的系统音频，只使用音频，不读取屏幕内容。";
+"NSAudioCaptureUsageDescription" = "CK Parrot 会录制会议音频（你听到的声音），并在本机转写，不会查看你的屏幕。";
+"NSRemindersFullAccessUsageDescription" = "在你要求时，CK Parrot 会把会议的后续事项添加到“提醒事项”中的 Parrot 列表。";
+"NSCalendarsFullAccessUsageDescription" = "CK Parrot 读取你的日历，用来为会议命名并识别参会人。它不会修改日历，数据也不会离开你的 Mac。";
+"CFBundleDisplayName" = "CK Parrot";

@@ -1,0 +1,31 @@
+# ck-parrot: tag vX.Y.Z → unsigned (ad-hoc) CK Parrot.app as ck-parrot_*.zip/.dmg
+name: Release
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain
+        run: sudo xcode-select -s "$(ls -d /Applications/Xcode_16*.app | sort -V | tail -1)"
+      - name: Build app (release, ad-hoc)
+        run: |
+          V="${GITHUB_REF_NAME#v}"
+          make bundle CONFIG=release SIGN_IDENTITY=- VERSION="$V"
+          test -f dist/Parrot.app/Contents/Resources/zh-Hans.lproj/Localizable.strings
+          mv dist/Parrot.app "dist/CK Parrot.app"
+          ditto -c -k --keepParent "dist/CK Parrot.app" "ck-parrot_${V}_macOS_arm64.zip"
+          hdiutil create -volname "CK Parrot" -srcfolder "dist/CK Parrot.app" -ov -format UDZO "ck-parrot_${V}_macOS_arm64.dmg"
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" ck-parrot_*_macOS_arm64.zip ck-parrot_*_macOS_arm64.dmg \
+            --repo "$GITHUB_REPOSITORY" --title "CK Parrot $GITHUB_REF_NAME" \
+            --notes-file RELEASE_NOTES.zh-CN.md

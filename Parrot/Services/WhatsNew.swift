@@ -35,7 +35,7 @@ struct WhatsNew: Equatable {
     var hasNews: Bool { !highlights.isEmpty }
 
     /// The version's entry on the website changelog (each release has an anchor).
-    var changelogURL: URL { URL(string: "https://openparrot.app/changelog#v\(version)")! }
+    var changelogURL: URL { URL(string: "https://github.com/NEWUSER/ck-parrot/releases") ?? URL(fileURLWithPath: "/") }
 
     /// Home shows the card once, only for the version it describes, and
     /// never to someone still in the welcome tour.

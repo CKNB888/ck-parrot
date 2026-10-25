@@ -1792,8 +1792,17 @@ final class TranscriptionEngine {
     /// Strips any Whisper special/timestamp tokens (e.g. "<|startoftranscript|>",
     /// "<|0.00|>") that can leak into raw decoder text, and trims whitespace.
     static func cleaned(_ text: String) -> String {
-        text
+        let t = text
             .replacingOccurrences(of: #"<\|[^|>]*\|>"#, with: "", options: .regularExpression)
             .trimmingCharacters(in: .whitespacesAndNewlines)
+        return simplifiedIfChinese(t)
+    }
+
+    /// ck-parrot: Whisper often emits Traditional characters for Mandarin.
+    /// When transcription language is Chinese, convert to Simplified (ICU).
+    static func simplifiedIfChinese(_ text: String) -> String {
+        guard UserDefaults.standard.string(forKey: "transcriptionLanguage") == "zh",
+              !text.isEmpty else { return text }
+        return text.applyingTransform(StringTransform("Hant-Hans"), reverse: false) ?? text
     }
 }

@@ -32,10 +32,10 @@
 "Ask about this call, or all of them" = "询问这次通话，或所有通话";
 "Ask anything about your past calls (⌘K)" = "询问关于过往通话的任何问题（⌘K）";
 "Assistant" = "助手";
-"Assistant is off. Recording and transcript keep going." = "助手已关闭。录音和转录仍在继续。";
+"Assistant is off. Recording and transcript keep going." = "助手已关闭。录音和转写仍在继续。";
 "Attach a picture of this window" = "附上此窗口的截图";
 "Audio files" = "音频文件";
-"Audio stays on your Mac unless a cloud transcription engine was used." = "除非使用了云端转录引擎，音频始终保存在你的 Mac 上。";
+"Audio stays on your Mac unless a cloud transcription engine was used." = "除非使用了云端转写引擎，音频始终保存在你的 Mac 上。";
 "Auto-detect" = "自动检测";
 "Back" = "返回";
 "Balanced and Cloud are off because On-device only is on in Settings → Privacy." = "“均衡”和“云端”已关闭，因为“设置 → 隐私”中开启了“仅限本机”。";
@@ -56,7 +56,7 @@
 "Call language" = "通话语言";
 "Call saved" = "通话已保存";
 "Cancel" = "取消";
-"Captures system audio + your mic, transcribed on-device." = "捕获系统音频和你的麦克风，在本机转录。";
+"Captures system audio + your mic, transcribed on-device." = "捕获系统音频和你的麦克风，在本机转写。";
 "Card kinds & gauges" = "卡片类型和指标";
 "Check Again" = "再次检查";
 "Check Now" = "立即检查";
@@ -89,7 +89,7 @@
 "Custom…" = "自定义…";
 "Dark" = "深色";
 "Decide later" = "稍后决定";
-"Deepgram cloud — word-by-word streaming, ~$0.70/hr" = "Deepgram 云端 — 逐词流式转录，约 $0.70/小时";
+"Deepgram cloud — word-by-word streaming, ~$0.70/hr" = "Deepgram 云端 — 逐词流式转写，约 $0.70/小时";
 "Deepgram's auto-detect doesn't cover Turkish, Arabic, Chinese or Korean. Pick the language for those calls." = "Deepgram 的自动检测不支持土耳其语、阿拉伯语、中文或韩语。请为这些通话选择语言。";
 "Delete" = "删除";
 "Delete Everything After This Line…" = "删除此行之后的所有内容…";
@@ -98,7 +98,7 @@
 "Delete folder…" = "删除文件夹…";
 "Delete profile" = "删除配置";
 "Delete selected profile" = "删除所选配置";
-"Delete the rest of this transcript?" = "删除此转录的剩余部分？";
+"Delete the rest of this transcript?" = "删除此转写的剩余部分？";
 "Delete this meeting?" = "删除此会议？";
 "Disconnect" = "断开连接";
 "Dismiss" = "忽略";
@@ -108,7 +108,7 @@
 "Don't Show Again" = "不再显示";
 "Done" = "完成";
 "Download / Reload Model" = "下载 / 重新加载模型";
-"Drop to transcribe" = "拖放到此处转录";
+"Drop to transcribe" = "拖放到此处转写";
 "Duplicate profile" = "复制配置";
 "Duplicate selected profile" = "复制所选配置";
 "EARLIER" = "更早";
@@ -122,7 +122,7 @@
 "Export Report (PDF)" = "导出报告（PDF）";
 "Export Report as PDF" = "将报告导出为 PDF";
 "Export Subtitles (SRT)" = "导出字幕（SRT）";
-"Export Transcript (TXT)" = "导出转录（TXT）";
+"Export Transcript (TXT)" = "导出转写（TXT）";
 "Export as Markdown" = "导出为 Markdown";
 "Export as SRT" = "导出为 SRT";
 "Export as TXT" = "导出为 TXT";
@@ -155,8 +155,8 @@
 "Import a recording" = "导入录音";
 "Include version and settings" = "包含版本和设置";
 "It never holds your meetings, your documents, names from your calls, or any keys." = "它从不保存你的会议、文档、通话中的人名或任何密钥。";
-"Jump to this moment in the transcript" = "跳转到转录中的这一时刻";
-"Jump to transcript" = "跳转到转录";
+"Jump to this moment in the transcript" = "跳转到转写中的这一时刻";
+"Jump to transcript" = "跳转到转写";
 "Keep classic" = "保留经典报告";
 "Keep on screen until handled" = "保持显示直到处理";
 "Keep the neutral labels" = "保留中性标签";
@@ -169,7 +169,7 @@
 "Later" = "稍后";
 "Leave blank and Parrot names it" = "留空则由 Parrot 命名";
 "Light" = "浅色";
-"Lines come out wrong until you switch. Your next calls use it too." = "切换之前转录会出错。之后的通话也会使用该语言。";
+"Lines come out wrong until you switch. Your next calls use it too." = "切换之前转写会出错。之后的通话也会使用该语言。";
 "Listening" = "正在聆听";
 "Loading speech model…" = "正在加载语音模型…";
 "Local models can take a few minutes — it appears here the moment it's ready." = "本地模型可能需要几分钟——准备好后会立即显示在这里。";
@@ -238,12 +238,12 @@
 "Parrot Needs Friends on X 🥺" = "Parrot 需要 X 上的朋友 🥺";
 "Parrot Website" = "Parrot 网站";
 "Parrot can't use this profile" = "Parrot 无法使用此配置";
-"Parrot couldn't find this in the transcript. Check it before acting on it." = "Parrot 在转录中找不到这一内容。采取行动前请先核实。";
+"Parrot couldn't find this in the transcript. Check it before acting on it." = "Parrot 在转写中找不到这一内容。采取行动前请先核实。";
 "Parrot is listening..." = "Parrot 正在聆听...";
 "Parrot needs two macOS permissions to hear your calls. Audio only: it never sees your screen, and nothing leaves your Mac." = "Parrot 需要两项 macOS 权限来听取你的通话。仅限音频：它从不查看你的屏幕，也不会有任何数据离开你的 Mac。";
 "Parrot on GitHub" = "GitHub 上的 Parrot";
 "Parrot on X" = "X 上的 Parrot";
-"Parrot writes the report again from the transcript, using a profile's report. The current one is kept, so you can undo." = "Parrot 会根据转录，使用某个配置的报告重新撰写报告。当前报告会被保留，因此你可以撤销。";
+"Parrot writes the report again from the transcript, using a profile's report. The current one is kept, so you can undo." = "Parrot 会根据转写，使用某个配置的报告重新撰写报告。当前报告会被保留，因此你可以撤销。";
 "Paste a key first" = "请先粘贴密钥";
 "Persona" = "角色";
 "Play" = "播放";
@@ -328,10 +328,10 @@
 "Show Welcome Tour" = "显示欢迎导览";
 "Show backup in Finder" = "在访达中显示备份";
 "Show in Finder" = "在访达中显示";
-"Show in Transcript" = "在转录中显示";
+"Show in Transcript" = "在转写中显示";
 "Show notes" = "显示笔记";
 "Show the file's text" = "显示文件文本";
-"Show transcript" = "显示转录";
+"Show transcript" = "显示转写";
 "Skip" = "跳过";
 "Small — 460 MB, better accuracy" = "Small — 460 MB，精度更好";
 "So it's ready for your first call of the day." = "这样一天的第一次通话就能准备好。";
@@ -346,7 +346,7 @@
 "Stop Recording" = "停止录音";
 "Subtitles (SRT)" = "字幕（SRT）";
 "System" = "跟随系统";
-"System audio isn't in the expected format, so speaker bleed may transcribe as \"Me\". Headphones avoid this entirely." = "系统音频格式不符合预期，扬声器串音可能被转录为“我”。使用耳机可完全避免。";
+"System audio isn't in the expected format, so speaker bleed may transcribe as \"Me\". Headphones avoid this entirely." = "系统音频格式不符合预期，扬声器串音可能被转写为“我”。使用耳机可完全避免。";
 "Takes about 2 minutes" = "大约需要 2 分钟";
 "Talk" = "发言";
 "The Assistant needs a Claude API key to suggest answers in real time." = "助手需要 Claude API 密钥才能实时建议回答。";
@@ -354,7 +354,7 @@
 "The Assistant's one-word read of the room" = "助手对现场气氛的一词判断";
 "The current settings are saved first, so you can undo this too." = "会先保存当前设置，因此这也可以撤销。";
 "The first load can take a few minutes." = "首次加载可能需要几分钟。";
-"The recording, transcript, and insights will be permanently removed." = "录音、转录和洞察将被永久删除。";
+"The recording, transcript, and insights will be permanently removed." = "录音、转写和洞察将被永久删除。";
 "The sections and coaching you set for this profile will be replaced." = "你为此配置设置的章节和辅导内容将被替换。";
 "They ask about security. The Assistant suggests:" = "对方询问安全问题。助手建议：";
 "Thinking…" = "思考中…";
@@ -365,16 +365,16 @@
 "Tiny — 40 MB, fastest" = "Tiny — 40 MB，最快";
 "Title" = "标题";
 "Total" = "总计";
-"Transcript" = "转录";
-"Transcript (TXT)" = "转录（TXT）";
+"Transcript" = "转写";
+"Transcript (TXT)" = "转写（TXT）";
 "Try" = "试试";
 "Try: " = "试试：";
-"Turns an audio file into a new meeting, transcribed on-device" = "将音频文件转为新会议，在本机转录";
+"Turns an audio file into a new meeting, transcribed on-device" = "将音频文件转为新会议，在本机转写";
 "Type notes — saved with this call." = "输入笔记——随本次通话保存。";
 "Type or pick a name" = "输入或选择一个名字";
 "Undo Rewrite" = "撤销重写";
 "Unresolved blockers — they're at the top of the feed below" = "未解决的阻碍——位于下方信息流顶部";
-"Unverified: no matching line in the transcript" = "未核实：转录中没有匹配的行";
+"Unverified: no matching line in the transcript" = "未核实：转写中没有匹配的行";
 "Update" = "更新";
 "Use Claude (needs a key)" = "使用 Claude（需要密钥）";
 "Use a free AI on this Mac" = "使用本机免费 AI";
@@ -401,9 +401,9 @@
 "Write report" = "撰写报告";
 "Write this report again with a profile's report" = "用某个配置的报告重新撰写此报告";
 "Your Assistant settings didn't change. A backup of every profile was saved. Past meetings keep their reports." = "你的助手设置没有改变。所有配置都已备份。过去的会议保留其报告。";
-"Your mic is hearing the other side through the speakers. Parrot filters most of it out, but headphones give a cleaner transcript." = "你的麦克风通过扬声器听到了对方的声音。Parrot 会过滤掉大部分，但使用耳机转录更清晰。";
+"Your mic is hearing the other side through the speakers. Parrot filters most of it out, but headphones give a cleaner transcript." = "你的麦克风通过扬声器听到了对方的声音。Parrot 会过滤掉大部分，但使用耳机转写更清晰。";
 "Your share of the conversation so far" = "到目前为止你在对话中的占比";
-"Your voice reaches Parrot far below normal speech level — usually a low input volume in System Settings → Sound. Transcription still works, but accuracy improves with more signal." = "你的声音传到 Parrot 时远低于正常说话音量——通常是“系统设置 → 声音”中的输入音量过低。转录仍可工作，但信号越强越准确。";
+"Your voice reaches Parrot far below normal speech level — usually a low input volume in System Settings → Sound. Transcription still works, but accuracy improves with more signal." = "你的声音传到 Parrot 时远低于正常说话音量——通常是“系统设置 → 声音”中的输入音量过低。转写仍可工作，但信号越强越准确。";
 "e.g. the prospect" = "例如：潜在客户";
 "echo cancel inactive" = "回声消除未启用";
 "google/gemini-2.5-flash" = "google/gemini-2.5-flash";
@@ -427,7 +427,7 @@
 "Keep %@" = "保留%@";
 "Switch to %@" = "切换到%@";
 "General" = "通用";
-"Transcription" = "转录";
+"Transcription" = "转写";
 "API Keys" = "API 密钥";
 "Knowledge" = "知识库";
 "Profiles" = "配置";
@@ -450,7 +450,7 @@
 "No microphone available" = "没有可用的麦克风";
 "Screen Recording permission is required. Please grant it in System Settings > Privacy & Security > Screen & System Audio Recording, then restart Parrot." = "需要屏幕录制权限。请在“系统设置 > 隐私与安全性 > 屏幕与系统音频录制”中授权，然后重新启动 Parrot。";
 "System audio capture could not start. Allow Parrot in System Settings > Privacy & Security > Screen & System Audio Recording, then try again." = "系统音频捕获无法启动。请在“系统设置 > 隐私与安全性 > 屏幕与系统音频录制”中允许 Parrot，然后重试。";
-"Transcribing…" = "正在转录…";
+"Transcribing…" = "正在转写…";
 "Analyzing…" = "正在分析…";
 "The speech model is still loading. Please wait." = "语音模型仍在加载，请稍候。";
 "Speaker detection didn't work this time. Try again." = "这次说话人识别没有成功，请重试。";
@@ -472,7 +472,7 @@
 "Marked %@" = "已标记 %@";
 "%lld speakers" = "%lld 位说话人";
 "AI cost ~%@" = "AI 费用约 %@";
-"Everything after %@ is removed from the transcript. The recording is kept, so the audio still plays in full." = "%@ 之后的内容将从转录中删除。录音会保留，因此音频仍可完整播放。";
+"Everything after %@ is removed from the transcript. The recording is kept, so the audio still plays in full." = "%@ 之后的内容将从转写中删除。录音会保留，因此音频仍可完整播放。";
 "Heard %lld people besides you — listen and name them" = "除你之外听到了 %lld 个人——听一听并为他们命名";
 "sounds like %@?" = "听起来像 %@？";
 "Sounds like %@ — confirm" = "听起来像 %@——确认";
@@ -504,3 +504,7 @@
 "Nobody has spoken for a minute. Parrot is still recording." = "已经一分钟没人说话了，Parrot 仍在录音。";
 "Nobody has spoken for %lld minutes. Parrot is still recording." = "已经 %lld 分钟没人说话了，Parrot 仍在录音。";
 "Couldn't start recording" = "无法开始录音";
+
+"Try:" = "试试：";
+"Why:" = "原因：";
+"🎉" = "🎉";

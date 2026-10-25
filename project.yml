@@ -100,20 +100,20 @@ targets:
         # REQUIRED for mic access: without this string macOS crashes the app on
         # first mic use and never shows it in Privacy → Microphone. Must live here
         # because xcodegen regenerates Info.plist on every generate.
-        NSMicrophoneUsageDescription: "Parrot records your microphone so it can transcribe your side of the meeting on-device."
+        NSMicrophoneUsageDescription: "CK Parrot records your microphone so it can transcribe your side of the meeting on-device."
         # Shown when macOS asks for Screen Recording, which Parrot uses to capture
         # system audio via ScreenCaptureKit. Also lives here so xcodegen keeps it.
-        NSScreenCaptureUsageDescription: "Parrot captures system audio from your meetings via screen recording. Only audio is used — never screen content."
+        NSScreenCaptureUsageDescription: "CK Parrot captures system audio from your meetings via screen recording. Only audio is used — never screen content."
         # macOS 15+: shown by the audio-only "System Audio Recording" consent
         # prompt (Core Audio process tap). This replaces the Screen Recording
         # ask on modern macOS; without the key the tap is silently denied.
-        NSAudioCaptureUsageDescription: "Parrot records your meeting's audio (what you hear) to transcribe it on-device. It never sees your screen."
+        NSAudioCaptureUsageDescription: "CK Parrot records your meeting's audio (what you hear) to transcribe it on-device. It never sees your screen."
         # macOS 14+ calendar prompt (EventKit full access — needed to read
         # events; Parrot never writes to the calendar). Opt-in: asked only
         # when the user clicks Connect Calendar.
         # Asked only when the user clicks "Add Next Steps to Reminders".
-        NSRemindersFullAccessUsageDescription: "Parrot adds a call's next steps to a Parrot list in Reminders when you ask it to."
-        NSCalendarsFullAccessUsageDescription: "Parrot reads your calendar to name your meetings and know who's on the call. It never changes your calendar, and nothing leaves your Mac."
+        NSRemindersFullAccessUsageDescription: "CK Parrot adds a call's next steps to a Parrot list in Reminders when you ask it to."
+        NSCalendarsFullAccessUsageDescription: "CK Parrot reads your calendar to name your meetings and know who's on the call. It never changes your calendar, and nothing leaves your Mac."
         # The in-app Help Book (docs/help, assembled by scripts/assemble-help.sh).
         # Both keys must live HERE, not only in Info.plist: xcodegen regenerates
         # the plist and silently dropped them once (7be0c1d), which broke
@@ -155,8 +155,7 @@ targets:
         # the EdDSA key in the release machine's login Keychain — updates not
         # signed by it are refused, so a hijacked feed still can't ship code.
         # Installer launcher service is required for sandboxed apps.
-        SUPublicEDKey: "5+CifCVb0y0I1NthwWggSCNDRclBd19qGUx5tC2uGU4="
         SUEnableInstallerLauncherService: true
-        SUEnableAutomaticChecks: true
-        SUAutomaticallyUpdate: true
+        SUEnableAutomaticChecks: false
+        SUAutomaticallyUpdate: false
         SUScheduledCheckInterval: 86400

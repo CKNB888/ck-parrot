@@ -271,6 +271,17 @@ struct ParrotApp: App {
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
+            // ck-parrot: never crash on launch if the store can't be opened
+            // (e.g. a failed migration). Move the old store aside, retry once,
+            // then fall back to an in-memory store so the app still runs.
+            NSLog("CK Parrot: ModelContainer failed: \(error)")
+            let url = modelConfiguration.url
+            let backup = url.deletingLastPathComponent()
+                .appendingPathComponent("default.store.broken-\(Int(Date().timeIntervalSince1970))")
+            try? FileManager.default.moveItem(at: url, to: backup)
+            if let c = try? ModelContainer(for: schema, configurations: [modelConfiguration]) { return c }
+            let memory = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+            if let c = try? ModelContainer(for: schema, configurations: [memory]) { return c }
             fatalError("Could not create ModelContainer: \(error)")
         }
     }()

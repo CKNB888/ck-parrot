@@ -504,3 +504,7 @@
 "Nobody has spoken for a minute. Parrot is still recording." = "Nobody has spoken for a minute. Parrot is still recording.";
 "Nobody has spoken for %lld minutes. Parrot is still recording." = "Nobody has spoken for %lld minutes. Parrot is still recording.";
 "Couldn't start recording" = "Couldn't start recording";
+
+"Try:" = "Try:";
+"Why:" = "Why:";
+"🎉" = "🎉";
