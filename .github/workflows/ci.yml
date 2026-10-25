@@ -84,18 +84,23 @@ jobs:
 
       - name: Snapshot renders
         run: |
+          # Assemble a real .app (debug) so Bundle.main finds Localization/*.lproj;
+          # the bare .build/debug executable has no resources and would render English only.
+          make bundle CONFIG=debug SIGN_IDENTITY=-
+          BIN="$PWD/dist/Parrot.app/Contents/MacOS/Parrot"
+          echo "BIN=$BIN" >> "$GITHUB_ENV"
           # Real offscreen renders of the app's SwiftUI views, in both UI languages.
           for L in zh-Hans en; do
             mkdir -p "snapshots/$L"
-            .build/debug/Parrot --snapshot "snapshots/$L/report.png" -AppleLanguages "($L)"
-            .build/debug/Parrot --copilot-snapshot "snapshots/$L/copilot.png" -AppleLanguages "($L)"
-            .build/debug/Parrot --sidebar-snapshot "snapshots/$L/sidebar.png" -AppleLanguages "($L)"
+            "$BIN" --snapshot "snapshots/$L/report.png" -AppleLanguages "($L)"
+            "$BIN" --copilot-snapshot "snapshots/$L/copilot.png" -AppleLanguages "($L)"
+            "$BIN" --sidebar-snapshot "snapshots/$L/sidebar.png" -AppleLanguages "($L)"
           done
 
       - name: Help screenshots (--help-shots)
         run: |
-          .build/debug/Parrot --help-shots snapshots/help -AppleLanguages "(en)"
-          .build/debug/Parrot --help-shots snapshots/help-zh -AppleLanguages "(zh-Hans)"
+          "$BIN" --help-shots snapshots/help -AppleLanguages "(en)"
+          "$BIN" --help-shots snapshots/help-zh -AppleLanguages "(zh-Hans)"
 
       # Small JPEG previews in the log, for reviewers who can't open artifacts.
       - name: Preview renders (base64 JPEG)
