@@ -1,6 +1,6 @@
 # Parrot for Claude
 
-Your meetings from [Parrot](https://openparrot.app), the free, local Mac app that records your calls and writes the transcript with real speaker names, available in Claude. Claude reads; nothing changes without your OK.
+Your meetings from [Parrot](https://github.com/CKNB888/ck-parrot), the free, local Mac app that records your calls and writes the transcript with real speaker names, available in Claude. Claude reads; nothing changes without your OK.
 
 Ask things like:
 
@@ -12,7 +12,7 @@ Ask things like:
 
 ## What you need
 
-1. Parrot on your Mac (macOS 14 or later, Apple Silicon): [openparrot.app](https://openparrot.app).
+1. Parrot on your Mac (macOS 14 or later, Apple Silicon): [github.com/CKNB888/ck-parrot](https://github.com/CKNB888/ck-parrot/releases).
 2. In Parrot, open **Claude & AI Apps** and turn on **Allow AI apps to read my meetings**.
 
 ## What's inside
@@ -25,4 +25,4 @@ Ask things like:
 
 Install Parrot, record or import one short audio file (File > Import Audio), wait for the report, then turn on the switch above. Ask "What did I promise?" or "Summarize my latest meeting".
 
-More: [Use your meetings in Claude](https://openparrot.app/help/claude.html). Privacy: [PRIVACY.md](PRIVACY.md).
+More: [Use your meetings in Claude](https://CKNB888.github.io/ck-parrot/help/claude.html). Privacy: [PRIVACY.md](PRIVACY.md).
