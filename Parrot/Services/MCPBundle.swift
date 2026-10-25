@@ -65,7 +65,7 @@ enum MCPBundle {
             "$(mdfind "kMDItemCFBundleIdentifier == '\(bundleID)'" 2>/dev/null | head -n 1)"; do
           if [ -x "$app/Contents/MacOS/Parrot" ]; then exec "$app/Contents/MacOS/Parrot" --mcp; fi
         done
-        echo "Parrot isn't installed. Get it at https://openparrot.app" >&2
+        echo "Parrot isn't installed. Get it at https://github.com/CKNB888/ck-parrot/releases" >&2
         exit 1
 
         """
@@ -93,15 +93,15 @@ enum MCPBundle {
             meetings marked on-device only are never shown. When Claude reads a meeting, that text \
             goes to Anthropic under your Claude account.
             """,
-            "author": ["name": "Parrot", "url": "https://openparrot.app"],
-            "homepage": "https://openparrot.app",
-            "documentation": "https://openparrot.app/help/connections.html",
+            "author": ["name": "Parrot", "url": "https://github.com/CKNB888/ck-parrot"],
+            "homepage": "https://github.com/CKNB888/ck-parrot",
+            "documentation": "https://CKNB888.github.io/ck-parrot/help/connections.html",
             "support": "https://github.com/CKNB888/ck-parrot/issues",
             "repository": ["type": "git", "url": "https://github.com/CKNB888/ck-parrot"],
             "license": "GPL-3.0",
             "icon": "icon.png",
             "keywords": ["meetings", "transcripts", "calls", "notes", "local", "mac"],
-            "privacy_policies": ["https://openparrot.app/privacy"],
+            "privacy_policies": ["https://github.com/CKNB888/ck-parrot"],
             "compatibility": ["platforms": ["darwin"]],
             "server": [
                 "type": "binary",

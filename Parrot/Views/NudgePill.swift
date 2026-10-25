@@ -22,8 +22,14 @@ final class NudgePillController {
         hovering = false
         let panel = self.panel ?? Self.makePanel()
         self.panel = panel
+        // The menu bar screen decides the style: notch → island, else under the icon.
+        let screen = NSScreen.screens.first ?? NSScreen.main
+        let placement = PillPlacement.detect(safeAreaTop: screen?.safeAreaInsets.top ?? 0)
+        let notchInset: CGFloat
+        if case .notch(let inset) = placement { notchInset = inset } else { notchInset = 0 }
         let host = NSHostingView(rootView: NudgePillView(
             nudge: nudge,
+            notchInset: notchInset,
             onOpen: { [weak self] in
                 self?.hide()
                 self?.onOpen?()
@@ -34,14 +40,26 @@ final class NudgePillController {
         host.frame = NSRect(origin: .zero, size: size)
         panel.contentView = host
         panel.setContentSize(size)
-        if let screen = NSScreen.main ?? NSScreen.screens.first {
-            let frame = screen.visibleFrame
-            panel.setFrameOrigin(NSPoint(x: frame.midX - size.width / 2, y: frame.maxY - size.height - 12))
+        var target = NSRect(origin: .zero, size: size)
+        if let screen {
+            let menuBarHeight = max(screen.frame.maxY - screen.visibleFrame.maxY, NSStatusBar.system.thickness)
+            target.origin = PillPlacement.origin(placement, size: size, frame: screen.frame,
+                                                 menuBarHeight: menuBarHeight,
+                                                 statusItemMidX: Self.statusItemMidX(on: screen))
         }
-        panel.alphaValue = 0
+        // Island above the menu bar; otherwise just under it.
+        panel.level = notchInset > 0 ? NSWindow.Level(rawValue: NSWindow.Level.statusBar.rawValue + 1) : .statusBar
+        // Slide out of the notch / menu bar instead of popping up mid-screen.
+        let wasVisible = panel.isVisible && panel.alphaValue > 0.5
+        if !wasVisible {
+            panel.setFrame(target.offsetBy(dx: 0, dy: notchInset > 0 ? size.height * 0.6 : 8), display: false)
+            panel.alphaValue = 0
+        }
         panel.orderFrontRegardless()
         NSAnimationContext.runAnimationGroup { context in
-            context.duration = 0.2
+            context.duration = 0.28
+            context.timingFunction = CAMediaTimingFunction(controlPoints: 0.2, 0.8, 0.2, 1)
+            panel.animator().setFrame(target, display: true)
             panel.animator().alphaValue = 1
         }
         scheduleHide()
@@ -77,6 +95,14 @@ final class NudgePillController {
         }
     }
 
+    /// Centre x of Parrot's menu bar icon (its status bar window), if on `screen`.
+    private static func statusItemMidX(on screen: NSScreen) -> CGFloat? {
+        NSApp.windows.first { window in
+            window.className.contains("NSStatusBarWindow") && window.isVisible
+                && window.screen == screen
+        }?.frame.midX
+    }
+
     private static func makePanel() -> NSPanel {
         let panel = NSPanel(contentRect: NSRect(x: 0, y: 0, width: Theme.Metrics.pillWidth, height: 48),
                             styleMask: [.nonactivatingPanel, .borderless], backing: .buffered, defer: true)
@@ -95,9 +121,20 @@ final class NudgePillController {
 
 struct NudgePillView: View {
     let nudge: Nudge
+    /// > 0 when docked in the notch: content sits below it on a black island.
+    var notchInset: CGFloat = 0
     var onOpen: () -> Void = {}
     var onDismiss: () -> Void = {}
     var onHover: (Bool) -> Void = { _ in }
+    @Environment(\.colorScheme) private var colorScheme
+
+    /// Island: square top flush with the screen edge, round bottom.
+    private var pillShape: UnevenRoundedRectangle {
+        let r = Theme.Metrics.pillRadius
+        let top: CGFloat = notchInset > 0 ? 0 : r
+        return UnevenRoundedRectangle(topLeadingRadius: top, bottomLeadingRadius: r,
+                                      bottomTrailingRadius: r, topTrailingRadius: top, style: .continuous)
+    }
 
     var body: some View {
         HStack(spacing: 10) {
@@ -118,10 +155,12 @@ struct NudgePillView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
+        .padding(.top, notchInset)
         .frame(width: Theme.Metrics.pillWidth)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: Theme.Metrics.pillRadius))
-        .overlay(RoundedRectangle(cornerRadius: Theme.Metrics.pillRadius).strokeBorder(Theme.Colors.nudgeLine))
-        .contentShape(RoundedRectangle(cornerRadius: Theme.Metrics.pillRadius))
+        .environment(\.colorScheme, notchInset > 0 ? .dark : colorScheme)
+        .background { pillShape.fill(notchInset > 0 ? AnyShapeStyle(Color.black) : AnyShapeStyle(.regularMaterial)) }
+        .overlay { if notchInset == 0 { pillShape.stroke(Theme.Colors.nudgeLine, lineWidth: 1) } }
+        .contentShape(pillShape)
         .onTapGesture(perform: onOpen)
         .onHover(perform: onHover)
     }

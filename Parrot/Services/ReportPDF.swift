@@ -364,6 +364,7 @@ enum ReportPDF {
         web.appearance = NSAppearance(named: .aqua)
         // Printing needs a window; this one is never shown.
         let window = NSWindow(contentRect: web.frame, styleMask: .borderless, backing: .buffered, defer: false)
+        window.sharingType = .none
         window.contentView = web
         let loader = Loader()
         web.navigationDelegate = loader
@@ -399,7 +400,7 @@ enum ReportPDF {
         return footed(doc, title: title)
     }
 
-    /// Every page again, with "Made with Parrot · openparrot.app" and its number.
+    /// Every page again, with "Made with CK Parrot · github.com/CKNB888/ck-parrot" and its number.
     private static func footed(_ doc: CGPDFDocument, title: String) -> Data {
         let out = NSMutableData()
         var box = doc.page(at: 1)?.getBoxRect(.mediaBox) ?? .zero
@@ -417,7 +418,7 @@ enum ReportPDF {
             NSGraphicsContext.current = NSGraphicsContext(cgContext: ctx, flipped: false)
             let attrs: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: gray]
             let y = media.minY + 26
-            let made = NSAttributedString(string: "Made with Parrot · openparrot.app", attributes: attrs)
+            let made = NSAttributedString(string: "Made with CK Parrot · github.com/CKNB888/ck-parrot", attributes: attrs)
             made.draw(at: NSPoint(x: media.minX + margins.left, y: y))
             ctx.setURL(URL(string: MeetingActions.websiteURL)! as CFURL,
                        for: CGRect(x: media.minX + margins.left, y: y, width: made.size().width, height: made.size().height))

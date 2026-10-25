@@ -119,6 +119,7 @@ enum ProfileTest {
         testRewriteReport()
         testImportAndReview()
         testNudgeModels()
+        testShareStrategy()
         testNudgeRules()
         testToneTimeline()
         testTalkSeconds()

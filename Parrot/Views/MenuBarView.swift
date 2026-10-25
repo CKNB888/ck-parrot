@@ -16,7 +16,6 @@ struct MenuBarView: View {
     @Query(Self.newestFirst) private var latest: [Meeting]
     /// Follow is asked once; after that click (followed or not, X won't
     /// say) the item turns into a standing "say hi".
-    @AppStorage("menuBarFollowClicked") private var followClicked = false
 
     private static var newestFirst: FetchDescriptor<Meeting> {
         var descriptor = FetchDescriptor<Meeting>(sortBy: [SortDescriptor(\.date, order: .reverse)])
@@ -79,14 +78,6 @@ struct MenuBarView: View {
                 showMainWindow { appSession.askRequest = AppSession.AskRequest(scope: nil, scopeTitle: nil) }
             }
             .keyboardShortcut("k")
-            if followClicked {
-                Button("Say Hi to Us on X 👋") { MeetingActions.open(MeetingActions.xSayHiURL) }
-            } else {
-                Button("Parrot Needs Friends on X 🥺") {
-                    followClicked = true
-                    MeetingActions.open(MeetingActions.xFollowURL)
-                }
-            }
         }
 
         Divider()

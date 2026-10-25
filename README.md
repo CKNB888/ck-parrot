@@ -2,8 +2,8 @@
 
 **简体中文** | [English](#english)
 
-> **基于 [Parrot](https://github.com/turantekin/Parrot)（作者 turantekin / Uygar，GPL-3.0）二次开发。**
-> 维护者：**CKNB**（[github.com/CKNB888](https://github.com/CKNB888)）。仓库：<https://github.com/CKNB888/ck-parrot>
+> **基于 Parrot（作者 turantekin / Uygar，GPL-3.0）二次开发。**
+> 维护者：**CKNB**。仓库：<https://github.com/CKNB888/ck-parrot>
 > 包标识 `io.github.cknb6.ckparrot`，可与上游 Parrot 同时安装。
 
 ## 简介
@@ -64,10 +64,16 @@ brew install xcodegen && xcodegen generate
 make bundle CONFIG=release SIGN_IDENTITY=-
 ```
 
+## 赞助与广告合作 / Sponsorship & Ads
+欢迎赞助本项目或洽谈广告合作，请添加微信 **1837620622**（请备注来意）。
+
 ## 许可证
 GPL-3.0（见 [LICENSE](LICENSE)）。上游版权归 Parrot 原作者所有；修改部分 © CKNB。
 
 ---
 
 ## English
-**CK Parrot** is a Chinese-first fork of [Parrot](https://github.com/turantekin/Parrot) (GPL-3.0), maintained by **CKNB** ([github.com/CKNB888](https://github.com/CKNB888)). Bundle id `io.github.cknb6.ckparrot`; installs alongside upstream. Changes: zh-Hans development region, Chinese transcription default with Traditional→Simplified conversion, Chinese permission prompts, upstream Sparkle feed removed, crash-safe store fallback. Ad-hoc signed: run `xattr -cr "/Applications/CK Parrot.app"`. Upstream docs: [README.en.md](README.en.md).
+**CK Parrot** is a Chinese-first fork of Parrot by turantekin (GPL-3.0), maintained by **CKNB** — <https://github.com/CKNB888/ck-parrot>. Bundle id `io.github.cknb6.ckparrot`; installs alongside upstream. Changes: zh-Hans development region, Chinese transcription default with Traditional→Simplified conversion, Chinese permission prompts, upstream Sparkle feed removed, crash-safe store fallback. Ad-hoc signed: run `xattr -cr "/Applications/CK Parrot.app"`. More: [README.en.md](README.en.md).
+
+### Sponsorship & Ads
+Sponsorships and advertising partnerships are welcome — add WeChat **1837620622** (please mention your purpose).

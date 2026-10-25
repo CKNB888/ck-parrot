@@ -217,6 +217,11 @@ final class ParrotAppDelegate: NSObject, NSApplicationDelegate {
         NotificationCenter.default.addObserver(forName: UserDefaults.didChangeNotification, object: nil, queue: .main) { _ in
             Task { @MainActor in Self.applyShareProtection() }
         }
+        // Panels, popovers and tooltips that never become key: re-check on
+        // every event-loop pass (cheap: only windows whose type differs change).
+        NotificationCenter.default.addObserver(forName: NSApplication.didUpdateNotification, object: nil, queue: .main) { _ in
+            MainActor.assumeIsolated { Self.applyShareProtection() }
+        }
         Self.applyShareProtection()
         // After the close has finished: until then the window still counts.
         NotificationCenter.default.addObserver(forName: NSWindow.willCloseNotification, object: nil, queue: .main) { _ in
@@ -412,6 +417,54 @@ enum CKDefaults {
         // Unknown system language or Chinese → transcribe as Chinese by default.
         if preferred.isEmpty || preferred.hasPrefix("zh") {
             UserDefaults.standard.register(defaults: [TranscriptionLanguage.defaultsKey: "zh"])
+        }
+    }
+}
+
+/// Per-macOS-version screen-share protection strategy (pure, tested in the
+/// --profile-test harness). Parrot needs macOS 14+, so the notch API
+/// (NSScreen.safeAreaInsets) is always there; 15+ adds the ScreenCaptureKit caveat.
+enum ShareProtectionStrategy {
+    /// sharingType = .none hides Parrot from CGWindowList-based capture on
+    /// every version; on 15+ ScreenCaptureKit full-screen capture may ignore it.
+    static func sckCaveat(major: Int) -> Bool { major >= 15 }
+
+    static func detail(major: Int, minor: Int) -> String {
+        let version = "macOS \(major).\(minor)"
+        if sckCaveat(major: major) {
+            return "检测到 \(version)：已设置为不可共享。腾讯会议、钉钉、飞书、Zoom 等用 ScreenCaptureKit 共享「整个屏幕」时系统不再保证隐藏 Parrot，请只共享单个窗口。"
+        }
+        return "检测到 \(version)：已设置为不可共享，整屏和单窗口共享中对方都看不到 Parrot（开会前可用会议软件预览确认一次）。"
+    }
+
+    static var current: String {
+        let v = ProcessInfo.processInfo.operatingSystemVersion
+        return detail(major: v.majorVersion, minor: v.minorVersion)
+    }
+}
+
+/// Where the nudge pill goes: in the notch (Dynamic-Island style) when the
+/// menu-bar screen has one, otherwise right under Parrot's menu bar icon.
+enum PillPlacement: Equatable {
+    case notch(inset: CGFloat)
+    case menuBar
+
+    static func detect(safeAreaTop: CGFloat) -> PillPlacement {
+        safeAreaTop > 0 ? .notch(inset: safeAreaTop) : .menuBar
+    }
+
+    /// Bottom-left origin of a panel of `size` on a screen `frame`.
+    /// `statusItemMidX` is the menu bar icon's centre when known.
+    static func origin(_ placement: PillPlacement, size: CGSize, frame: CGRect,
+                       menuBarHeight: CGFloat, statusItemMidX: CGFloat?) -> CGPoint {
+        switch placement {
+        case .notch:
+            // Hangs from the top edge; the view pads its content below the notch.
+            return CGPoint(x: frame.midX - size.width / 2, y: frame.maxY - size.height)
+        case .menuBar:
+            let mid = statusItemMidX ?? (frame.maxX - size.width / 2 - 12)
+            let x = min(max(mid - size.width / 2, frame.minX + 8), frame.maxX - size.width - 8)
+            return CGPoint(x: x, y: frame.maxY - menuBarHeight - size.height - 6)
         }
     }
 }

@@ -10,7 +10,7 @@ Parrot 是一款 macOS 原生会议录音工具：同时录制系统音频和你
 
 ## 快速开始
 
-1. 从 [Releases](https://github.com/turantekin/Parrot/releases) 下载最新版本，拖入“应用程序”。
+1. 从 [Releases](https://github.com/CKNB888/ck-parrot/releases) 下载最新版本，拖入“应用程序”。
 2. 首次启动按引导授予麦克风和系统音频权限。
 3. 在“设置 → 助手”中选择 AI（本机 Ollama、Claude、或 OpenAI 兼容接口如 OpenRouter / DeepSeek）。
 4. 开始录音。
@@ -30,6 +30,9 @@ CI（GitHub Actions，macOS runner）会自动构建、运行测试并产出可�
 ## 贡献者
 
 - [CKNB (@cknb6)](https://github.com/CKNB888)：简体中文本地化与问题修复
+
+## 赞助与广告合作 / Sponsorship & Ads
+欢迎赞助本项目或洽谈广告合作，请添加微信 **1837620622**（请备注来意）。
 
 ## 许可证
 

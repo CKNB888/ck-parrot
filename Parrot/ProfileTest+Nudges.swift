@@ -384,4 +384,20 @@ extension ProfileTest {
         let spans = lines.map { ToneTimeline.Span(isMe: $0.source == .me, start: $0.start, end: $0.end, text: $0.text) }
         check("replay: the report replays the same", ToneTimeline.timingNudges(spans, duration: 200).map(\.time) == [125])
     }
+
+    /// v1.0.6: per-version share protection + notch / menu bar placement.
+    static func testShareStrategy() {
+        check("share: 14 has no SCK caveat", !ShareProtectionStrategy.sckCaveat(major: 14))
+        check("share: 15 has SCK caveat", ShareProtectionStrategy.sckCaveat(major: 15))
+        check("share: 26 has SCK caveat", ShareProtectionStrategy.sckCaveat(major: 26))
+        check("share: detail names the version", ShareProtectionStrategy.detail(major: 15, minor: 1).contains("macOS 15.1"))
+        check("pill: notch detected", PillPlacement.detect(safeAreaTop: 32) == .notch(inset: 32))
+        check("pill: no notch -> menu bar", PillPlacement.detect(safeAreaTop: 0) == .menuBar)
+        let frame = CGRect(x: 0, y: 0, width: 1512, height: 982)
+        let size = CGSize(width: 460, height: 80)
+        let n = PillPlacement.origin(.notch(inset: 32), size: size, frame: frame, menuBarHeight: 37, statusItemMidX: nil)
+        check("pill: notch centred at top", n == CGPoint(x: 526, y: 902))
+        let m = PillPlacement.origin(.menuBar, size: size, frame: frame, menuBarHeight: 24, statusItemMidX: 1400)
+        check("pill: under icon, clamped on screen", m == CGPoint(x: 1044, y: 872))
+    }
 }

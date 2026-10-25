@@ -52,8 +52,8 @@ extension Notification.Name {
 @MainActor
 enum MeetingActions {
     nonisolated static let repoURL = "https://github.com/CKNB888/ck-parrot"
-    /// The landing page: a scrolling demo, the honest privacy list, and the download.
-    nonisolated static let websiteURL = "https://openparrot.app"
+    /// CK fork: the only project page shown is this repository.
+    nonisolated static let websiteURL = repoURL
     nonisolated static let xURL = "https://x.com/OpenParrotHQ"
     /// X's follow intent: the profile opens with a one-click Follow prompt.
     nonisolated static let xFollowURL = "https://x.com/intent/follow?screen_name=OpenParrotHQ"
@@ -251,18 +251,12 @@ struct ParrotCommands: Commands {
             Button("Parrot Help on the Web") {
                 MeetingActions.open("https://CKNB888.github.io/ck-parrot/help/")
             }
-            Button("Parrot Website") {
-                MeetingActions.open(MeetingActions.websiteURL)
-            }
             Button("Show Welcome Tour") {
                 MeetingActions.showWelcomeTour()
             }
             Divider()
             Button("Parrot on GitHub") {
                 MeetingActions.open(MeetingActions.repoURL)
-            }
-            Button("Parrot on X") {
-                MeetingActions.open(MeetingActions.xURL)
             }
             Button("Report a Bug…") {
                 NotificationCenter.default.post(name: .parrotReportBug, object: nil)

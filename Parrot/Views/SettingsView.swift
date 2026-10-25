@@ -225,7 +225,7 @@ struct SettingsView: View {
                 )
                 SettingsToggleRow(
                     title: "Hide Parrot windows from screen sharing",
-                    detail: "Others in Tencent Meeting, DingTalk or Zoom don't see Parrot while you do. On macOS 15+ full-screen sharing may still show it; share a single window instead.",
+                    detail: ShareProtectionStrategy.current,
                     isOn: $hideFromShare
                 )
             }
@@ -290,8 +290,8 @@ struct SettingsView: View {
                         if !isEmbedded { NSApp.keyWindow?.performClose(nil) }
                     }
                 }
-                SettingsLabeledRow(title: "Website", detail: "The landing page, with a demo you can scroll and the honest privacy list.") {
-                    Button("Open openparrot.app") { MeetingActions.open(MeetingActions.websiteURL) }
+                SettingsLabeledRow(title: "GitHub", detail: "github.com/CKNB888/ck-parrot · 基于开源项目 Parrot（GPL-3.0，见 LICENSE）修改。赞助与广告合作：微信 1837620622") {
+                    Button("Open GitHub") { MeetingActions.open(MeetingActions.repoURL) }
                 }
             }
         }
