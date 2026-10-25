@@ -39,7 +39,11 @@ jobs:
           restore-keys: spm-${{ runner.os }}-
 
       - name: Lint localizations
-        run: for f in Localization/*.lproj/Localizable.strings; do plutil -lint "$f"; done
+        run: |
+          for f in Localization/*.lproj/Localizable.strings; do plutil -lint "$f"; done
+          # Every English key must have a zh-Hans translation.
+          keys() { plutil -convert json -o - "$1" | python3 -c 'import json,sys; print("\n".join(sorted(json.load(sys.stdin))))'; }
+          diff <(keys Localization/en.lproj/Localizable.strings) <(keys Localization/zh-Hans.lproj/Localizable.strings)
 
       - name: Build (debug)
         run: swift build -c debug --force-resolved-versions
