@@ -15,7 +15,7 @@ struct ModelDownloadProgressView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
             HStack {
-                Text(title)
+                Text(L(title))
                 Spacer()
                 Text(boundedProgress, format: .percent.precision(.fractionLength(0)))
                     .monospacedDigit()

@@ -19,7 +19,7 @@ struct KeyCheckField: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 4) {
-                Text(label)
+                Text(L(label))
                     .font(Theme.Typography.cardTitle)
                 if optional {
                     Text("(optional)")

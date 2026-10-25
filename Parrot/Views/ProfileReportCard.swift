@@ -211,7 +211,7 @@ struct ProfileReportCard: View {
 
     private func coachField(_ label: String, text: Binding<String>, prompt: String) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Text(label)
+            Text(L(label))
                 .foregroundStyle(Theme.Colors.ink2)
                 .frame(width: 48, alignment: .leading)
             TextField("", text: text, prompt: Text(prompt), axis: .vertical)

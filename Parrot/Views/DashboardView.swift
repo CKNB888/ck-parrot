@@ -366,7 +366,7 @@ struct StatTile: View {
                 .font(Theme.Typography.title())
                 .foregroundStyle(Theme.Colors.ink)
                 .monospacedDigit()
-            Text(label)
+            Text(L(label))
                 .font(Theme.Typography.secondary)
                 .foregroundStyle(Theme.Colors.ink2)
         }

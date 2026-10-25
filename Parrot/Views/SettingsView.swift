@@ -828,7 +828,7 @@ private struct SettingsNavRow: View {
                     .font(.system(size: 13))
                     .frame(width: 18)
                     .foregroundStyle(selected ? Theme.Colors.accent : Theme.Colors.ink2)
-                Text(title)
+                Text(L(title))
                     .font(Theme.Typography.sans(13, .medium))
                     .foregroundStyle(Theme.Colors.ink)
                 Spacer()
@@ -852,7 +852,7 @@ struct Hint: View {
     init(_ text: String) { self.text = text }
 
     var body: some View {
-        Text(text)
+        Text(L(text))
             .font(Theme.Typography.secondary)
             .foregroundStyle(Theme.Colors.ink2)
             .fixedSize(horizontal: false, vertical: true)

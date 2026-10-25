@@ -7,10 +7,10 @@ struct StepHeader: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            Text(title)
+            Text(L(title))
                 .font(Theme.Typography.title(24))
             if let subtitle {
-                Text(subtitle)
+                Text(L(subtitle))
                     .font(Theme.Typography.sans(14))
                     .foregroundStyle(Theme.Colors.ink2)
                     .multilineTextAlignment(.center)
@@ -38,9 +38,9 @@ struct CopilotHeroCard<Accessory: View>: View {
                 .frame(width: 44, height: 44)
                 .background(Theme.Colors.spotlight, in: RoundedRectangle(cornerRadius: Theme.Metrics.cardRadius))
             VStack(alignment: .leading, spacing: 2) {
-                Text(title)
+                Text(L(title))
                     .font(Theme.Typography.heroTitle)
-                Text(subtitle)
+                Text(L(subtitle))
                     .font(Theme.Typography.secondary)
                     .foregroundStyle(Theme.Colors.ink2)
                     .fixedSize(horizontal: false, vertical: true)
@@ -95,7 +95,7 @@ struct PendingRow: View {
             Image(systemName: "circle")
                 .font(.appTitle3)
                 .frame(width: 24)
-            Text(title)
+            Text(L(title))
                 .font(Theme.Typography.cardTitle)
             Spacer(minLength: 0)
         }

@@ -1090,7 +1090,7 @@ struct MeetingDetailView: View {
                     Circle()
                         .fill(TranscriptSegmentRow.speakerColors[label.stableHash % TranscriptSegmentRow.speakerColors.count])
                         .frame(width: 8, height: 8)
-                    Text(label)
+                    Text(L(label))
                         .font(Theme.Typography.caption)
                         .fontWeight(.medium)
                         .frame(width: 70, alignment: .leading)

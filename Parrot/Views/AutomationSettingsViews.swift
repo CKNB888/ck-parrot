@@ -252,11 +252,11 @@ struct CallPromptBanner: View {
             Image(systemName: prompt.kind == .start ? "phone.arrow.up.right" : "phone.down")
                 .foregroundStyle(Theme.Colors.accent)
             VStack(alignment: .leading, spacing: 1) {
-                Text(title)
+                Text(L(title))
                     .font(Theme.Typography.cardTitle)
                     .foregroundStyle(Theme.Colors.ink)
                     .lineLimit(1)
-                Text(subtitle)
+                Text(L(subtitle))
                     .font(Theme.Typography.caption)
                     .foregroundStyle(Theme.Colors.ink2)
                     .lineLimit(1)

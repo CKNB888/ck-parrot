@@ -50,7 +50,7 @@ struct CopilotPathStep: View {
                     .frame(width: 26)
                 VStack(alignment: .leading, spacing: 3) {
                     HStack(spacing: 6) {
-                        Text(title)
+                        Text(L(title))
                             .font(Theme.Typography.heroTitle)
                         if let badge {
                             Text(badge)
@@ -61,7 +61,7 @@ struct CopilotPathStep: View {
                                 .background(Theme.Colors.spotlight, in: Capsule())
                         }
                     }
-                    Text(detail)
+                    Text(L(detail))
                         .font(Theme.Typography.secondary)
                         .foregroundStyle(Theme.Colors.ink2)
                         .fixedSize(horizontal: false, vertical: true)

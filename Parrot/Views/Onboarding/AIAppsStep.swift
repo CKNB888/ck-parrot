@@ -82,7 +82,7 @@ struct AIAppsStep: View {
                 Image(systemName: "app")
                     .foregroundStyle(Theme.Colors.ink3)
             }
-            Text(name)
+            Text(L(name))
                 .font(Theme.Typography.cardTitle)
         }
         .padding(.horizontal, 10)

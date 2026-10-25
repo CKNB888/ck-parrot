@@ -176,7 +176,7 @@ private struct NavRow: View {
                     .font(.system(size: 13))
                     .frame(width: 16)
                     .foregroundStyle(selected ? Theme.Colors.accent : Theme.Colors.ink2)
-                Text(title)
+                Text(L(title))
                     .font(Theme.Typography.sans(13, .medium))
                     .foregroundStyle(Theme.Colors.ink)
                 if beta { BetaTag() }

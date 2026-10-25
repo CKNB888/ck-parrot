@@ -137,7 +137,7 @@ struct FieldRow<Field: View>: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(label)
+            Text(L(label))
                 .font(Theme.Typography.secondary)
                 .foregroundStyle(Theme.Colors.ink2)
             // Grouped Forms render a TextField's title as a leading label with a
@@ -470,7 +470,7 @@ private struct EditorField: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(label)
+            Text(L(label))
                 .font(Theme.Typography.secondary)
                 .foregroundStyle(Theme.Colors.ink2)
             TextField("", text: $text, prompt: Text(prompt))

@@ -86,7 +86,7 @@ struct PermissionRow: View {
                     Text(grantedTitle)
                         .font(Theme.Typography.cardTitle)
                     if !subtitle.isEmpty {
-                        Text(subtitle)
+                        Text(L(subtitle))
                             .font(Theme.Typography.caption)
                             .foregroundStyle(Theme.Colors.ink3)
                     }
@@ -108,7 +108,7 @@ struct PermissionRow: View {
                         Text(askTitle)
                             .font(Theme.Typography.cardTitle)
                         if !subtitle.isEmpty {
-                            Text(subtitle)
+                            Text(L(subtitle))
                                 .font(Theme.Typography.caption)
                                 .opacity(0.75)
                         }

@@ -26,11 +26,11 @@ struct SettingsCard<Content: View>: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(title)
+            Text(L(title))
                 .font(Theme.Typography.sans(13, .semibold))
                 .foregroundStyle(Theme.Colors.ink)
             if let blurb {
-                Text(blurb)
+                Text(L(blurb))
                     .font(Theme.Typography.secondary)
                     .foregroundStyle(Theme.Colors.ink2)
                     .fixedSize(horizontal: false, vertical: true)
@@ -74,11 +74,11 @@ struct SettingsLabeledRow<Trailing: View>: View {
         SettingsRow(first: first) {
             HStack(alignment: .center, spacing: 12) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
+                    Text(L(title))
                         .font(Theme.Typography.body)
                         .foregroundStyle(Theme.Colors.ink)
                     if let detail {
-                        Text(detail)
+                        Text(L(detail))
                             .font(Theme.Typography.secondary)
                             .foregroundStyle(Theme.Colors.ink2)
                             .fixedSize(horizontal: false, vertical: true)
@@ -118,12 +118,12 @@ struct SettingsBlockRow<Content: View>: View {
     var body: some View {
         SettingsRow(first: first) {
             VStack(alignment: .leading, spacing: 8) {
-                Text(title)
+                Text(L(title))
                     .font(Theme.Typography.body)
                     .foregroundStyle(Theme.Colors.ink)
                 content
                 if let detail {
-                    Text(detail)
+                    Text(L(detail))
                         .font(Theme.Typography.secondary)
                         .foregroundStyle(Theme.Colors.ink2)
                         .fixedSize(horizontal: false, vertical: true)
@@ -177,7 +177,7 @@ struct TagChip: View {
                 Image(systemName: "checkmark")
                     .font(.system(size: 9, weight: .semibold))
             }
-            Text(label)
+            Text(L(label))
         }
         .font(Theme.Typography.caption)
         .lineLimit(1)
@@ -189,3 +189,9 @@ struct TagChip: View {
         .foregroundStyle(on ? Theme.Colors.accent : Theme.Colors.ink)
     }
 }
+
+// ck-parrot: custom components take plain `String` labels, which SwiftUI's
+// `Text(_: String)` renders verbatim. Route them through the string table.
+// The overloads let call sites compile whether the label is String or already a key.
+@inline(__always) func L(_ s: String) -> LocalizedStringKey { LocalizedStringKey(s) }
+@inline(__always) func L(_ k: LocalizedStringKey) -> LocalizedStringKey { k }

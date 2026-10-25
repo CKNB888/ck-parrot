@@ -58,7 +58,7 @@ struct ToneTimelineCard: View, Equatable {
 
     private func tile(_ label: String, _ value: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(label)
+            Text(L(label))
                 .font(Theme.Typography.caption)
                 .foregroundStyle(Theme.Colors.ink2)
             Text(value)
@@ -84,7 +84,7 @@ struct ToneTimelineCard: View, Equatable {
     private func swatch(_ color: Color, _ label: String) -> some View {
         HStack(spacing: 5) {
             RoundedRectangle(cornerRadius: 2).fill(color).frame(width: 10, height: 10)
-            Text(label)
+            Text(L(label))
         }
     }
 

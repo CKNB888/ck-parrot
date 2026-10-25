@@ -90,9 +90,9 @@ struct MeetCopilotStep: View {
                 .foregroundStyle(Theme.Colors.accent)
                 .frame(width: 24)
             VStack(alignment: .leading, spacing: 2) {
-                Text(title)
+                Text(L(title))
                     .font(Theme.Typography.cardTitle)
-                Text(detail)
+                Text(L(detail))
                     .font(Theme.Typography.secondary)
                     .foregroundStyle(Theme.Colors.ink2)
                     .fixedSize(horizontal: false, vertical: true)
