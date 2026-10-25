@@ -20,7 +20,7 @@ enum NudgeReplay {
         // may ask permission to read. `--store` points anywhere else.
         var rest = args
         var source = FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent("Library/Containers/com.uygar.parrot/Data/Library/Application Support/default.store")
+            .appendingPathComponent("Library/Containers/io.github.cknb6.ckparrot/Data/Library/Application Support/default.store")
         if let i = rest.firstIndex(of: "--store"), i + 1 < rest.count {
             source = URL(fileURLWithPath: rest[i + 1])
             rest.removeSubrange(i...(i + 1))
@@ -134,7 +134,7 @@ enum ToneSnapshot {
 /// strip. The pill has `sharingType = .none`, so it must not be in it. Run
 /// from the signed app (`open -n -W dist/Parrot.app --args --pill-test out.png`)
 /// so the capture uses Parrot's Screen Recording permission. The app is
-/// sandboxed: a relative path lands in ~/Library/Containers/com.uygar.parrot/Data.
+/// sandboxed: a relative path lands in ~/Library/Containers/io.github.cknb6.ckparrot/Data.
 /// Proof is in the PNG: no pill here, a pill with PILL_TEST_SHARED=1.
 @MainActor
 enum PillTest {

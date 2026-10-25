@@ -318,7 +318,7 @@ final class JevDocMatcher {
 ```swift
     private static var storeURL: URL {
         // Dev harnesses point this at the sandboxed app's real index
-        // (~/Library/Containers/com.uygar.parrot/…/KnowledgeBase/index.json)
+        // (~/Library/Containers/io.github.cknb6.ckparrot/…/KnowledgeBase/index.json)
         // so --kb-add / --doc-answer-eval work on what the app actually uses.
         if let override = ProcessInfo.processInfo.environment["PARROT_KB_INDEX"], !override.isEmpty {
             return URL(fileURLWithPath: override)
@@ -341,7 +341,7 @@ import SwiftUI
 /// tag it into every built-in profile. Point PARROT_KB_INDEX at the sandboxed
 /// app's index to change what the installed app uses; the previous index is
 /// copied aside first.
-///   PARROT_KB_INDEX=~/Library/Containers/com.uygar.parrot/Data/Library/Application\ Support/Parrot/KnowledgeBase/index.json \
+///   PARROT_KB_INDEX=~/Library/Containers/io.github.cknb6.ckparrot/Data/Library/Application\ Support/Parrot/KnowledgeBase/index.json \
 ///   .build/release/Parrot --kb-add ~/Downloads/file.md
 @MainActor
 enum KBAddTool {
@@ -494,7 +494,7 @@ enum DocAnswerEval {
     static func keychainKey() -> String {
         let p = Process()
         p.executableURL = URL(fileURLWithPath: "/usr/bin/security")
-        p.arguments = ["find-generic-password", "-s", "com.uygar.parrot", "-a", JevDocMatcher.keychainAccount, "-w"]
+        p.arguments = ["find-generic-password", "-s", "io.github.cknb6.ckparrot", "-a", JevDocMatcher.keychainAccount, "-w"]
         let pipe = Pipe(); p.standardOutput = pipe; p.standardError = Pipe()
         try? p.run(); p.waitUntilExit()
         return String(decoding: pipe.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)
@@ -889,5 +889,5 @@ Flag: `--copilot-replay <path> [options...]` → `CopilotReplay.run(transcriptPa
 ### Task 9: Install and hand over
 
 - [ ] `make test` ALL PASS; `.build/release/Parrot --analyze-test claude` succeeds (Haiku still fine, schema unchanged so no grammar recompile).
-- [ ] `SKIP_NOTARIZE=1 scripts/release.sh 0.18.0-dev` (Developer ID signing so TCC grants persist), confirm Parrot is not running, `rm -rf /Applications/Parrot.app && ditto dist/Parrot.app /Applications/Parrot.app`, `spctl -a`, then `security add-generic-password -U -T /Applications/Parrot.app -s com.uygar.parrot -a typesafe-api-key -w "$(security find-generic-password -s com.uygar.parrot -a typesafe-api-key -w)"` so the installed app can read the key without a consent dialog, then `open /Applications/Parrot.app`.
+- [ ] `SKIP_NOTARIZE=1 scripts/release.sh 0.18.0-dev` (Developer ID signing so TCC grants persist), confirm Parrot is not running, `rm -rf /Applications/Parrot.app && ditto dist/Parrot.app /Applications/Parrot.app`, `spctl -a`, then `security add-generic-password -U -T /Applications/Parrot.app -s io.github.cknb6.ckparrot -a typesafe-api-key -w "$(security find-generic-password -s io.github.cknb6.ckparrot -a typesafe-api-key -w)"` so the installed app can read the key without a consent dialog, then `open /Applications/Parrot.app`.
 - [ ] Verify in the running app: Settings → Knowledge lists the Launchese document with its chunk count; Settings → API Keys shows the TypeSafe field as saved; a `say`-driven test recording with a Launchese question produces the excerpt card (drive with the mic-grab recipe from memory only if the user is not using the machine; otherwise leave to the user).

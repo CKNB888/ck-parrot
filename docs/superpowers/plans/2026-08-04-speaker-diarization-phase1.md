@@ -357,7 +357,7 @@ sox /tmp/d1.wav /tmp/d2.wav /tmp/d3.wav /tmp/diarize-fixture.wav 2>/dev/null || 
 .build/debug/Parrot --diarize-test /tmp/diarize-fixture.wav
 ```
 
-Expected with sox: `DIARIZE OK — 2 speakers`. Then the real thing: `.build/debug/Parrot --diarize-test "$HOME/Library/Containers/com.uygar.parrot/Data/Library/Application Support/Parrot/Audio/system_2026-08-03T12-00-32Z.caf"` → `DIARIZE OK — 2 speakers`.
+Expected with sox: `DIARIZE OK — 2 speakers`. Then the real thing: `.build/debug/Parrot --diarize-test "$HOME/Library/Containers/io.github.cknb6.ckparrot/Data/Library/Application Support/Parrot/Audio/system_2026-08-03T12-00-32Z.caf"` → `DIARIZE OK — 2 speakers`.
 
 - [ ] **Step 4: Commit** — `git add -A Parrot && git commit -m "Harness: --diarize-test runs real diarization on an audio file"`
 

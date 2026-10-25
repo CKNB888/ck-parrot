@@ -22,7 +22,7 @@
 			<string>Owner</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>com.uygar.parrot.profile</string>
+				<string>io.github.cknb6.ckparrot.profile</string>
 			</array>
 		</dict>
 	</array>
@@ -31,13 +31,15 @@
 	<key>CFBundleHelpBookFolder</key>
 	<string>Parrot.help</string>
 	<key>CFBundleHelpBookName</key>
-	<string>com.uygar.parrot.help</string>
+	<string>io.github.cknb6.ckparrot.help</string>
 	<key>CFBundleIconName</key>
 	<string>AppIcon</string>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<key>CFBundleDisplayName</key>
+	<string>CK Parrot</string>
 	<key>CFBundleName</key>
 	<string>$(PRODUCT_NAME)</string>
 	<key>CFBundlePackageType</key>
@@ -48,7 +50,7 @@
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>com.uygar.parrot.link</string>
+			<string>io.github.cknb6.ckparrot.link</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>openparrot</string>
@@ -73,8 +75,6 @@
 	<true/>
 	<key>SUEnableInstallerLauncherService</key>
 	<true/>
-	<key>SUFeedURL</key>
-	<string>https://turantekin.github.io/Parrot/appcast.xml</string>
 	<key>SUPublicEDKey</key>
 	<string>5+CifCVb0y0I1NthwWggSCNDRclBd19qGUx5tC2uGU4=</string>
 	<key>SUScheduledCheckInterval</key>
@@ -89,7 +89,7 @@
 			<key>UTTypeDescription</key>
 			<string>Parrot call profile</string>
 			<key>UTTypeIdentifier</key>
-			<string>com.uygar.parrot.profile</string>
+			<string>io.github.cknb6.ckparrot.profile</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>

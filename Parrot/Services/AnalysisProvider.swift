@@ -730,7 +730,7 @@ final class ClaudeAnalysisProvider: AnalysisProvider {
 /// Stores API keys in the user's keychain. One service, one account per
 /// provider — "claude-api-key" (default), "groq-api-key", "deepgram-api-key".
 enum APIKeyStore {
-    private static let service = "com.uygar.parrot"
+    private static let service = "io.github.cknb6.ckparrot"
 
     /// Keys by account, nil value = known missing. A live call asked
     /// `isConfigured` on every transcript segment: ~280 main-thread Keychain

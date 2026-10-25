@@ -45,7 +45,7 @@
 <p>点击窗口右下角的小瓢虫，或使用<strong>帮助 → 报告问题…</strong>。写下发生了什么，其余由 Parrot 填写：你正在使用的版本、你的模型和转录设置，以及可选的窗口截图。不会自动发送任何东西。按钮会在 GitHub 上打开一个预填好的 issue，你检查一遍后再发布。截图只包含 Parrot 的窗口，绝不是你的整个屏幕，并且它会放到你的剪贴板上，由你自己用 <kbd>⌘V</kbd> 粘贴。如果窗口正在显示某人的转录，请先看一眼。</p>
 <p>同一个面板也接受想法和功能请求，不仅仅是 bug。</p>
 <p>对于音频问题，诊断日志能让问题更容易被发现。用 <code>PARROT_AUDIO_DEBUG=1</code> 运行应用，重现问题，然后用以下命令获取日志：</p>
-<p><code>log show --last 10m --predicate 'subsystem == "com.uygar.parrot"'</code></p>
+<p><code>log show --last 10m --predicate 'subsystem == "io.github.cknb6.ckparrot"'</code></p>
 <p>把它也粘贴到 issue 中，你就让某个人的调试工作轻松多了。</p>
 
 <p class="muted">简体中文翻译：<a href="https://github.com/cknb6">CKNB</a> · <a href="../troubleshooting.html">English</a></p>

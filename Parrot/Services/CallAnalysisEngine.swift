@@ -598,10 +598,10 @@ final class CallAnalysisEngine {
 
     // MARK: - Fast document answers (Jev)
 
-    /// Timing trail for live tests: `log show --predicate 'subsystem == "com.uygar.parrot" AND category == "copilot"'`.
+    /// Timing trail for live tests: `log show --predicate 'subsystem == "io.github.cknb6.ckparrot" AND category == "copilot"'`.
     /// Notice level so it persists (info-level lines were gone within the hour);
     /// public fields on purpose (NSLog from the sandboxed app is redacted); never key material.
-    private static let log = Logger(subsystem: "com.uygar.parrot", category: "copilot")
+    private static let log = Logger(subsystem: "io.github.cknb6.ckparrot", category: "copilot")
 
     /// Set by RecordingManager. nil means the path does not exist for this call.
     var docMatcher: JevDocMatcher?

@@ -1095,7 +1095,7 @@ enum ProfileTest {
 
         let url = BugReport.issueURL(kind: .idea, title: "Tabs & spaces #1", body: "one\ntwo")
         check("issue url targets the repo's new-issue form",
-              url?.absoluteString.hasPrefix("https://github.com/turantekin/Parrot/issues/new?") == true)
+              url?.absoluteString.hasPrefix("https://github.com/NEWUSER/ck-parrot/issues/new?") == true)
         check("issue url labels an idea as enhancement",
               url?.absoluteString.contains("labels=enhancement") == true)
         check("issue url labels a bug as bug",
@@ -3325,7 +3325,7 @@ enum ProfileTest {
         check("WebKit GPU reads as Safari", D.normalizedAppID("com.apple.WebKit.GPU") == "com.apple.Safari")
         check("FaceTime daemon reads as FaceTime", D.normalizedAppID("com.apple.avconferenced") == "com.apple.FaceTime")
         check("plain app unchanged", D.normalizedAppID("us.zoom.xos") == "us.zoom.xos")
-        check("Parrot itself ignored", D.relevantApps(["com.uygar.parrot"], ignored: []).isEmpty)
+        check("Parrot itself ignored", D.relevantApps(["io.github.cknb6.ckparrot"], ignored: []).isEmpty)
         check("Siri/dictation ignored", D.relevantApps(["com.apple.SpeechRecognitionCore.speechrecognitiond",
                                                         "com.apple.assistantd"], ignored: []).isEmpty)
         check("dictation apps are not calls",

@@ -34,7 +34,7 @@ enum ReportPDFHarness {
             meeting = demoMeeting(in: c.mainContext)
         } else {
             let source = URL(fileURLWithPath: store ?? fm.homeDirectoryForCurrentUser
-                .appendingPathComponent("Library/Containers/com.uygar.parrot/Data/Library/Application Support/default.store").path)
+                .appendingPathComponent("Library/Containers/io.github.cknb6.ckparrot/Data/Library/Application Support/default.store").path)
             try? fm.createDirectory(at: scratch, withIntermediateDirectories: true)
             let copy = scratch.appendingPathComponent(source.lastPathComponent)
             for suffix in ["", "-wal", "-shm"] where fm.fileExists(atPath: source.path + suffix) {

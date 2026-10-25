@@ -23,8 +23,8 @@
 	     the downloader service is not, since we hold network.client above. -->
 	<key>com.apple.security.temporary-exception.mach-lookup.global-name</key>
 	<array>
-		<string>com.uygar.parrot-spks</string>
-		<string>com.uygar.parrot-spki</string>
+		<string>io.github.cknb6.ckparrot-spks</string>
+		<string>io.github.cknb6.ckparrot-spki</string>
 	</array>
 </dict>
 </plist>

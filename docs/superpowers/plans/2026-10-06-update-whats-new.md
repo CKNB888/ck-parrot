@@ -644,7 +644,7 @@ In `ContentView`, add a TEMP `.task` (env-gated, removed in Step 4):
 
 - [ ] **Step 2: Run it in the throwaway bundle**
 
-Build release, assemble the throwaway bundle `com.uygar.parrot.updatetest` (unsandboxed, ad-hoc signed, scratch `CFFIXED_USER_HOME`, onboarding marked done) as in the memory recipe, and run:
+Build release, assemble the throwaway bundle `io.github.cknb6.ckparrot.updatetest` (unsandboxed, ad-hoc signed, scratch `CFFIXED_USER_HOME`, onboarding marked done) as in the memory recipe, and run:
 `CFFIXED_USER_HOME=<scratch> PARROT_TEMP_FAKE_UPDATE=0.28.0 <bundle>/Contents/MacOS/Parrot 2>&1 | tee <scratch>/run.log`
 Expected: the notification "Parrot 0.28.0 is perched and ready" appears (macOS may ask once to allow notifications for the throwaway bundle: the owner clicks Allow); its **Restart now** prints `TEMP install requested` in the log. Then quit, delete the throwaway defaults domain and scratch home.
 

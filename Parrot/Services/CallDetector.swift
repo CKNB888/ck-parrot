@@ -146,7 +146,7 @@ struct CallDetector {
 
     /// System processes that capture input without being a call.
     static let builtInIgnored: [String] = [
-        "com.uygar.parrot",
+        "io.github.cknb6.ckparrot",
         "com.apple.SpeechRecognitionCore",
         "com.apple.speech",
         "com.apple.assistantd",

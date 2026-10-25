@@ -22,7 +22,7 @@ BUILD_NUM   := $(shell date +%Y%m%d%H%M)
 # granted again. Compare:
 #
 #   ad-hoc  designated => cdhash H"4666a893..."
-#   signed  designated => identifier "com.uygar.parrot" and anchor apple generic
+#   signed  designated => identifier "io.github.cknb6.ckparrot" and anchor apple generic
 #                         and certificate leaf[subject.CN] = "Apple Development: ..."
 #
 # So: use whatever valid codesigning identity you already have, automatically.
@@ -111,9 +111,9 @@ bundle: build
 	@printf 'APPL????' > $(APP)/Contents/PkgInfo
 	@cp Parrot/Info.plist $(PLIST)
 	@plutil -replace CFBundleExecutable         -string Parrot           $(PLIST)
-	@plutil -replace CFBundleIdentifier         -string com.uygar.parrot $(PLIST)
+	@plutil -replace CFBundleIdentifier         -string io.github.cknb6.ckparrot $(PLIST)
 	@plutil -replace CFBundleName               -string Parrot           $(PLIST)
-	@plutil -replace CFBundleDevelopmentRegion  -string en               $(PLIST)
+	@plutil -replace CFBundleDevelopmentRegion  -string zh-Hans             $(PLIST)
 	@plutil -replace CFBundleShortVersionString -string "$(VERSION)"     $(PLIST)
 	@plutil -replace CFBundleVersion            -string "$(BUILD_NUM)"   $(PLIST)
 	@plutil -replace LSMinimumSystemVersion     -string "14.0"           $(PLIST)
@@ -122,7 +122,7 @@ bundle: build
 	cp Parrot/Fonts/*.otf $(APP)/Contents/Resources/
 	@# UI translations (SwiftUI looks them up in the main bundle).
 	cp -R Localization/*.lproj $(APP)/Contents/Resources/
-	@plutil -replace CFBundleLocalizations -json '["en","zh-Hans"]' $(PLIST)
+	@plutil -replace CFBundleLocalizations -json '["zh-Hans","en"]' $(PLIST)
 	@# Sparkle is a binary XCFramework: swift build links against it but never
 	@# embeds it, so it has to be copied in by hand. The executable's rpath
 	@# points at ../Frameworks (see Package.swift linkerSettings).
@@ -224,8 +224,8 @@ signing-help:
 	@echo 'Already-granted permissions are bound to the old ad-hoc build, so clear'
 	@echo 'them once after switching, then quit and relaunch Parrot:'
 	@echo
-	@echo '    tccutil reset ScreenCapture com.uygar.parrot'
-	@echo '    tccutil reset Microphone com.uygar.parrot'
+	@echo '    tccutil reset ScreenCapture io.github.cknb6.ckparrot'
+	@echo '    tccutil reset Microphone io.github.cknb6.ckparrot'
 	@echo
 
 .PHONY: run

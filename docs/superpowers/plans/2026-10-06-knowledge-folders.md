@@ -1307,7 +1307,7 @@ Open `light.png` and `dark.png` (Read tool) and check, at 780×620: folder heade
 
 ```bash
 KB=$(mktemp -d)
-cp "$HOME/Library/Containers/com.uygar.parrot/Data/Library/Application Support/Parrot/KnowledgeBase/index.json" "$KB/index.json"
+cp "$HOME/Library/Containers/io.github.cknb6.ckparrot/Data/Library/Application Support/Parrot/KnowledgeBase/index.json" "$KB/index.json"
 printf '# Probe\n\nA tiny test document.\n' > "$KB/probe.md"
 PARROT_KB_INDEX="$KB/index.json" .build/debug/Parrot --kb-add "$KB/probe.md"
 python3 - "$KB" <<'EOF'

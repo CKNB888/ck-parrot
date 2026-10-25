@@ -162,7 +162,7 @@ discovery profile, Copilot on Claude, TypeSafe key present, Deepgram
 transcription selected (its "Them" socket failed at the start and the app
 fell back to on-device Whisper, see below). Times are wall clock from the
 moment the spoken line ended, read from the app's public copilot log
-(`log show --info --predicate 'subsystem == "com.uygar.parrot" AND category == "copilot"'`).
+(`log show --info --predicate 'subsystem == "io.github.cknb6.ckparrot" AND category == "copilot"'`).
 
 | Prospect line | transcript line lands | "From your docs" excerpt | first Claude card |
 |---|---|---|---|

@@ -380,7 +380,7 @@ Legend: ⬜ not started · 🟡 built (awaiting your eyeball) · ✅ done · ⏸
 ## Part 1 — Meeting #48 analysis (the test that started this)
 
 Pulled from the local SwiftData store
-(`~/Library/Containers/com.uygar.parrot/Data/Library/Application Support/default.store`).
+(`~/Library/Containers/io.github.cknb6.ckparrot/Data/Library/Application Support/default.store`).
 
 - **What it was:** 49.9 min, parent ↔ NHS clinician (parenting/ADHD coaching
   roleplay). 740 transcript segments, 343 copilot insights, 2,513-char summary,
@@ -641,7 +641,7 @@ codesign --force --options runtime --timestamp=none \
 osascript -e 'tell application "Parrot" to quit' 2>/dev/null
 rm -rf /Applications/Parrot.app && ditto "$APP" /Applications/Parrot.app
 ```
-Same signing identity + bundle id (`com.uygar.parrot`, team `5D8KQ6NJGF`) → TCC
+Same signing identity + bundle id (`io.github.cknb6.ckparrot`, team `5D8KQ6NJGF`) → TCC
 mic/screen grants persist. Release build → representative CPU. (No app icon, since
 `swift build` doesn't compile an asset catalog — cosmetic only.) Opening the
 committed `.xcodeproj` in **Xcode.app** also works (Theme.swift is now registered).

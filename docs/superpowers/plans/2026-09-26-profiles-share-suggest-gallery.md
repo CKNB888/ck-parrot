@@ -196,7 +196,7 @@ Runs once, on the first launch after the update, inside `ProfileStore.seedAndMig
 
 ### Task A: Export, Import, Share
 
-**Files:** `ProfileFile.swift`, `ProfileStore.swift`, `ProfilesSettingsView.swift`, `ParrotApp.swift` (open-file handling), `project.yml` / Makefile Info.plist (document type `com.uygar.parrot.profile`, extension `.parrotprofile`), `ProfileTest.swift`
+**Files:** `ProfileFile.swift`, `ProfileStore.swift`, `ProfilesSettingsView.swift`, `ParrotApp.swift` (open-file handling), `project.yml` / Makefile Info.plist (document type `io.github.cknb6.ckparrot.profile`, extension `.parrotprofile`), `ProfileTest.swift`
 
 - [ ] Profile editor gets **Export…** (save panel) and **Share…** (the macOS share sheet: Mail, Messages, AirDrop).
 - [ ] **Import…** in the profiles list, drag-and-drop onto the list, and double-clicking a `.parrotprofile` all open the **Review screen** (Task C).

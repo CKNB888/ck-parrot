@@ -1,6 +1,7 @@
 name: Parrot
 options:
-  bundleIdPrefix: com.uygar
+  bundleIdPrefix: io.github.cknb6
+  developmentLanguage: zh-Hans
   deploymentTarget:
     macOS: "14.0"
   xcodeVersion: "16.0"
@@ -37,7 +38,7 @@ targets:
         buildPhase: resources
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.uygar.parrot
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.cknb6.ckparrot
         PRODUCT_NAME: Parrot
         MARKETING_VERSION: "1.0.0"
         CURRENT_PROJECT_VERSION: "1"
@@ -91,8 +92,8 @@ targets:
         # replace the app bundle. Without these two names self-updating fails
         # silently. The downloader service isn't needed — we have network.client.
         com.apple.security.temporary-exception.mach-lookup.global-name:
-          - com.uygar.parrot-spks
-          - com.uygar.parrot-spki
+          - io.github.cknb6.ckparrot-spks
+          - io.github.cknb6.ckparrot-spki
     info:
       path: Parrot/Info.plist
       properties:
@@ -119,20 +120,20 @@ targets:
         # Help → Parrot Help from 0.16.0 to 0.18.0. assemble-help.sh now fails
         # the build if they are missing.
         CFBundleHelpBookFolder: Parrot.help
-        CFBundleHelpBookName: com.uygar.parrot.help
+        CFBundleHelpBookName: io.github.cknb6.ckparrot.help
         # Points Finder/Dock at the asset-catalog icon (asset compiler doesn't
         # inject this when the Info.plist is static).
         CFBundleIconName: AppIcon
         # openparrot://meeting/<id>?t=<seconds> opens a meeting at a moment
         # (ParrotLink); AI apps get these links in tool results.
         CFBundleURLTypes:
-          - CFBundleURLName: com.uygar.parrot.link
+          - CFBundleURLName: io.github.cknb6.ckparrot.link
             CFBundleURLSchemes: [openparrot]
         # .parrotprofile: a portable call profile (JSON, see ProfileFile).
         # Double-click or drop one and Parrot opens its review screen;
         # nothing changes until the user applies it.
         UTExportedTypeDeclarations:
-          - UTTypeIdentifier: com.uygar.parrot.profile
+          - UTTypeIdentifier: io.github.cknb6.ckparrot.profile
             UTTypeDescription: Parrot call profile
             UTTypeConformsTo: [public.json]
             UTTypeTagSpecification:
@@ -141,17 +142,19 @@ targets:
           - CFBundleTypeName: Parrot call profile
             CFBundleTypeRole: Viewer
             LSHandlerRank: Owner
-            LSItemContentTypes: [com.uygar.parrot.profile]
+            LSItemContentTypes: [io.github.cknb6.ckparrot.profile]
         # Auto-register bundled fonts (Parrot/Fonts/*.otf, flattened into
         # Resources by xcodegen) — the whole UI runs on Inter.
         ATSApplicationFontsPath: "."
-        CFBundleLocalizations: [en, zh-Hans]
+        CFBundleLocalizations: [zh-Hans, en]
+        CFBundleDisplayName: CK Parrot
+        # ck-parrot: Sparkle auto-update to upstream is disabled (no SUFeedURL);
+        # AppUpdater skips Sparkle when SUFeedURL is absent.
         # Sparkle. The feed is served by GitHub Pages from docs/ on master, the
         # same place the help guide lives. SUPublicEDKey is the public half of
         # the EdDSA key in the release machine's login Keychain — updates not
         # signed by it are refused, so a hijacked feed still can't ship code.
         # Installer launcher service is required for sandboxed apps.
-        SUFeedURL: "https://turantekin.github.io/Parrot/appcast.xml"
         SUPublicEDKey: "5+CifCVb0y0I1NthwWggSCNDRclBd19qGUx5tC2uGU4="
         SUEnableInstallerLauncherService: true
         SUEnableAutomaticChecks: true

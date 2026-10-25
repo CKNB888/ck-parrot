@@ -604,7 +604,7 @@ final class KnowledgeBaseService {
 
     private static var storeURL: URL {
         // Dev harnesses point this at the sandboxed app's real index
-        // (~/Library/Containers/com.uygar.parrot/…/KnowledgeBase/index.json)
+        // (~/Library/Containers/io.github.cknb6.ckparrot/…/KnowledgeBase/index.json)
         // so --kb-add / --doc-answer-eval work on what the app actually uses.
         if let override = ProcessInfo.processInfo.environment["PARROT_KB_INDEX"], !override.isEmpty {
             return URL(fileURLWithPath: override)

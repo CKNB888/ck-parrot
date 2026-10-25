@@ -27,11 +27,11 @@ final class SystemAudioTap {
     private let targetFormat: AVAudioFormat
     /// IO callbacks and the format-change listener share this queue, so the
     /// converter/sourceFormat pair is never read while being rebuilt.
-    private let queue = DispatchQueue(label: "com.uygar.parrot.audio.tap", qos: .userInteractive)
+    private let queue = DispatchQueue(label: "io.github.cknb6.ckparrot.audio.tap", qos: .userInteractive)
     /// onBuffer runs here, not in the IO callback: Core Audio skips whatever
     /// time the callback overruns, so a consumer stuck on a lock for 50 ms
     /// lost 50 ms of "Them" (measured with --capture-test, issue #100).
-    private let deliveryQueue = DispatchQueue(label: "com.uygar.parrot.audio.tap.deliver", qos: .userInteractive)
+    private let deliveryQueue = DispatchQueue(label: "io.github.cknb6.ckparrot.audio.tap.deliver", qos: .userInteractive)
     private var formatListener: AudioObjectPropertyListenerBlock?
     /// Uptime when start() began; the first IO callback logs its delay from
     /// here once, then zeroes it. IO queue only after start() returns.

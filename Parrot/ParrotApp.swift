@@ -7,6 +7,7 @@ struct ParrotMain {
     /// design verification (see SnapshotTool.swift); otherwise the normal app runs.
     static func main() {
         let args = CommandLine.arguments
+        CKDefaults.register()
         // Launched by an AI app (Claude Desktop…) as its MCP server: stdio,
         // read-only, refuses unless enabled in Settings → Connections.
         if args.contains("--mcp") {
@@ -349,5 +350,17 @@ extension View {
         environment(recordingManager)
             .environment(recordingManager.profileStore)
             .environment(appSession)
+    }
+}
+
+/// ck-parrot: Chinese-first defaults. `register(defaults:)` never overrides a
+/// value the user already picked; it only changes the first-run fallback.
+enum CKDefaults {
+    static func register() {
+        let preferred = Locale.preferredLanguages.first?.lowercased() ?? ""
+        // Unknown system language or Chinese → transcribe as Chinese by default.
+        if preferred.isEmpty || preferred.hasPrefix("zh") {
+            UserDefaults.standard.register(defaults: [TranscriptionLanguage.defaultsKey: "zh"])
+        }
     }
 }

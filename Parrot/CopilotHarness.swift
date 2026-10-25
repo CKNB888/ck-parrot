@@ -11,7 +11,7 @@ import SwiftUI
 /// into every built-in profile. Point PARROT_KB_INDEX at the sandboxed app's
 /// index to change what the installed app uses; the previous index is copied
 /// aside first.
-///   PARROT_KB_INDEX=~/Library/Containers/com.uygar.parrot/Data/Library/Application\ Support/Parrot/KnowledgeBase/index.json \
+///   PARROT_KB_INDEX=~/Library/Containers/io.github.cknb6.ckparrot/Data/Library/Application\ Support/Parrot/KnowledgeBase/index.json \
 ///   .build/release/Parrot --kb-add ~/Downloads/file.md
 @MainActor
 enum KBAddTool {
@@ -178,7 +178,7 @@ enum DocAnswerEval {
     static func keychainKey() -> String {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/security")
-        process.arguments = ["find-generic-password", "-s", "com.uygar.parrot", "-a", JevDocMatcher.keychainAccount, "-w"]
+        process.arguments = ["find-generic-password", "-s", "io.github.cknb6.ckparrot", "-a", JevDocMatcher.keychainAccount, "-w"]
         let pipe = Pipe()
         process.standardOutput = pipe
         process.standardError = Pipe()

@@ -7,7 +7,7 @@ import Foundation
 /// Cursor its install link, Claude Code and Codex a command to paste.
 enum MCPBundle {
 
-    static let bundleID = "com.uygar.parrot"
+    static let bundleID = "io.github.cknb6.ckparrot"
     static let claudeBundleID = "com.anthropic.claudefordesktop"
     static let cursorBundleID = "com.todesktop.230313mzl4w4u92"
     /// Codex now ships inside the ChatGPT app, which carries this id.
@@ -96,8 +96,8 @@ enum MCPBundle {
             "author": ["name": "Parrot", "url": "https://openparrot.app"],
             "homepage": "https://openparrot.app",
             "documentation": "https://openparrot.app/help/connections.html",
-            "support": "https://github.com/turantekin/Parrot/issues",
-            "repository": ["type": "git", "url": "https://github.com/turantekin/Parrot"],
+            "support": "https://github.com/NEWUSER/ck-parrot/issues",
+            "repository": ["type": "git", "url": "https://github.com/NEWUSER/ck-parrot"],
             "license": "GPL-3.0",
             "icon": "icon.png",
             "keywords": ["meetings", "transcripts", "calls", "notes", "local", "mac"],

@@ -51,7 +51,7 @@ extension Notification.Name {
 /// and the detail toolbar. Exports write to Downloads and reveal in Finder.
 @MainActor
 enum MeetingActions {
-    nonisolated static let repoURL = "https://github.com/turantekin/Parrot"
+    nonisolated static let repoURL = "https://github.com/NEWUSER/ck-parrot"
     /// The landing page: a scrolling demo, the honest privacy list, and the download.
     nonisolated static let websiteURL = "https://openparrot.app"
     nonisolated static let xURL = "https://x.com/OpenParrotHQ"
@@ -249,7 +249,7 @@ struct ParrotCommands: Commands {
                 NSApp.showHelp(nil)
             }
             Button("Parrot Help on the Web") {
-                MeetingActions.open("https://turantekin.github.io/Parrot/help/")
+                MeetingActions.open("https://NEWUSER.github.io/ck-parrot/help/")
             }
             Button("Parrot Website") {
                 MeetingActions.open(MeetingActions.websiteURL)

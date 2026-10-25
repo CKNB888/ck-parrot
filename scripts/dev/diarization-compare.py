@@ -15,7 +15,7 @@ if len(sys.argv) < 2:
 JSON_PATH = sys.argv[1]
 TITLE = sys.argv[2] if len(sys.argv) > 2 else "Meeting Aug 3, 2026 at 1:00 pm"
 DB = os.path.expanduser(
-    "~/Library/Containers/com.uygar.parrot/Data/Library/Application Support/default.store")
+    "~/Library/Containers/io.github.cknb6.ckparrot/Data/Library/Application Support/default.store")
 
 d = json.load(open(JSON_PATH))
 D = [(s["speakerId"], s["startTimeSeconds"], s["endTimeSeconds"]) for s in d["segments"]]

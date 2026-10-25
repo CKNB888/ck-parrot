@@ -5,7 +5,7 @@ import UniformTypeIdentifiers
 
 extension UTType {
     /// `.parrotprofile`, declared in project.yml.
-    static let parrotProfile = UTType(exportedAs: "com.uygar.parrot.profile", conformingTo: .json)
+    static let parrotProfile = UTType(exportedAs: "io.github.cknb6.ckparrot.profile", conformingTo: .json)
 }
 
 /// A profile as a file, for the share sheet (Mail, Messages, AirDrop).

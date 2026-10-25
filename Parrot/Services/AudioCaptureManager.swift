@@ -23,8 +23,8 @@ final class AudioCaptureManager: NSObject {
     /// recording, and the stale file object would hijack the NEXT recording's
     /// audio. Plain Bool across threads, same accepted pattern as `isCapturing`.
     private var filesClosed = true
-    private let systemWriteQueue = DispatchQueue(label: "com.uygar.parrot.audio.system")
-    private let micWriteQueue = DispatchQueue(label: "com.uygar.parrot.audio.mic")
+    private let systemWriteQueue = DispatchQueue(label: "io.github.cknb6.ckparrot.audio.system")
+    private let micWriteQueue = DispatchQueue(label: "io.github.cknb6.ckparrot.audio.mic")
     /// Acoustic echo canceller, created per recording when enabled. Removes the
     /// speaker bleed from the mic using the system audio as the reference. nil =
     /// disabled (mic passes through untouched).
@@ -79,7 +79,7 @@ final class AudioCaptureManager: NSObject {
     /// Capture events and AUDIODBG lines go through os_log with explicit public
     /// privacy: NSLog from the sandboxed app is redacted to "<private>" in
     /// `log show`, which silently made the field diagnostics uncollectable.
-    static let oslog = Logger(subsystem: "com.uygar.parrot", category: "capture")
+    static let oslog = Logger(subsystem: "io.github.cknb6.ckparrot", category: "capture")
 
     /// Accumulates levels between 5 s log flushes. Each instance is only touched
     /// from its own stream's callback thread.
@@ -372,7 +372,7 @@ final class AudioCaptureManager: NSObject {
     @MainActor
     private func startSystemAudioCapture() async throws {
         // ponytail: escape hatch for field debugging of the new path —
-        // `defaults write com.uygar.parrot forceSCKCapture -bool YES`.
+        // `defaults write io.github.cknb6.ckparrot forceSCKCapture -bool YES`.
         if #available(macOS 15.0, *), !UserDefaults.standard.bool(forKey: "forceSCKCapture") {
             do {
                 try startTapCapture()
@@ -1084,7 +1084,7 @@ extension AVAudioPCMBuffer {
 /// reference paired with each frame, as aec-mic_/aec-ref_<ts>.caf next to the
 /// recording, so `--aec-replay` can rerun Speex offline on what it saw live.
 private final class AECDump {
-    private let queue = DispatchQueue(label: "com.uygar.parrot.audio.aecdump")
+    private let queue = DispatchQueue(label: "io.github.cknb6.ckparrot.audio.aecdump")
     private let format = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: 16000,
                                        channels: 1, interleaved: false)!
     private var mic: AVAudioFile?
