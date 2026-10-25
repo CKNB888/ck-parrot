@@ -4,11 +4,18 @@ on:
   push:
     tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "要上传到的发布标签（如 v1.0.0），留空则只构建产物"
+        required: false
+        default: ""
 permissions:
   contents: write
 jobs:
   release:
     runs-on: macos-15
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
@@ -16,16 +23,27 @@ jobs:
         run: sudo xcode-select -s "$(ls -d /Applications/Xcode_16*.app | sort -V | tail -1)"
       - name: Build app (release, ad-hoc)
         run: |
-          V="${GITHUB_REF_NAME#v}"
+          set -euo pipefail
+          V="$(echo "$TAG" | sed -n 's/^v//p')"; V="${V:-1.0.0}"
           make bundle CONFIG=release SIGN_IDENTITY=- VERSION="$V"
           test -f dist/Parrot.app/Contents/Resources/zh-Hans.lproj/Localizable.strings
           mv dist/Parrot.app "dist/CK Parrot.app"
           ditto -c -k --keepParent "dist/CK Parrot.app" "ck-parrot_${V}_macOS_arm64.zip"
           hdiutil create -volname "CK Parrot" -srcfolder "dist/CK Parrot.app" -ov -format UDZO "ck-parrot_${V}_macOS_arm64.dmg"
+          pkgbuild --component "dist/CK Parrot.app" --install-location /Applications "ck-parrot_${V}_macOS_arm64.pkg"
+          ls -la ck-parrot_*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ck-parrot-macos
+          path: ck-parrot_*
       - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/v') || inputs.tag != ''
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" ck-parrot_*_macOS_arm64.zip ck-parrot_*_macOS_arm64.dmg \
-            --repo "$GITHUB_REPOSITORY" --title "CK Parrot $GITHUB_REF_NAME" \
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" ck-parrot_*_macOS_arm64.* --clobber --repo "$GITHUB_REPOSITORY"; exit 0
+          fi
+          gh release create "$TAG" ck-parrot_*_macOS_arm64.zip ck-parrot_*_macOS_arm64.dmg ck-parrot_*_macOS_arm64.pkg \
+            --repo "$GITHUB_REPOSITORY" --title "CK Parrot $TAG" \
             --notes-file RELEASE_NOTES.zh-CN.md
