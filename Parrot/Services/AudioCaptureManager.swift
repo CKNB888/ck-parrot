@@ -1,3 +1,4 @@
+import AppKit
 import AVFoundation
 import ScreenCaptureKit
 import CoreAudio
@@ -255,6 +256,10 @@ final class AudioCaptureManager: NSObject {
 
     /// Observer for AVAudioEngineConfigurationChange on the current engine.
     private var micRestartObserver: NSObjectProtocol?
+    /// ck v1.0.5: re-arms system-audio capture after the Mac wakes from sleep
+    /// (process taps / SCStream can silently die across sleep).
+    private var wakeObserver: NSObjectProtocol?
+    private var systemRestartInFlight = false
 
     private let sampleRate: Double = 16000
     private let channels: UInt32 = 1
@@ -341,6 +346,16 @@ final class AudioCaptureManager: NSObject {
         captureOrigin = ProcessInfo.processInfo.systemUptime
         isCapturing = true
         syncThreadFlags()
+        if let wakeObserver { NSWorkspace.shared.notificationCenter.removeObserver(wakeObserver) }
+        wakeObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didWakeNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                // Let Core Audio settle its device list after wake.
+                try? await Task.sleep(for: .seconds(2))
+                await self?.restartSystemAudio(reason: "wake")
+            }
+        }
         Self.oslog.log("capture live — \(self.captureBackend.rawValue, privacy: .public) up in \(Int((t1 - t0) * 1000), privacy: .public) ms, mic in \(Int((self.captureOrigin - t1) * 1000), privacy: .public) ms")
     }
 
@@ -357,6 +372,9 @@ final class AudioCaptureManager: NSObject {
         audioLevel = 0
         micLevel = 0
         micPeakLevel = 0
+
+        if let wakeObserver { NSWorkspace.shared.notificationCenter.removeObserver(wakeObserver) }
+        wakeObserver = nil
 
         // Stop system audio stream (whichever backend is live)
         if #available(macOS 15.0, *), let tap = processTap as? SystemAudioTap {
@@ -476,6 +494,39 @@ final class AudioCaptureManager: NSObject {
         }
     }
 
+    /// ck v1.0.5: tear down and re-open the system-audio backend (after wake,
+    /// or when SCStream reports it stopped). Same files and downstream path;
+    /// retries with back-off so a device that is still coming up is caught.
+    @MainActor
+    func restartSystemAudio(reason: String, attempt: Int = 0) async {
+        guard isCapturing else { return }
+        if attempt == 0 {
+            guard !systemRestartInFlight else { return }
+            systemRestartInFlight = true
+        }
+        if #available(macOS 15.0, *), let tap = processTap as? SystemAudioTap {
+            tap.stop()
+        }
+        processTap = nil
+        if let stream {
+            self.stream = nil
+            try? await stream.stopCapture()
+        }
+        do {
+            try await startSystemAudioCapture()
+            systemRestartInFlight = false
+            Self.oslog.log("system audio re-armed (\(reason, privacy: .public), attempt \(attempt + 1, privacy: .public))")
+        } catch {
+            guard attempt < 5, isCapturing else {
+                systemRestartInFlight = false
+                Self.oslog.error("system audio restart gave up — \(error.localizedDescription, privacy: .public)")
+                return
+            }
+            try? await Task.sleep(for: .seconds(Double(attempt + 1) * 2))
+            await restartSystemAudio(reason: reason, attempt: attempt + 1)
+        }
+    }
+
     // MARK: - System Audio (ScreenCaptureKit)
 
     private func startSCKCapture() async throws {
@@ -510,7 +561,7 @@ final class AudioCaptureManager: NSObject {
         // (see the SCStreamOutput handler), so it always matches what we write.
 
         let t1 = ProcessInfo.processInfo.systemUptime
-        let stream = SCStream(filter: filter, configuration: config, delegate: nil)
+        let stream = SCStream(filter: filter, configuration: config, delegate: self)
         try stream.addStreamOutput(self, type: .audio, sampleHandlerQueue: sckQueue)
         try await stream.startCapture()
         self.stream = stream
@@ -972,6 +1023,19 @@ final class AudioCaptureManager: NSObject {
         let dir = appSupport.appendingPathComponent("Parrot/Audio", isDirectory: true)
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir
+    }
+}
+
+// MARK: - SCStreamDelegate
+
+extension AudioCaptureManager: SCStreamDelegate {
+    /// ck v1.0.5: SCStream stops on sleep, display reconfiguration or when the
+    /// capture service restarts. Re-open instead of silently losing "Them".
+    func stream(_ stream: SCStream, didStopWithError error: Error) {
+        Self.oslog.error("SCStream stopped — \(error.localizedDescription, privacy: .public); restarting")
+        Task { @MainActor [weak self] in
+            await self?.restartSystemAudio(reason: "sck-stopped")
+        }
     }
 }
 
