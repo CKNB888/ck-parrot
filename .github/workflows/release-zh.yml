@@ -1,0 +1,31 @@
+# Fork-only: build an unsigned (ad-hoc) Parrot.app for tags like v0.29.7-zh
+# and publish it as a GitHub Release with a .zip and .dmg.
+name: Release (zh)
+on:
+  push:
+    tags: ["v*-zh"]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain
+        run: sudo xcode-select -s "$(ls -d /Applications/Xcode_16*.app | sort -V | tail -1)"
+      - name: Build app (release, ad-hoc)
+        run: |
+          V="${GITHUB_REF_NAME#v}"; V="${V%-zh}"
+          make bundle CONFIG=release SIGN_IDENTITY=- VERSION="$V"
+          test -f dist/Parrot.app/Contents/Resources/zh-Hans.lproj/Localizable.strings
+          ditto -c -k --keepParent dist/Parrot.app "Parrot-${GITHUB_REF_NAME}-macOS.zip"
+          hdiutil create -volname Parrot -srcfolder dist/Parrot.app -ov -format UDZO "Parrot-${GITHUB_REF_NAME}-macOS.dmg"
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" Parrot-*-macOS.zip Parrot-*-macOS.dmg \
+            --repo "$GITHUB_REPOSITORY" --prerelease --title "Parrot $GITHUB_REF_NAME（简体中文版）" \
+            --notes "简体中文本地化 + Bug 修复（#146）。未签名/ad-hoc 构建：首次打开请右键 → 打开，或执行 xattr -cr /Applications/Parrot.app。仅支持 macOS 14+ Apple Silicon。"
