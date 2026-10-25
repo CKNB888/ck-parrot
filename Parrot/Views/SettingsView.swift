@@ -290,7 +290,7 @@ struct SettingsView: View {
                         if !isEmbedded { NSApp.keyWindow?.performClose(nil) }
                     }
                 }
-                SettingsLabeledRow(title: "GitHub", detail: "github.com/CKNB888/ck-parrot · 基于开源项目 Parrot（GPL-3.0，见 LICENSE）修改。赞助与广告合作：微信 1837620622") {
+                SettingsLabeledRow(title: "GitHub", detail: "github.com/CKNB888/ck-parrot") {
                     Button("Open GitHub") { MeetingActions.open(MeetingActions.repoURL) }
                 }
             }
