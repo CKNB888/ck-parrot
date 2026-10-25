@@ -524,7 +524,8 @@ enum ProfileTest {
 
     static func testPresets() {
         let all = ProfilePresets.all()
-        check("eight presets", all.count == 8)
+        check("nine presets", all.count == 9)
+        check("classroom preset answers in Chinese, conclusion first", all.first { $0.name == "课堂答疑" }?.persona.contains("一句话结论") == true)
         let vendor = all.first { $0.name == "Vendor call" }
         check("vendor call preset exists with the vendor as counterpart", vendor?.counterpart == "the vendor")
         check("vendor call pins open questions and red flags",

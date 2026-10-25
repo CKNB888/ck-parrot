@@ -9,6 +9,7 @@ enum ProfilePresets {
     private static let genericID  = UUID(uuidString: "00000000-0000-0000-0000-0000000000C5")!
     private static let vendorID   = UUID(uuidString: "00000000-0000-0000-0000-0000000000C6")!
     private static let investorID = UUID(uuidString: "00000000-0000-0000-0000-0000000000C7")!
+    private static let classroomID = UUID(uuidString: "00000000-0000-0000-0000-0000000000C8")!
 
     /// Bump when the built-in preset definitions change (persona, kinds, counterpart).
     /// `ProfileStore` refreshes built-in profiles whose stored version is older,
@@ -177,8 +178,29 @@ enum ProfilePresets {
                 ],
                 gauges: [gauge("interest", "Interest", "Cold", "Leaning in", "3F9168"),
                          gauge("my_dominance", "You're talking", "Balanced", "Dominating", "5F6470")]),
+            CallProfile(id: classroomID, name: "课堂答疑", iconSystemName: "graduationcap",
+                summary: "老师上课时：学生提问，先给结论再给要点。",
+                isBuiltIn: true, sortOrder: 8,
+                persona: classroomPersona,
+                tone: "", counterpart: "the students", allowGeneralKnowledge: true,
+                presetVersion: presetVersion,
+                kinds: [
+                    kind("answer", "答案", "4F6FB0", "text.bubble.fill", "A student asked a question. Title = the one-sentence conclusion in Simplified Chinese; body = at most 3 short key points or steps the teacher can say aloud, formulas in plain notation.", pinned: true, priority: 10),
+                    kind("misconception", "易错点", "E8943A", "exclamationmark.triangle.fill", "A student's question or answer shows a common mistake. Title names the mistake; body gives the correct idea in one sentence.", priority: 8),
+                    kind("unanswered_question", "待回答", "C0563B", "questionmark.bubble.fill", "A student asked something and the lesson moved on without answering it. Flag it so the teacher can come back to it.", pinned: true, priority: 9),
+                    kind("follow_up", "追问建议", "2F7E96", "questionmark.circle.fill", "A short check-for-understanding question the teacher could ask the class next."),
+                    kind("note", "课堂记录", "5F6470", "note.text", "A key point, assignment or announcement worth recording for the lesson summary."),
+                ],
+                gauges: [gauge("my_dominance", "You're talking", "Balanced", "Dominating", "5F6470")]),
         ].map(shipped)
     }
+
+    private static let classroomPersona = """
+    你是老师的课堂答疑助手，老师正在上课，学生的提问来自转写（可能有错字，请按上下文理解）。\
+    所有输出用简体中文。每张卡片：标题就是一句话结论（最重要的信息放最前面）；正文最多 3 个要点或步骤，每条一句，\
+    关键术语或数值放在要点开头；不寒暄、不复述问题、不编造。按学科作答：数学物理先列依据再给步骤和带单位的结果，\
+    化学方程式要配平并注明条件，编程给最短可运行代码，英语规则用中文讲、例句用英文。不要回答老师自己说的话。
+    """
 
     // MARK: - Report templates
 
