@@ -201,11 +201,11 @@ enum ProfileTest {
               WhatsNew.seenAfterLaunch(running: "0.28.0", seen: "", onboarded: false) == "0.28.0"
                 && WhatsNew.seenAfterLaunch(running: "0.28.0", seen: "0.27.0", onboarded: true) == "0.27.0")
 
-        check("whats new: links the changelog entry", news.changelogURL.absoluteString == "https://openparrot.app/changelog#v0.28.0")
+        check("whats new: links the changelog entry", news.changelogURL.absoluteString == "https://github.com/CKNB888/ck-parrot/releases")
         let html = news.html()
         check("whats new: html has the headline, list and link",
               html.contains("<h3>Fresh feathers! Parrot 0.28.0</h3>") && html.contains("<li>Folders for your documents.</li>")
-                && html.contains("href=\"https://openparrot.app/changelog#v0.28.0\">Read the full story</a>"))
+                && html.contains("href=\"https://github.com/CKNB888/ck-parrot/releases\">Read the full story</a>"))
         check("whats new: html is a fragment Sparkle embeds", !html.lowercased().contains("<body") && !html.lowercased().contains("doctype"))
         check("whats new: html escapes text",
               WhatsNew(version: "1", headline: "A & B", highlights: ["<b>x</b>", "\"y\""]).html().contains("A &amp; B")
