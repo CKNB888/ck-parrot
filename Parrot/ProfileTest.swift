@@ -4751,6 +4751,12 @@ enum ProfileTest {
         check("fit: Intel 8 GB → base", MachineFit.whisperModel(for: .init(memoryGB: 8, cores: 4, appleSilicon: false, freeDiskGB: 100)).model == "base")
         check("disk: turbo refused with 1 GB free", TranscriptionEngine.diskSpaceProblem(for: "large-v3-turbo", freeBytes: 1_073_741_824) != nil)
         check("disk: base fine with 10 GB free", TranscriptionEngine.diskSpaceProblem(for: "base", freeBytes: 10_737_418_240) == nil)
+        do {
+            let home = URL(fileURLWithPath: "/Users/t/Library/Containers/io.github.cknb6.ckparrot/Data")
+            let paths = FullUninstall.targets(home: home).map(\.path)
+            check("uninstall: every path stays inside the container", paths.allSatisfy { $0.hasPrefix(home.path + "/") })
+            check("uninstall: covers models, store, prefs", paths.contains(home.path + "/Documents/huggingface") && paths.contains(home.path + "/Library/Application Support/default.store") && paths.contains(home.path + "/Library/Preferences/io.github.cknb6.ckparrot.plist"))
+        }
         check("fit: low disk → tiny", MachineFit.whisperModel(for: .init(memoryGB: 32, cores: 12, appleSilicon: true, freeDiskGB: 0.5)).model == "tiny")
         check("fit: reason is Chinese, no exclamation", MachineFit.whisperModel(for: .init(memoryGB: 8, cores: 8, appleSilicon: true, freeDiskGB: 50)).reason.contains("内存 8 GB") && !MachineFit.whisperModel(for: .init(memoryGB: 8, cores: 8, appleSilicon: true, freeDiskGB: 50)).reason.contains("！"))
     }

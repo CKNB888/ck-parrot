@@ -35,13 +35,15 @@ jobs:
         if: env.SKIP != '1'
         run: |
           set -euo pipefail
-          V="$(echo "$TAG" | sed -n 's/^v//p')"; V="${V:-1.0.6}"
+          V="$(echo "$TAG" | sed -n 's/^v//p')"; V="${V:-1.0.7}"
           make bundle CONFIG=release SIGN_IDENTITY=- VERSION="$V"
           test -f dist/Parrot.app/Contents/Resources/zh-Hans.lproj/Localizable.strings
           mv dist/Parrot.app "dist/CK Parrot.app"
           ditto -c -k --keepParent "dist/CK Parrot.app" "ck-parrot_${V}_macOS_arm64.zip"
-          hdiutil create -volname "CK Parrot" -srcfolder "dist/CK Parrot.app" -ov -format UDZO "ck-parrot_${V}_macOS_arm64.dmg"
-          pkgbuild --component "dist/CK Parrot.app" --install-location /Applications "ck-parrot_${V}_macOS_arm64.pkg"
+          STAGE="$(mktemp -d)"; cp -R "dist/CK Parrot.app" "$STAGE/"; ln -s /Applications "$STAGE/Applications"
+          cp scripts/uninstall.command "$STAGE/卸载 CK Parrot.command"
+          hdiutil create -volname "CK Parrot" -srcfolder "$STAGE" -ov -format UDZO "ck-parrot_${V}_macOS_arm64.dmg"
+          pkgbuild --component "dist/CK Parrot.app" --identifier io.github.cknb6.ckparrot --version "$V" --install-location /Applications "ck-parrot_${V}_macOS_arm64.pkg"
           ls -la ck-parrot_*
       - uses: actions/upload-artifact@v4
         if: env.SKIP != '1'

@@ -293,6 +293,9 @@ struct SettingsView: View {
                 SettingsLabeledRow(title: "GitHub", detail: "github.com/CKNB888/ck-parrot") {
                     Button("Open GitHub") { MeetingActions.open(MeetingActions.repoURL) }
                 }
+                SettingsLabeledRow(title: "完全卸载", detail: "删除全部数据、模型、设置与钥匙串项，然后移到废纸篓。") {
+                    Button("完全卸载…", role: .destructive) { FullUninstall.confirmAndRun() }
+                }
             }
         }
     }
