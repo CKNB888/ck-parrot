@@ -35,7 +35,7 @@ jobs:
         if: env.SKIP != '1'
         run: |
           set -euo pipefail
-          V="$(echo "$TAG" | sed -n 's/^v//p')"; V="${V:-1.0.3}"
+          V="$(echo "$TAG" | sed -n 's/^v//p')"; V="${V:-1.0.4}"
           make bundle CONFIG=release SIGN_IDENTITY=- VERSION="$V"
           test -f dist/Parrot.app/Contents/Resources/zh-Hans.lproj/Localizable.strings
           mv dist/Parrot.app "dist/CK Parrot.app"

@@ -148,7 +148,7 @@
 "Higher-priority cards win when space is tight" = "空间不足时优先显示高优先级卡片";
 "How the call went" = "通话进展如何";
 "Icon" = "图标";
-"Identifying speakers..." = "正在识别说话人...";
+"Identifying speakers..." = "正在识别说话人…";
 "Import Audio…" = "导入音频…";
 "Import a profile" = "导入配置";
 "Import a profile (.parrotprofile)" = "导入配置（.parrotprofile）";
@@ -239,7 +239,7 @@
 "Parrot Website" = "Parrot 网站";
 "Parrot can't use this profile" = "Parrot 无法使用此配置";
 "Parrot couldn't find this in the transcript. Check it before acting on it." = "Parrot 在转写中找不到这一内容。采取行动前请先核实。";
-"Parrot is listening..." = "Parrot 正在聆听...";
+"Parrot is listening..." = "Parrot 正在监听…";
 "Parrot needs two macOS permissions to hear your calls. Audio only: it never sees your screen, and nothing leaves your Mac." = "Parrot 需要两项 macOS 权限来听取你的通话。仅限音频：它从不查看你的屏幕，也不会有任何数据离开你的 Mac。";
 "Parrot on GitHub" = "GitHub 上的 Parrot";
 "Parrot on X" = "X 上的 Parrot";
