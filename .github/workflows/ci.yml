@@ -84,19 +84,24 @@ jobs:
 
       - name: Snapshot renders
         run: |
-          mkdir -p snapshots
-          .build/debug/Parrot --snapshot snapshots/report.png
-          .build/debug/Parrot --copilot-snapshot snapshots/copilot.png
-          .build/debug/Parrot --sidebar-snapshot snapshots/sidebar.png
+          # Real offscreen renders of the app's SwiftUI views, in both UI languages.
+          for L in zh-Hans en; do
+            mkdir -p "snapshots/$L"
+            .build/debug/Parrot --snapshot "snapshots/$L/report.png" -AppleLanguages "($L)"
+            .build/debug/Parrot --copilot-snapshot "snapshots/$L/copilot.png" -AppleLanguages "($L)"
+            .build/debug/Parrot --sidebar-snapshot "snapshots/$L/sidebar.png" -AppleLanguages "($L)"
+          done
 
       - name: Help screenshots (--help-shots)
-        run: .build/debug/Parrot --help-shots snapshots/help
+        run: |
+          .build/debug/Parrot --help-shots snapshots/help -AppleLanguages "(en)"
+          .build/debug/Parrot --help-shots snapshots/help-zh -AppleLanguages "(zh-Hans)"
 
       # Small JPEG previews in the log, for reviewers who can't open artifacts.
       - name: Preview renders (base64 JPEG)
         if: always()
         run: |
-          for f in snapshots/help/settings-connections.png snapshots/help/settings-privacy.png snapshots/help/ask.png snapshots/help/live-screen.png; do
+          for f in snapshots/help-zh/settings-connections.png snapshots/help-zh/ask.png; do
             [ -f "$f" ] || continue
             sips -Z 460 -s format jpeg -s formatOptions 30 "$f" --out /tmp/preview.jpg >/dev/null
             echo "=== PREVIEW $f ==="
@@ -106,24 +111,6 @@ jobs:
 
       - name: Assemble app bundle (ad-hoc)
         run: make bundle CONFIG=debug SIGN_IDENTITY=-
-
-      # A downloadable, optimised build for trying a branch on a real Mac.
-      # Ad-hoc signed (no secrets here): macOS needs the quarantine flag
-      # cleared once — see docs/TESTING-GUIDE.md. ditto keeps the Sparkle
-      # framework's symlinks, which a plain artifact zip would break.
-      - name: Test build (release, ad-hoc)
-        if: github.event_name != 'pull_request'
-        run: |
-          make bundle CONFIG=release SIGN_IDENTITY=- VERSION=0.21.0-test
-          ditto -c -k --keepParent dist/Parrot.app Parrot-test.zip
-
-      - name: Upload test build
-        if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v4
-        with:
-          name: ck-parrot-test-build
-          path: Parrot-test.zip
-          retention-days: 30
 
       - name: Upload snapshots
         if: always()
