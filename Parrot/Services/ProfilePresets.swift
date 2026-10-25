@@ -281,6 +281,12 @@ enum ProfilePresets {
             ]),
             section("next", "Next steps", "bullets", "What someone said they'd do, with any date.", commitments: true),
         ], coaching: coach("pitch coach", "Clarity of the story, handling tough questions, the ask.")),
+        classroomID: ReportTemplate(sections: [
+            section("overview", "课堂概要", "prose", "1-2 sentences in Simplified Chinese: what the lesson covered and how the class went."),
+            section("questions", "学生提问", "bullets", "Each question a student asked, with the one-sentence answer given (or 未回答)."),
+            section("misconceptions", "易错点", "bullets", "Common mistakes or confusions students showed, each with the correct idea."),
+            section("followups", "课后跟进", "bullets", "Questions still open, homework or anything the teacher said they'd do, with any date.", commitments: true),
+        ], coaching: coach("teaching coach", "Clear answers, checking understanding, and giving students time to ask.")),
     ]
 
     /// The built-in reports a profile can start from, by profile name.
