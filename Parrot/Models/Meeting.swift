@@ -256,6 +256,10 @@ final class Meeting {
         }
         if let assigned = names[label] { return assigned }
         if label == "Me" { return "Me" }
+        // v2.0 classroom labels: other voices show as 学生1, 学生2…
+        if UserDefaults.standard.bool(forKey: MyVoiceprint.classroomLabelsKey), label.hasPrefix("Speaker ") {
+            return MyVoiceprint.classroomName(label, enabled: true)
+        }
         return names.isEmpty ? (themName ?? label) : label
     }
 

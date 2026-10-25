@@ -1133,3 +1133,14 @@
 "Visible in screen sharing" = "Visible in screen sharing";
 "GitHub" = "GitHub";
 "%@ words heard in %@." = "%@ words heard in %@.";
+
+/* v2.0 */
+"My voiceprint" = "My voiceprint";
+"Recorded. Your own voice in the call audio is labelled Me and never answered." = "Recorded. Your own voice in the call audio is labelled Me and never answered.";
+"Read aloud for about 15 seconds. Stored only on this Mac." = "Read aloud for about 15 seconds. Stored only on this Mac.";
+"Recording…" = "Recording…";
+"Record Again" = "Record Again";
+"Record (15 s)" = "Record (15 s)";
+"Classroom labels" = "Classroom labels";
+"Other voices show as 学生1, 学生2 instead of Speaker 1, Speaker 2." = "Other voices show as 学生1, 学生2 instead of Speaker 1, Speaker 2.";
+"Export Questions" = "Export Questions";

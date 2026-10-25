@@ -28,6 +28,33 @@ enum ExportService {
         }
     }
 
+    // MARK: - Questions (v2.0)
+
+    /// Lines from other people that look like questions, oldest first.
+    static func questionLines(_ lines: [(label: String, time: TimeInterval, text: String)])
+        -> [(label: String, time: TimeInterval, text: String)] {
+        lines.filter { line in
+            line.label != "Me" && (line.text.contains("？") || line.text.contains("吗")
+                || line.text.contains("为什么") || line.text.contains("怎么")
+                || CallAnalysisEngine.looksLikeQuestion(line.text))
+        }
+    }
+
+    /// Markdown list of the other side's questions, with times and speakers.
+    static func exportQuestions(meeting: Meeting) -> String {
+        let names = meeting.speakerNames
+        let lines = meeting.sortedSegments.map {
+            (label: $0.speakerLabel ?? "", time: $0.startTime, text: $0.text)
+        }
+        let questions = questionLines(lines)
+        var output = "# \(meeting.title) · 提问清单\n\n\(formatDate(meeting.date))，共 \(questions.count) 个提问\n\n"
+        for (index, q) in questions.enumerated() {
+            let who = meeting.displayName(forSpeaker: q.label.isEmpty ? nil : q.label, names: names)
+            output += "\(index + 1). [\(Receipts.stamp(q.time))] \(who)：\(q.text)\n"
+        }
+        return output
+    }
+
     // MARK: - Plain Text Export
 
     static func exportToTXT(meeting: Meeting, parts: Parts = .all) -> String {

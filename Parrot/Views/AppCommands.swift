@@ -72,6 +72,11 @@ enum MeetingActions {
         write(Data(ExportService.exportToMarkdown(meeting: meeting).utf8), for: meeting, ext: "md")
     }
 
+    /// v2.0: the other side's questions with times, as Markdown.
+    static func exportQuestions(_ meeting: Meeting) {
+        write(Data(ExportService.exportQuestions(meeting: meeting).utf8), for: meeting, ext: "md")
+    }
+
     /// The report (not the transcript) as a PDF to share; says so if it can't be made.
     static func exportPDF(_ meeting: Meeting) {
         Task {

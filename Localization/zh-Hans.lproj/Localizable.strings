@@ -1133,3 +1133,14 @@
 "Visible in screen sharing" = "共享屏幕时可见";
 "GitHub" = "GitHub";
 "%@ words heard in %@." = "已听到 %1$@ 个词，共 %2$@。";
+
+/* v2.0 */
+"My voiceprint" = "我的声纹";
+"Recorded. Your own voice in the call audio is labelled Me and never answered." = "已录入。通话声音里你自己的声音会标记为“我”，不会被当作对方提问。";
+"Read aloud for about 15 seconds. Stored only on this Mac." = "朗读约 15 秒即可，只保存在这台 Mac 上。";
+"Recording…" = "正在录音…";
+"Record Again" = "重新录入";
+"Record (15 s)" = "录入（15 秒）";
+"Classroom labels" = "课堂模式标签";
+"Other voices show as 学生1, 学生2 instead of Speaker 1, Speaker 2." = "其他人的声音显示为“学生1”“学生2”，而不是“说话人 1”。";
+"Export Questions" = "导出提问清单";

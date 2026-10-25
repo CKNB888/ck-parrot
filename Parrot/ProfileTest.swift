@@ -1377,6 +1377,20 @@ enum ProfileTest {
         let a: [Float] = [1, 0, 0], b: [Float] = [0, 1, 0]
         check("cosine identical", abs(SpeakerProfileStore.cosine(a, a) - 1) < 0.001)
         check("cosine orthogonal", abs(SpeakerProfileStore.cosine(a, b)) < 0.001)
+        // v2.0 voiceprint: echo of the user's own voice becomes "Me".
+        let relabeled = MyVoiceprint.relabelMe(["S1": "Speaker 1", "S2": "Speaker 2"],
+                                               embeddings: ["S1": [0.95, 0.05, 0], "S2": [0, 1, 0]], mine: a)
+        check("voiceprint relabels own voice", relabeled["S1"] == "Me" && relabeled["S2"] == "Speaker 2")
+        check("no voiceprint no relabel",
+              MyVoiceprint.relabelMe(["S1": "Speaker 1"], embeddings: ["S1": a], mine: nil)["S1"] == "Speaker 1")
+        check("classroom label", MyVoiceprint.classroomName("Speaker 2", enabled: true) == "学生2")
+        check("classroom label off", MyVoiceprint.classroomName("Speaker 2", enabled: false) == "Speaker 2")
+        check("classroom keeps Me", MyVoiceprint.classroomName("Me", enabled: true) == "Me")
+        let qs = ExportService.questionLines([(label: "Speaker 1", time: 5, text: "这道题为什么选 B？"),
+                                             (label: "Me", time: 9, text: "大家看黑板"),
+                                             (label: "Speaker 2", time: 70, text: "Can you repeat that"),
+                                             (label: "Speaker 1", time: 80, text: "好的")])
+        check("question list keeps only others' questions", qs.count == 2 && qs[0].time == 5)
         check("no profiles no match", SpeakerProfileStore.match(a, in: ctx) == nil)
         SpeakerProfileStore.remember(name: "Gürkan", embedding: [1, 0, 0], in: ctx)
         check("match after remember", SpeakerProfileStore.match([0.9, 0.1, 0], in: ctx)?.name == "Gürkan")

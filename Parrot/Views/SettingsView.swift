@@ -86,6 +86,10 @@ struct SettingsView: View {
     @AppStorage("rememberVoices") private var rememberVoices = false
     @AppStorage(RecordingManager.globalMarkHotKeyDefaultsKey) private var globalMarkHotKey = true
     @AppStorage("liveSpeakerLabels") private var liveSpeakerLabels = false
+    @AppStorage(MyVoiceprint.classroomLabelsKey) private var classroomLabels = false
+    @State private var myVoiceEnrolled = MyVoiceprint.isEnrolled
+    @State private var voiceEnrollProgress: Double?
+    @State private var voiceEnrollMessage: String?
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \SpeakerProfile.name) private var voiceProfiles: [SpeakerProfile]
     /// There's no Save button — @AppStorage persists on every change. This
@@ -437,6 +441,47 @@ struct SettingsView: View {
                     title: "Live speaker labels",
                     detail: "Experimental. During a call, tells the other people apart every 30 seconds instead of waiting for the end. The final pass when the call ends is still the accurate one.",
                     isOn: $liveSpeakerLabels
+                )
+                SettingsLabeledRow(
+                    title: "My voiceprint",
+                    detail: voiceEnrollMessage ?? (myVoiceEnrolled
+                        ? "Recorded. Your own voice in the call audio is labelled Me and never answered."
+                        : "Read aloud for about 15 seconds. Stored only on this Mac.")
+                ) {
+                    HStack(spacing: 8) {
+                        if let p = voiceEnrollProgress {
+                            ProgressView(value: p).frame(width: 80)
+                        }
+                        Button(L(voiceEnrollProgress != nil ? "Recording…" : (myVoiceEnrolled ? "Record Again" : "Record (15 s)"))) {
+                            voiceEnrollMessage = nil
+                            voiceEnrollProgress = 0
+                            Task { @MainActor in
+                                do {
+                                    if recordingManager.isRecording { throw MyVoiceprint.EnrollError.busy }
+                                    _ = try await MyVoiceprint.enroll(using: recordingManager.diarizationEngine) { p in
+                                        voiceEnrollProgress = p
+                                    }
+                                    myVoiceEnrolled = true
+                                    voiceEnrollMessage = nil
+                                } catch {
+                                    voiceEnrollMessage = error.localizedDescription
+                                }
+                                voiceEnrollProgress = nil
+                            }
+                        }
+                        .disabled(voiceEnrollProgress != nil)
+                        if myVoiceEnrolled {
+                            Button("Delete") {
+                                MyVoiceprint.delete()
+                                myVoiceEnrolled = false
+                            }
+                        }
+                    }
+                }
+                SettingsToggleRow(
+                    title: "Classroom labels",
+                    detail: "Other voices show as 学生1, 学生2 instead of Speaker 1, Speaker 2.",
+                    isOn: $classroomLabels
                 )
                 SettingsToggleRow(
                     title: "Remember voices",

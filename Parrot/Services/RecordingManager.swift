@@ -1253,7 +1253,7 @@ final class RecordingManager {
             // Stopped (or a new call started) while this ran: its labels and
             // identities belong to a meeting whose final pass now owns them.
             guard isRecording, currentMeeting === meeting else { return }
-            let mapping: [String: String]
+            var mapping: [String: String]
             if windowed {
                 var speech: [String: TimeInterval] = [:]
                 for turn in output.segments { speech[turn.speakerLabel, default: 0] += turn.endTime - turn.startTime }
@@ -1261,6 +1261,8 @@ final class RecordingManager {
             } else {
                 mapping = Self.stableMapping(newEmbeddings: output.embeddings, anchors: liveAnchors)
             }
+            // v2.0: the user's own voice in the system audio is "Me".
+            mapping = MyVoiceprint.relabelMe(mapping, embeddings: output.embeddings, mine: MyVoiceprint.embedding)
             // Turns of clusters left out of the mapping don't label anything.
             let turns = output.segments.compactMap { turn in
                 mapping[turn.speakerLabel].map {
@@ -1281,7 +1283,8 @@ final class RecordingManager {
             }
             // Known voices keep their reference; a window only adds new ones.
             for (cluster, embedding) in output.embeddings {
-                guard let label = mapping[cluster], !windowed || liveAnchors[label] == nil else { continue }
+                guard let label = mapping[cluster], label != "Me",
+                      !windowed || liveAnchors[label] == nil else { continue }
                 liveAnchors[label] = embedding
             }
 
@@ -1329,14 +1332,19 @@ final class RecordingManager {
             // Continuity with any live sweeps: keep the identities the user
             // watched during the call. Empty anchors → identity mapping, so
             // non-live meetings and redetect are untouched.
-            let mapping = Self.stableMapping(newEmbeddings: output.embeddings, anchors: anchors)
+            let mapping = MyVoiceprint.relabelMe(
+                Self.stableMapping(newEmbeddings: output.embeddings, anchors: anchors),
+                embeddings: output.embeddings, mine: MyVoiceprint.embedding)
             let turns = output.segments.map {
                 DiarizationEngine.SpeakerSegmentResult(
                     speakerLabel: mapping[$0.speakerLabel] ?? $0.speakerLabel,
                     startTime: $0.startTime, endTime: $0.endTime)
             }
-            let embeddings = Dictionary(uniqueKeysWithValues:
-                output.embeddings.map { (mapping[$0.key] ?? $0.key, $0.value) })
+            // Several clusters can map to "Me"; keep the first, never crash.
+            let embeddings = Dictionary(
+                output.embeddings.map { (mapping[$0.key] ?? $0.key, $0.value) }
+                    .filter { $0.0 != "Me" },
+                uniquingKeysWith: { first, _ in first })
 
             // Assign speaker labels to transcript segments by time overlap.
             // "Me" segments come from the mic stream and are already attributed;

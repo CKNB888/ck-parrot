@@ -195,6 +195,7 @@ struct MeetingDetailView: View {
                 Menu {
                     Button("Export as TXT") { MeetingActions.exportTXT(meeting) }
                     Button("Export as Markdown") { MeetingActions.exportMarkdown(meeting) }
+                    Button("Export Questions") { MeetingActions.exportQuestions(meeting) }
                     Button("Export Report as PDF") { MeetingActions.exportPDF(meeting) }
                         .disabled(!ReportPDF.hasReport(meeting))
                     Button("Export as SRT") { MeetingActions.exportSRT(meeting) }
