@@ -88,19 +88,21 @@ jobs:
           # the bare .build/debug executable has no resources and would render English only.
           make bundle CONFIG=debug SIGN_IDENTITY=-
           BIN="$PWD/dist/Parrot.app/Contents/MacOS/Parrot"
-          echo "BIN=$BIN" >> "$GITHUB_ENV"
-          # Real offscreen renders of the app's SwiftUI views, in both UI languages.
+          # The app is sandboxed, so its writes land in its container; collect them after each run.
+          C="$HOME/Library/Containers/io.github.cknb6.ckparrot/Data"
+          grab() { mkdir -p "$1"; find "$C" -name '*.png' -newer /tmp/mark -exec mv {} "$1"/ \; ; }
           for L in zh-Hans en; do
-            mkdir -p "snapshots/$L"
+            touch /tmp/mark; sleep 1
             "$BIN" --snapshot "snapshots/$L/report.png" -AppleLanguages "($L)"
             "$BIN" --copilot-snapshot "snapshots/$L/copilot.png" -AppleLanguages "($L)"
             "$BIN" --sidebar-snapshot "snapshots/$L/sidebar.png" -AppleLanguages "($L)"
+            grab "snapshots/$L"
           done
-
-      - name: Help screenshots (--help-shots)
-        run: |
-          "$BIN" --help-shots snapshots/help -AppleLanguages "(en)"
-          "$BIN" --help-shots snapshots/help-zh -AppleLanguages "(zh-Hans)"
+          touch /tmp/mark; sleep 1
+          "$BIN" --help-shots snapshots/help -AppleLanguages "(en)"; grab snapshots/help
+          touch /tmp/mark; sleep 1
+          "$BIN" --help-shots snapshots/help-zh -AppleLanguages "(zh-Hans)"; grab snapshots/help-zh
+          find snapshots -name '*.png' | sort
 
       # Small JPEG previews in the log, for reviewers who can't open artifacts.
       - name: Preview renders (base64 JPEG)
