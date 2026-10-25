@@ -104,7 +104,7 @@ struct MenuBarView: View {
             // Home's cached count: only meetings whose line count changed are recounted.
             let words = meetings.reduce(0) { $0 + DashboardView.words(in: $1) }
                 .formatted(.number.notation(.compactName))
-            let calls = meetings.count == 1 ? "1 call" : "\(meetings.count) calls"
+            let calls = meetings.count == 1 ? String(localized: "1 call") : String(localized: "\(meetings.count) calls")
             Text("\(words) words heard in \(calls). All ears 🦜")
             Divider()
         }

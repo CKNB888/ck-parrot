@@ -13,15 +13,15 @@ struct Nudge: Codable, Identifiable, Hashable {
 
         var title: String {
             switch self {
-            case .wrapUp: "Wrap-up"
-            case .unansweredQuestion: "Unanswered question"
-            case .goneQuiet: "Gone quiet"
-            case .moodShift: "Mood shift"
-            case .talkingOver: "Talking over"
-            case .repeatedPoint: "Repeated point"
-            case .longMonologue: "Long monologue"
-            case .shortAnswers: "Short answers"
-            case .speedingUp: "Speeding up"
+            case .wrapUp: String(localized: "Wrap-up")
+            case .unansweredQuestion: String(localized: "Unanswered question")
+            case .goneQuiet: String(localized: "Gone quiet")
+            case .moodShift: String(localized: "Mood shift")
+            case .talkingOver: String(localized: "Talking over")
+            case .repeatedPoint: String(localized: "Repeated point")
+            case .longMonologue: String(localized: "Long monologue")
+            case .shortAnswers: String(localized: "Short answers")
+            case .speedingUp: String(localized: "Speeding up")
             }
         }
 

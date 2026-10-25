@@ -363,11 +363,11 @@ private struct ScopePill: View {
 
     private var text: String {
         switch pill {
-        case .sameAsFolder: "Same as folder"
-        case .allTypes: "All call types"
+        case .sameAsFolder: String(localized: "Same as folder")
+        case .allTypes: String(localized: "All call types")
         case .types(let names, _): names.count <= 2 ? names.joined(separator: ", ") : "\(names[0]) +\(names.count - 1)"
-        case .notUsed: "Not used on calls"
-        case .paused: "Off"
+        case .notUsed: String(localized: "Not used on calls")
+        case .paused: String(localized: "Off")
         }
     }
 

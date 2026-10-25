@@ -101,7 +101,7 @@ enum AnalysisError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .missingAPIKey: "No Claude API key set. Add one in Settings → Assistant."
+        case .missingAPIKey: String(localized: "No Claude API key set. Add one in Settings → Assistant.")
         case .badResponse(let message): message
         }
     }

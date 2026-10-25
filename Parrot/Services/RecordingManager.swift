@@ -105,8 +105,8 @@ final class RecordingManager {
             case transcribing, analyzing
             var label: String {
                 switch self {
-                case .transcribing: "Transcribing…"
-                case .analyzing: "Analyzing…"
+                case .transcribing: String(localized: "Transcribing…")
+                case .analyzing: String(localized: "Analyzing…")
                 }
             }
         }
@@ -1489,8 +1489,8 @@ enum RecordingError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .modelNotReady: "The speech model is still loading. Please wait."
-        case .speakersNotDetected: "Speaker detection didn't work this time. Try again."
+        case .modelNotReady: String(localized: "The speech model is still loading. Please wait.")
+        case .speakersNotDetected: String(localized: "Speaker detection didn't work this time. Try again.")
         }
     }
 }

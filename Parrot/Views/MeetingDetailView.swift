@@ -1508,9 +1508,9 @@ struct SpeakerNamePopover: View {
 
     private static func title(_ group: SpeakerNameOption.Group) -> String {
         switch group {
-        case .thisCall: "In this call"
-        case .invite: "On the invite"
-        case .past: "From past calls"
+        case .thisCall: String(localized: "In this call")
+        case .invite: String(localized: "On the invite")
+        case .past: String(localized: "From past calls")
         }
     }
 }

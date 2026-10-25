@@ -12,15 +12,15 @@ enum SettingsSection: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .general: "General"
-        case .recording: "Recording"
-        case .transcription: "Transcription"
-        case .copilot: "Assistant"
-        case .apiKeys: "API Keys"
-        case .knowledge: "Knowledge"
-        case .profiles: "Profiles"
-        case .connections: "Connections"
-        case .privacy: "Privacy"
+        case .general: String(localized: "General")
+        case .recording: String(localized: "Recording")
+        case .transcription: String(localized: "Transcription")
+        case .copilot: String(localized: "Assistant")
+        case .apiKeys: String(localized: "API Keys")
+        case .knowledge: String(localized: "Knowledge")
+        case .profiles: String(localized: "Profiles")
+        case .connections: String(localized: "Connections")
+        case .privacy: String(localized: "Privacy")
         }
     }
 
