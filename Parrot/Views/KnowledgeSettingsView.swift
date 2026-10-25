@@ -120,7 +120,7 @@ struct KnowledgeSettingsView: View {
                         .foregroundStyle(Theme.Colors.ink2)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(open ? "Close folder" : "Open folder")
+                .accessibilityLabel(L(open ? "Close folder" : "Open folder"))
                 Image(systemName: folder == nil ? "tray" : "folder")
                     .foregroundStyle(paused ? Theme.Colors.ink3 : Theme.Colors.ink2)
                 if let folder, renamingID == folder.id {

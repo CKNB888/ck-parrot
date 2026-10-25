@@ -74,7 +74,7 @@ private struct ProfileMigrationRow: View {
                 .foregroundStyle(Theme.Colors.ink2)
                 .frame(width: 20)
             VStack(alignment: .leading, spacing: 2) {
-                Text(profile.name)
+                Text(L(profile.name))
                     .font(Theme.Typography.cardTitle)
                     .foregroundStyle(Theme.Colors.ink)
                 change

@@ -44,14 +44,14 @@ struct AutomaticStep: View {
                         .font(Theme.Typography.cardTitle)
                     Picker("", selection: $autoRecordRaw) {
                         ForEach(AutoRecordMode.allCases) { mode in
-                            Text(mode.label).tag(mode.rawValue)
+                            Text(L(mode.label)).tag(mode.rawValue)
                         }
                     }
                     .pickerStyle(.segmented)
                     .labelsHidden()
-                    Text(autoRecordRaw == AutoRecordMode.auto.rawValue
+                    Text(L(autoRecordRaw == AutoRecordMode.auto.rawValue
                          ? "Records by itself. Many places require telling everyone on the call."
-                         : "Parrot only notices the mic is in use, never the audio.")
+                         : "Parrot only notices the mic is in use, never the audio."))
                         .font(Theme.Typography.caption)
                         .foregroundStyle(Theme.Colors.ink2)
                         .fixedSize(horizontal: false, vertical: true)

@@ -119,9 +119,9 @@ struct ToneTimelineCard: View, Equatable {
 
             // Mood: the profile's main gauge, high at the top.
             if let gauge = model.gauge, model.mood.count >= 2 {
-                ctx.draw(Text(gauge.highLabel).font(Theme.Typography.caption).foregroundColor(Theme.Colors.ink3),
+                ctx.draw(Text(L(gauge.highLabel)).font(Theme.Typography.caption).foregroundColor(Theme.Colors.ink3),
                          at: CGPoint(x: 0, y: moodTop), anchor: .leading)
-                ctx.draw(Text(gauge.lowLabel).font(Theme.Typography.caption).foregroundColor(Theme.Colors.ink3),
+                ctx.draw(Text(L(gauge.lowLabel)).font(Theme.Typography.caption).foregroundColor(Theme.Colors.ink3),
                          at: CGPoint(x: 0, y: moodTop + moodH), anchor: .leading)
                 var mid = Path()
                 mid.move(to: CGPoint(x: left, y: moodTop + moodH / 2))
@@ -190,7 +190,7 @@ struct ToneTimelineCard: View, Equatable {
             Spacer(minLength: 0)
             if let play {
                 Button { isPlaying ? stop() : play(m) } label: {
-                    Label(isPlaying ? "Stop" : "Play", systemImage: isPlaying ? "stop.fill" : "play.fill")
+                    Label(L(isPlaying ? "Stop" : "Play"), systemImage: isPlaying ? "stop.fill" : "play.fill")
                         .font(Theme.Typography.caption)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
@@ -198,7 +198,7 @@ struct ToneTimelineCard: View, Equatable {
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(isPlaying ? Theme.Colors.accent : Theme.Colors.ink2)
-                .help(isPlaying ? "Stop playing" : "Play from here")
+                .help(L(isPlaying ? "Stop playing" : "Play from here"))
             }
         }
         .padding(.vertical, 8)

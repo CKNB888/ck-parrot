@@ -24,12 +24,18 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
+      - name: Skip if a v* tag points at this commit (tag run builds it)
+        if: ${{ env.TAG == 'latest' && github.event_name == 'push' }}
+        run: |
+          if git ls-remote --tags origin 'v*' | grep -q "^${GITHUB_SHA}"; then echo "SKIP=1" >> "$GITHUB_ENV"; echo "tag run will build this commit"; fi
       - name: Toolchain
+        if: env.SKIP != '1'
         run: sudo xcode-select -s "$(ls -d /Applications/Xcode_16*.app | sort -V | tail -1)"
       - name: Build app (release, ad-hoc)
+        if: env.SKIP != '1'
         run: |
           set -euo pipefail
-          V="$(echo "$TAG" | sed -n 's/^v//p')"; V="${V:-1.0.0}"
+          V="$(echo "$TAG" | sed -n 's/^v//p')"; V="${V:-1.0.1}"
           make bundle CONFIG=release SIGN_IDENTITY=- VERSION="$V"
           test -f dist/Parrot.app/Contents/Resources/zh-Hans.lproj/Localizable.strings
           mv dist/Parrot.app "dist/CK Parrot.app"
@@ -38,10 +44,12 @@ jobs:
           pkgbuild --component "dist/CK Parrot.app" --install-location /Applications "ck-parrot_${V}_macOS_arm64.pkg"
           ls -la ck-parrot_*
       - uses: actions/upload-artifact@v4
+        if: env.SKIP != '1'
         with:
           name: ck-parrot-macos
           path: ck-parrot_*
       - name: Publish release
+        if: env.SKIP != '1'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

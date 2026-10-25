@@ -53,7 +53,7 @@ struct AIAppsStep: View {
 
             VStack(spacing: 8) {
                 if let claude {
-                    Button(connected ? "Opened Claude. Click Install there." : "Connect Claude") { connect(claude) }
+                    Button(L(connected ? "Opened Claude. Click Install there." : "Connect Claude")) { connect(claude) }
                         .buttonStyle(.borderedProminent)
                         .disabled(connected)
                 } else {

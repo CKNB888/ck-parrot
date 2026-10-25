@@ -22,7 +22,7 @@ struct BugReportSheet: View {
                 .foregroundStyle(Theme.Colors.ink)
 
             Picker("", selection: $kind) {
-                ForEach(BugReport.Kind.allCases) { Text($0.label).tag($0) }
+                ForEach(BugReport.Kind.allCases) { Text(L($0.label)).tag($0) }
             }
             .pickerStyle(.segmented)
             .labelsHidden()

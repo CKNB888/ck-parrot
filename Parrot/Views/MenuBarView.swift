@@ -42,7 +42,7 @@ struct MenuBarView: View {
             .keyboardShortcut("m", modifiers: [.control, .option])
             .disabled(recordingManager.isStopping)
 
-            Button(recordingManager.isMuted ? "Unmute Me" : "Mute Me") {
+            Button(L(recordingManager.isMuted ? "Unmute Me" : "Mute Me")) {
                 recordingManager.toggleMute()
             }
             .keyboardShortcut("m", modifiers: [.control, .option, .shift])
@@ -50,13 +50,13 @@ struct MenuBarView: View {
 
             let assistant = recordingManager.callAnalysisEngine
             if assistant.isSetUp {
-                Button(assistant.isPaused ? "Turn Assistant On" : "Turn Assistant Off") {
+                Button(L(assistant.isPaused ? "Turn Assistant On" : "Turn Assistant Off")) {
                     assistant.setPaused(!assistant.isPaused)
                 }
                 .disabled(recordingManager.isStopping)
             }
 
-            Button(recordingManager.isStopping ? "Finalizing…" : "Stop Recording") {
+            Button(L(recordingManager.isStopping ? "Finalizing…" : "Stop Recording")) {
                 Task { await recordingManager.stopRecording() }
             }
             .keyboardShortcut(".")

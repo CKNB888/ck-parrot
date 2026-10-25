@@ -153,7 +153,7 @@ struct ScoreRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
             HStack(spacing: 8) {
-                Text(row.label)
+                Text(L(row.label))
                     .font(Theme.Typography.cardTitle)
                     .foregroundStyle(Theme.Colors.ink)
                 Spacer(minLength: 8)
@@ -170,10 +170,10 @@ struct ScoreRow: View {
                         .font(Theme.Typography.mono(12, .semibold))
                         .foregroundStyle(Theme.Colors.ink)
                 } else {
-                    Text(row.uncited ? "no moment cited" : "not enough evidence")
+                    Text(L(row.uncited ? "no moment cited" : "not enough evidence"))
                         .font(Theme.Typography.caption)
                         .foregroundStyle(Theme.Colors.ink3)
-                        .help(row.uncited ? "The report gave a score without pointing to a moment in the call, so Parrot doesn't show it." : "")
+                        .help(L(row.uncited ? "The report gave a score without pointing to a moment in the call, so Parrot doesn't show it." : ""))
                 }
             }
             if row.score != nil {

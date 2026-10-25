@@ -58,7 +58,7 @@ struct MeetCopilotStep: View {
                     .font(Theme.Typography.caption)
                     .foregroundStyle(Theme.Colors.ink2)
             }
-            Text(shown >= 1 ? "Them: “Where is our data stored? Security will ask.”" : "Listening to the call…")
+            Text(L(shown >= 1 ? "Them: “Where is our data stored? Security will ask.”" : "Listening to the call…"))
                 .font(Theme.Typography.secondary)
                 .foregroundStyle(Theme.Colors.ink2)
                 .fixedSize(horizontal: false, vertical: true)

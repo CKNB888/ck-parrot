@@ -70,7 +70,7 @@ struct CallDetectionCard: View {
                                                reminders: reminders) {
                 SettingsLabeledRow(title: "Notifications are off",
                                    detail: "Parrot can't ask to record a call or remind you of a meeting. It only bounces its Dock icon.") {
-                    Button(notifications == .notAsked ? "Turn On" : "Open Settings") {
+                    Button(L(notifications == .notAsked ? "Turn On" : "Open Settings")) {
                         Task { notifications = await NotificationAccess.turnOn() }
                     }
                 }
@@ -158,7 +158,7 @@ struct CalendarCard: View {
                         PermissionFlow.openSettings(pane: "Privacy_Calendars")
                     }
                 } else {
-                    Button(connecting ? "Connecting…" : "Connect Calendar") {
+                    Button(L(connecting ? "Connecting…" : "Connect Calendar")) {
                         connecting = true
                         Task {
                             await calendar.connect()
@@ -262,11 +262,11 @@ struct CallPromptBanner: View {
                     .lineLimit(1)
             }
             Spacer(minLength: 8)
-            Button(prompt.kind == .start ? "Record" : "Stop", action: onAccept)
+            Button(L(prompt.kind == .start ? "Record" : "Stop"), action: onAccept)
                 .buttonStyle(.borderedProminent)
                 .controlSize(.small)
             Menu {
-                Button(prompt.kind == .start ? "Not Now" : "Keep Recording", action: onDismiss)
+                Button(L(prompt.kind == .start ? "Not Now" : "Keep Recording"), action: onDismiss)
                 if let onIgnoreApp, prompt.kind == .start, prompt.appID != CallDetector.unknownApp {
                     Button("Never for \(prompt.appName)", action: onIgnoreApp)
                 }

@@ -235,7 +235,7 @@ struct ParrotCommands: Commands {
             .disabled(!recordingManager.isRecording || recordingManager.isStopping)
 
             // Global shortcut too; toggleMute ignores the double press.
-            Button(recordingManager.isMuted ? "Unmute Me" : "Mute Me") {
+            Button(L(recordingManager.isMuted ? "Unmute Me" : "Mute Me")) {
                 recordingManager.toggleMute()
             }
             .keyboardShortcut("m", modifiers: [.control, .option, .shift])

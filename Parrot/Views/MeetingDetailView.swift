@@ -204,7 +204,7 @@ struct MeetingDetailView: View {
                         }
                     }
                     Divider()
-                    Button(meeting.followUpEmail == nil ? "Draft Follow-up Email" : "Redraft Follow-up Email") {
+                    Button(L(meeting.followUpEmail == nil ? "Draft Follow-up Email" : "Redraft Follow-up Email")) {
                         runAction {
                             try await recordingManager.draftFollowUp(meeting)
                             tab = .report
@@ -227,7 +227,7 @@ struct MeetingDetailView: View {
                         .disabled(!CloudGate.mayLeaveMac(meeting))
                     }
                 } label: {
-                    Label(actionRunning ? "Working…" : "Share", systemImage: "square.and.arrow.up")
+                    Label(L(actionRunning ? "Working…" : "Share"), systemImage: "square.and.arrow.up")
                 }
                 .disabled(actionRunning)
 
@@ -476,7 +476,7 @@ struct MeetingDetailView: View {
             ForEach(Array(usage.costBreakdown().enumerated()), id: \.offset) { _, item in
                 HStack(alignment: .firstTextBaseline) {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(item.label)
+                        Text(L(item.label))
                             .font(Theme.Typography.secondary)
                         Text(item.detail)
                             .font(Theme.Typography.caption)
@@ -1056,8 +1056,8 @@ struct MeetingDetailView: View {
                 return meeting.detectedSpeakersNote
             }
         } label: {
-            Label(recordingManager.diarizationEngine.isProcessing
-                  ? "Detecting speakers…" : "Detect speakers",
+            Label(L(recordingManager.diarizationEngine.isProcessing
+                  ? "Detecting speakers…" : "Detect speakers"),
                   systemImage: "person.2.wave.2")
         }
         .disabled(recordingManager.diarizationEngine.isProcessing)
@@ -1390,9 +1390,9 @@ struct SpeakerNamePopover: View {
             Text("Who is this?")
                 .font(Theme.Typography.caption)
                 .fontWeight(.semibold)
-            Text(playClip != nil
+            Text(L(playClip != nil
                  ? "Listen to a couple of moments from this voice."
-                 : "You're hearing them live — type who it is.")
+                 : "You're hearing them live — type who it is."))
                 .font(Theme.Typography.caption)
                 .foregroundStyle(Theme.Colors.ink2)
 
@@ -1703,8 +1703,8 @@ struct StoredInsightRow: View {
                         .font(Theme.Typography.cardTitle)
 
                     if kindStyle.isPinned {
-                        Label(
-                            insight.isHandled ? "Handled" : "Unresolved",
+                        Label(L(
+                            insight.isHandled ? "Handled" : "Unresolved"),
                             systemImage: insight.isHandled ? "checkmark" : "exclamationmark.circle"
                         )
                         .font(.appCaption2)

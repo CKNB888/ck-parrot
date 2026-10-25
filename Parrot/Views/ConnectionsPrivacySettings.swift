@@ -34,7 +34,7 @@ struct ConnectionsSettingsPage: View {
                                 autoExport = false
                             }
                         }
-                        Button(folderPath == nil ? "Choose Folder…" : "Change…") { chooseFolder() }
+                        Button(L(folderPath == nil ? "Choose Folder…" : "Change…")) { chooseFolder() }
                     }
                 }
                 SettingsToggleRow(title: "Save every finished meeting there automatically",
@@ -72,7 +72,7 @@ struct ConnectionsSettingsPage: View {
                         SecureField("secret", text: $secretDraft)
                             .textFieldStyle(.roundedBorder)
                             .frame(width: 140)
-                        Button(secretSaved && secretDraft.isEmpty ? "Clear" : "Save") {
+                        Button(L(secretSaved && secretDraft.isEmpty ? "Clear" : "Save")) {
                             _ = APIKeyStore.save(secretDraft, account: Webhook.secretAccount)
                             secretSaved = !secretDraft.isEmpty
                             secretDraft = ""
@@ -80,7 +80,7 @@ struct ConnectionsSettingsPage: View {
                     }
                 }
                 SettingsLabeledRow(title: "Test it", detail: testResult ?? (webhookLast.isEmpty ? nil : "Last: \(webhookLast)")) {
-                    Button(testing ? "Sending…" : "Send Test") {
+                    Button(L(testing ? "Sending…" : "Send Test")) {
                         testing = true
                         Task {
                             do {

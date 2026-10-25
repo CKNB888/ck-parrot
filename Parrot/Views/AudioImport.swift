@@ -94,7 +94,7 @@ struct ImportingBanner: View {
                     .font(Theme.Typography.cardTitle)
                     .foregroundStyle(Theme.Colors.ink)
                     .lineLimit(1)
-                Text(progress.phase.label)
+                Text(L(progress.phase.label))
                     .font(Theme.Typography.caption)
                     .foregroundStyle(Theme.Colors.ink2)
             }

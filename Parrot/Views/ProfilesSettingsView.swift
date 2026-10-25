@@ -167,7 +167,7 @@ private struct ProfileRow: View {
                 .foregroundStyle(Theme.Colors.ink2)
                 .frame(width: 16)
             VStack(alignment: .leading, spacing: 1) {
-                Text(profile.name)
+                Text(L(profile.name))
                     .font(Theme.Typography.body)
                     .lineLimit(1)
                 if profile.isBuiltIn {
@@ -204,7 +204,7 @@ private struct ProfileDetailView: View {
     var body: some View {
         SettingsPage {
             HStack(spacing: 8) {
-                Text(profile.name)
+                Text(L(profile.name))
                     .font(Theme.Typography.title())
                     .foregroundStyle(Theme.Colors.ink)
                     .lineLimit(1)

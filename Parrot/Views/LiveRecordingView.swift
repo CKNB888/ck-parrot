@@ -125,7 +125,7 @@ struct LiveRecordingView: View {
                         .foregroundStyle(showCopilot ? Theme.Colors.accent : Theme.Colors.ink2)
                 }
                 .buttonStyle(.plain)
-                .help(showCopilot ? "Hide the Assistant" : "Show the Assistant")
+                .help(L(showCopilot ? "Hide the Assistant" : "Show the Assistant"))
                 .padding(.trailing, 12)
             }
 
@@ -136,7 +136,7 @@ struct LiveRecordingView: View {
                     await recordingManager.stopRecording()
                 }
             } label: {
-                Label(recordingManager.isStopping ? "Finalizing…" : "Stop",
+                Label(L(recordingManager.isStopping ? "Finalizing…" : "Stop"),
                       systemImage: "stop.circle.fill")
                     .font(.appHeadline)
                     .foregroundStyle(recordingManager.isStopping ? Theme.Colors.ink2 : Theme.Colors.stop)
@@ -167,7 +167,7 @@ struct LiveRecordingView: View {
             Divider()
             Text(Consent.currentNotice)
         } label: {
-            Label(consent == nil ? "Consent" : "Consent noted",
+            Label(L(consent == nil ? "Consent" : "Consent noted"),
                   systemImage: consent == nil ? "person.wave.2" : "checkmark.shield")
                 .font(.appHeadline)
                 .foregroundStyle(consent == nil && remindConsent ? Theme.Colors.warn : Theme.Colors.ink2)
@@ -195,9 +195,9 @@ struct LiveRecordingView: View {
                 // Dimmed when off: behind the call app the switch itself greys out either way.
                 .foregroundStyle(engine.isPaused ? Theme.Colors.ink3 : Theme.Colors.ink)
                 .fixedSize()
-                .help(engine.isPaused
+                .help(L(engine.isPaused
                     ? "Turn the Assistant on"
-                    : "Turn the Assistant off. Recording and transcript keep going, and nothing more is spent.")
+                    : "Turn the Assistant off. Recording and transcript keep going, and nothing more is spent."))
                 .padding(.trailing, Theme.Metrics.controlGap)
         }
     }
@@ -210,7 +210,7 @@ struct LiveRecordingView: View {
         Button {
             recordingManager.toggleMute()
         } label: {
-            Label(recordingManager.isMuted ? "Unmute me" : "Mute me",
+            Label(L(recordingManager.isMuted ? "Unmute me" : "Mute me"),
                   systemImage: recordingManager.isMuted ? "mic.slash.fill" : "mic.fill")
                 .font(.appHeadline)
                 .foregroundStyle(recordingManager.isMuted ? Theme.Colors.warn : Theme.Colors.accent)

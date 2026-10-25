@@ -147,7 +147,7 @@ struct DashboardView: View {
                     Button { profileStore.setActive(profile) } label: {
                         HStack(spacing: 5) {
                             Image(systemName: profile.iconSystemName).font(.appCaption)
-                            Text(profile.name).font(Theme.Typography.secondary)
+                            Text(L(profile.name)).font(Theme.Typography.secondary)
                         }
                         .padding(.horizontal, 12).padding(.vertical, 6)
                         .background(isActive ? Theme.Colors.accent : Theme.Colors.chip,

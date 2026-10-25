@@ -622,8 +622,18 @@ final class TranscriptionEngine {
 
         bufferLock.withLock {
             audioBuffers[source, default: []].append(contentsOf: samples)
+            // 内存上限：解码跟不上（或模型仍在加载）时缓冲不再无限增长。
+            // 丢弃最旧音频并推进 consumed 计数，时间戳保持准确。
+            let over = (audioBuffers[source]?.count ?? 0) - Self.maxBufferedSamples
+            if over > 0 {
+                audioBuffers[source]?.removeFirst(over)
+                consumedSamples[source] = (consumedSamples[source] ?? 0) + over
+            }
         }
     }
+
+    /// 每路最多缓存 5 分钟 16 kHz 音频（约 19 MB）。
+    nonisolated static let maxBufferedSamples = 16000 * 300
 
     /// "Now" and when each stream last carried speech, in seconds into the
     /// call on the segments' own clock (samples / 16 kHz + the stream's

@@ -135,7 +135,7 @@ struct RewritingBanner: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer()
-                Button(run.task != nil ? "Stop" : "OK") { recordingManager.stopRewrite(meeting) }
+                Button(L(run.task != nil ? "Stop" : "OK")) { recordingManager.stopRewrite(meeting) }
                     .controlSize(.small)
             }
             .rewriteBannerStyle()

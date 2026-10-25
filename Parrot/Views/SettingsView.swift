@@ -414,7 +414,7 @@ struct SettingsView: View {
                     }
                 } else {
                     SettingsLabeledRow(title: "Models", detail: "Not downloaded", first: true) {
-                        Button(diarizerDownloading ? "Downloading…" : "Download (~13 MB)") {
+                        Button(L(diarizerDownloading ? "Downloading…" : "Download (~13 MB)")) {
                             diarizerDownloading = true
                             Task {
                                 try? await recordingManager.diarizationEngine.ensureModels()
@@ -564,7 +564,7 @@ struct SettingsView: View {
                 ) {
                     Picker("", selection: $copilotPace) {
                         ForEach(CopilotPace.allCases) { pace in
-                            Text(pace.label).tag(pace.rawValue)
+                            Text(L(pace.label)).tag(pace.rawValue)
                         }
                     }
                     .pickerStyle(.radioGroup)
@@ -576,7 +576,7 @@ struct SettingsView: View {
                 ) {
                     Picker("", selection: $copilotWindow) {
                         ForEach(CopilotWindow.allCases) { window in
-                            Text(window.label).tag(window.rawValue)
+                            Text(L(window.label)).tag(window.rawValue)
                         }
                     }
                     .labelsHidden()
@@ -591,7 +591,7 @@ struct SettingsView: View {
                 SettingsBlockRow(title: "Live cards", first: true) {
                     Picker("", selection: $copilotProvider) {
                         ForEach(CopilotProviderKind.allCases) { kind in
-                            Text(kind.label).tag(kind.rawValue)
+                            Text(L(kind.label)).tag(kind.rawValue)
                         }
                     }
                     .pickerStyle(.radioGroup)
@@ -607,7 +607,7 @@ struct SettingsView: View {
                     Picker("", selection: $reportsProvider) {
                         Text("Same as live cards").tag("")
                         ForEach(CopilotProviderKind.allCases) { kind in
-                            Text(kind.label).tag(kind.rawValue)
+                            Text(L(kind.label)).tag(kind.rawValue)
                         }
                     }
                     .labelsHidden()
@@ -626,7 +626,7 @@ struct SettingsView: View {
                     Picker("", selection: $askProvider) {
                         Text("Same as reports").tag("")
                         ForEach(CopilotProviderKind.allCases) { kind in
-                            Text(kind.label).tag(kind.rawValue)
+                            Text(L(kind.label)).tag(kind.rawValue)
                         }
                     }
                     .labelsHidden()

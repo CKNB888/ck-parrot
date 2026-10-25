@@ -89,9 +89,9 @@ struct CopilotPanelView: View {
                         .foregroundStyle(Theme.Colors.ink2)
                 }
                 .buttonStyle(.plain)
-                .help(engine.isPaused
+                .help(L(engine.isPaused
                     ? "Turn the Assistant on"
-                    : "Turn the Assistant off. Nothing is sent and nothing is spent while it's off.")
+                    : "Turn the Assistant off. Nothing is sent and nothing is spent while it's off."))
             }
 
             statusBadge
@@ -491,7 +491,7 @@ struct HeroInsightCard: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
                 IconChip(systemName: kindStyle.iconSystemName, color: kindStyle.color)
-                Text(kindStyle.label)
+                Text(L(kindStyle.label))
                     .font(Theme.Typography.cardTitle)
                     .foregroundStyle(Theme.Colors.ink2)
 
@@ -527,7 +527,7 @@ struct HeroInsightCard: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             if isExcerpt, insight.detail.count > 240 {
-                Button(showsWholeExcerpt ? "Show less" : "Show more") {
+                Button(L(showsWholeExcerpt ? "Show less" : "Show more")) {
                     withAnimation(.easeOut(duration: 0.15)) { showsWholeExcerpt.toggle() }
                 }
                 .buttonStyle(.plain)
@@ -550,7 +550,7 @@ struct HeroInsightCard: View {
                             copied = false
                         }
                     } label: {
-                        Label(copied ? "Copied" : "Copy", systemImage: copied ? "checkmark" : "doc.on.doc")
+                        Label(L(copied ? "Copied" : "Copy"), systemImage: copied ? "checkmark" : "doc.on.doc")
                             .font(Theme.Typography.sans(12, .medium))
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
@@ -654,7 +654,7 @@ struct InsightCard: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 8) {
                 IconChip(systemName: kindStyle.iconSystemName, color: kindStyle.color)
-                Text(kindStyle.label)
+                Text(L(kindStyle.label))
                     .font(Theme.Typography.sans(11, .semibold))
                     .foregroundStyle(Theme.Colors.ink2)
 

@@ -34,7 +34,7 @@ struct KeyCheckField: View {
                         if key != checkedKey { result = nil }
                         empty = false
                     }
-                Button(checking ? "Checking…" : "Check key") { Task { await check() } }
+                Button(L(checking ? "Checking…" : "Check key")) { Task { await check() } }
                     .disabled(checking)
             }
             status
@@ -58,7 +58,7 @@ struct KeyCheckField: View {
             Text("Paste a key first")
                 .foregroundStyle(Theme.Colors.stop)
         } else if let message = ProviderKeyCheck.message(result, service) {
-            Label(message, systemImage: result == .works ? "checkmark.circle.fill" : "exclamationmark.triangle")
+            Label(L(message, systemImage: result == .works ? "checkmark.circle.fill" : "exclamationmark.triangle"))
                 .foregroundStyle(result == .works ? Theme.Colors.good : Theme.Colors.stop)
         } else {
             Text(hint)

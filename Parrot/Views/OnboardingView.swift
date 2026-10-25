@@ -43,7 +43,7 @@ struct OnboardingView: View {
                 if model.isLast {
                     // Dismissal marks completion: the app-side binding writes
                     // hasCompletedOnboarding when this flips to false.
-                    Button(model.mode == .copilot ? "Done" : "Let's start") {
+                    Button(L(model.mode == .copilot ? "Done" : "Let's start")) {
                         model.finish()
                         isPresented = false
                     }

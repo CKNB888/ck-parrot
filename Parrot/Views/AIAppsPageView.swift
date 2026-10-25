@@ -234,7 +234,7 @@ struct AIAppsPageView: View {
                                     .foregroundStyle(Theme.Colors.ink2)
                                     .fixedSize(horizontal: false, vertical: true)
                                 Spacer(minLength: 8)
-                                Button(copied == example ? "Copied" : "Copy") {
+                                Button(L(copied == example ? "Copied" : "Copy")) {
                                     AIApps.copy(example)
                                     copied = example
                                 }
@@ -383,7 +383,7 @@ struct AIAppsConnectedBanner: View {
                             .lineLimit(1)
                     }
                     Spacer(minLength: 8)
-                    Button(copied ? "Copied" : "Copy") {
+                    Button(L(copied ? "Copied" : "Copy")) {
                         AIApps.copy(AIApps.firstQuestion)
                         copied = true
                     }

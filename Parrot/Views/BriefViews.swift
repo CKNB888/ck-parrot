@@ -98,7 +98,7 @@ struct LiveBriefCard: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .help(expanded ? "Hide the brief" : "Show the brief, profile and documents for this call")
+            .help(L(expanded ? "Hide the brief" : "Show the brief, profile and documents for this call"))
 
             if expanded {
                 Text(engine.callBrief.isEmpty
@@ -122,7 +122,7 @@ struct LiveBriefCard: View {
 
                 DocumentsInPlayRow(names: docs)
 
-                Button(engine.callBrief.isEmpty ? "Add a brief…" : "Edit brief…") {
+                Button(L(engine.callBrief.isEmpty ? "Add a brief…" : "Edit brief…")) {
                     draft = engine.callBrief
                     editing = true
                 }

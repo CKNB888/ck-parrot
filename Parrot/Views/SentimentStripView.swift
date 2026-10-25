@@ -43,7 +43,7 @@ struct SentimentStripView: View {
             Circle()
                 .fill(color)
                 .frame(width: 6, height: 6)
-            Text(gauge.label)
+            Text(L(gauge.label))
                 .font(Theme.Typography.secondary)
                 .foregroundStyle(Theme.Colors.ink2)
                 .lineLimit(1)

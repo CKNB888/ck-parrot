@@ -70,7 +70,7 @@ struct AskPageView: View {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 1) {
                     ForEach(AskChatStore.grouped(store.chats, now: .now), id: \.label) { group in
-                        Text(group.label)
+                        Text(L(group.label))
                             .textCase(.uppercase)
                             .font(Theme.Typography.cap)
                             .foregroundStyle(Theme.Colors.ink3)
@@ -305,7 +305,7 @@ struct AskPageView: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .bottom, spacing: Theme.Metrics.chipInsetH * 1.5) {
                 // Three lines tall from the start, so the box is easy to spot.
-                TextField(chat.messages.isEmpty ? "Ask about your meetings…" : "Ask a follow-up…",
+                TextField(L(chat.messages.isEmpty ? "Ask about your meetings…" : "Ask a follow-up…"),
                           text: $question, axis: .vertical)
                     .textFieldStyle(.plain)
                     .font(Theme.Typography.body)

@@ -175,15 +175,15 @@ struct ProfileReviewView: View {
             Hint("\(target?.name ?? "This profile") is in use on the call right now. Apply it after the call ends.")
         }
         HStack(spacing: 8) {
-            Button(theirs ? "Keep mine" : "Discard") { finish() }
+            Button(L(theirs ? "Keep mine" : "Discard")) { finish() }
                 .keyboardShortcut(.cancelAction)
             Spacer()
             if let target {
-                Button(theirs ? "Keep both" : "Save as new profile") {
+                Button(L(theirs ? "Keep both" : "Save as new profile")) {
                     profileStore.add(file, source: source, freshIdentity: true, in: context)
                     finish()
                 }
-                Button(theirs ? "Use theirs" : "Apply") {
+                Button(L(theirs ? "Use theirs" : "Apply")) {
                     let label = isSuggestion ? "Before \(AIApps.appName(file.suggestion?.from))'s suggestion" : "Before importing a file"
                     profileStore.apply(file, to: target, label: label, in: context)
                     finish()
