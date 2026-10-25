@@ -1,4 +1,4 @@
-# CK Parrot —— 中文优先的 macOS 本地会议转写与 AI 助手
+# CK Parrot —— 中文优先的 macOS 本地会议转写与通话助手
 
 **简体中文** | [English](#english)
 
@@ -7,7 +7,7 @@
 > 包标识 `io.github.cknb6.ckparrot`，可与上游 Parrot 同时安装。
 
 ## 简介
-macOS 原生（SwiftUI）会议工具：同时录制系统音频和麦克风，**在本机实时转写**（WhisperKit），通话中由 AI 助手（Parrot 原有的实时 Copilot，支持 Ollama / OpenAI 兼容接口等）结合你的文档给出提示，会后可导出 Markdown / TXT / SRT。
+macOS 原生（SwiftUI）会议工具：同时录制系统音频和麦克风，**在本机实时转写**（WhisperKit），通话中由助手（Parrot 原有的实时 Copilot，支持 Ollama / OpenAI 兼容接口等）结合你的文档给出提示，会后可导出 Markdown / TXT / SRT。
 
 - 系统要求：macOS 14+，Apple Silicon
 - 界面：简体中文为开发语言（zh-Hans），保留 English
@@ -31,7 +31,7 @@ macOS 原生（SwiftUI）会议工具：同时录制系统音频和麦克风，*
 
 ![教程预览](docs/media/tutorial-zh.gif)
 
-🎬 完整视频：[中文视频](https://github.com/CKNB888/ck-parrot/releases/download/v1.0.0/ck-parrot-tutorial-zh.mp4) · [English video](https://github.com/CKNB888/ck-parrot/releases/download/v1.0.0/ck-parrot-tutorial-en.mp4)
+完整视频：[中文视频](https://github.com/CKNB888/ck-parrot/releases/download/v1.0.0/ck-parrot-tutorial-zh.mp4) · [English video](https://github.com/CKNB888/ck-parrot/releases/download/v1.0.0/ck-parrot-tutorial-en.mp4)
 
 1. **安装**：在 [Releases](https://github.com/CKNB888/ck-parrot/releases) 下载 `.dmg` 或 `.pkg`。首次打开请右键 → 打开，或执行 `xattr -cr "/Applications/CK Parrot.app"`。
 2. **授予权限**：按引导授予麦克风、“屏幕与系统录音”权限（日历可选）。
@@ -41,6 +41,16 @@ macOS 原生（SwiftUI）会议工具：同时录制系统音频和麦克风，*
 6. **通话中**：右侧实时转写，左侧助手卡片给出建议回答、待回答问题和待办事项，可一键复制。
 7. **会后**：查看摘要、复盘报告和评分，导出 Markdown / TXT / SRT，或用「问问 Parrot」搜索过往通话。
 8. **个性化**：在设置里配置通话类型、知识库文档、隐私（仅限本机、隐藏个人信息）和连接（Webhook、笔记文件夹）。
+
+## v2.0.0 新功能
+- **菜单栏面板**：点击菜单栏图标弹出面板（独立的不可共享窗口，不是系统菜单），开始 / 停止录音、最近通话、设置都在这里；新的应用图标与单色菜单栏图标
+- **我的声纹**：设置 → 我的声纹，录 15 秒自己的声音；之后转写中自己的话统一标为「我」，不会被当成别人的提问
+- **课堂模式标签**：开启后其他说话人显示为「学生1、学生2…」
+- **导出提问**：会议菜单新增「导出提问」，把别人提出的问题导出为 Markdown 列表
+- **按电脑配置推荐转写模型**：显示推荐理由，下载前检查磁盘空间；停止录音后释放模型内存
+- **完全卸载**：设置里一键删除全部数据（包括声纹），或运行 [`scripts/uninstall.command`](scripts/uninstall.command)
+- 界面去掉 emoji 与装饰图标，设置中只保留本仓库 GitHub 链接
+- 包含此前未单独发布的 v1.0.7 改动
 
 ## v1.0.0 主要改动
 - 更名 CK Parrot，新包标识，可与上游共存
@@ -57,6 +67,9 @@ macOS 原生（SwiftUI）会议工具：同时录制系统音频和麦克风，*
 首次请右键 → 打开，或执行 `xattr -cr "/Applications/CK Parrot.app"`。然后在 系统设置 → 隐私与安全性 授予麦克风与“屏幕与系统录音”权限。
 
 **中文转写建议**：在引导或设置中选择 Large V3 Turbo（或其压缩版）模型，`base` 模型对中文效果较差；语言选择「中文」。
+
+## 卸载
+设置 → 完全卸载（删除录音、转写、模型、声纹与钥匙串密钥），或在终端运行 `scripts/uninstall.command`；最后把 CK Parrot 拖到废纸篓。
 
 ## 从源码构建
 ```bash
