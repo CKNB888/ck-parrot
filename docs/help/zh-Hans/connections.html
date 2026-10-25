@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="keywords" content="export, markdown, obsidian, notion, slack, zapier, make, n8n, webhook, email, follow-up, reminders, mcp, claude, claude desktop, claude code, codex, cursor, ai apps">
+<title>连接：把会议导出去</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<a class="crumb" href="index.html">← Parrot 帮助</a>
+<h1>连接：把会议导出去</h1>
+
+<p>会议右上角的<strong>共享</strong>菜单和<strong>设置 &rarr; 连接</strong>可以把你的通话发送到你工作的地方。这里的所有功能在你开启之前都是关闭的。</p>
+
+<h2>Markdown 与笔记应用</h2>
+<p><strong>导出为 Markdown</strong> 会把会议写成一篇笔记：顶部是标题、日期和参与者，然后是你的笔记、总结、以复选框列出的后续步骤、辅导、标记的时刻和转录。在“设置 &rarr; 连接”中选择一个文件夹（Obsidian 库很合适），每次结束的会议都可以自动保存到那里。再次保存会议会更新同一篇笔记，即使你重命名了会议也一样。</p>
+
+<h2>跟进邮件</h2>
+<p><strong>起草跟进邮件</strong>会用通话所用的语言写一封简短邮件，列出达成的共识和分工。它只列出通话中有人真正做出的承诺。草稿出现在“报告”标签页，带有<strong>复制</strong>和<strong>在“邮件”中打开</strong>，收件人已填为日历邀请中的参与者。在你亲自发送之前不会发出任何内容。开启“每次通话后起草一封”即可让它提前准备好。</p>
+
+<h2>Apple 提醒事项</h2>
+<p><strong>将后续步骤添加到提醒事项</strong>会把报告中的后续步骤和承诺放进提醒事项中的 <em>Parrot</em> 列表。macOS 会询问一次权限。</p>
+
+<h2>Webhook（Slack、Notion、CRM）</h2>
+<p>粘贴来自 Zapier、Make 或 n8n 的 webhook 地址，Parrot 会把每次结束的会议以 JSON 发送过去：标题、日期、参与者、总结、后续步骤、标记的时刻和笔记，如果你允许还包括转录。之后它可以进入 Slack、Notion、HubSpot 或这些工具能连接的任何地方。只接受 https 地址。添加签名密钥后，每个请求都会带上 <code>X-Parrot-Signature</code> 头（请求体的 HMAC-SHA256），接收方可以据此验证请求来自你。<strong>发送测试</strong>会发送一个示例。不会跟随重定向，因此会议只会发到你粘贴的地址。仅限本机的会议永远不会被发送。</p>
+
+<h2>Claude 和其他 AI 应用</h2>
+<p>让 Claude、Codex 或 Cursor 以只读方式读取你的会议：一键连接，选择它们能看到什么，然后问诸如“我上周承诺了什么？”之类的问题。它有单独的页面：<a href="claude.html">在 Claude 中使用你的会议</a>。“设置 &rarr; 连接”中有总开关和<strong>打开 Claude 与 AI 应用</strong>。</p>
+
+<p class="muted">简体中文翻译：<a href="https://github.com/cknb6">CKNB</a> · <a href="../connections.html">English</a></p>
+</body>
+</html>

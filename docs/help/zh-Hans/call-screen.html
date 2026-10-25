@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="keywords" content="call screen, live view, recording screen, timer, stop, device bar, mic level, sounds like, switch language, assistant switch, turn assistant off, record only, assistant panel, copilot panel, call score, gauges, empty gauge, transcript, notes, tour, what does">
+<title>通话界面逐项说明</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<a class="crumb" href="index.html">← Parrot 帮助</a>
+<h1>通话界面逐项说明</h1>
+
+<p>这是 Parrot 在通话中的样子。下面从上到下逐一介绍每个区域，以及值得留意的地方。</p>
+
+<img src="../img/live-screen.png" alt="实时通话界面：标题栏、设备栏、左侧的助手面板、右侧的转录">
+
+<h2>顶部条</h2>
+<p>左侧是<strong>录音</strong>和计时器。右侧是<strong>静音我</strong>、<strong>标记</strong>、<strong>助手</strong>开关和<strong>停止</strong>按钮。只需要录音时请关闭<strong>助手</strong>开关：转录继续，不会向 AI 发送任何内容，通话结束时仍会撰写报告。下方的点状波形是最近一分钟的音频活动，用来快速确认“声音正在进来”。</p>
+
+<h2>设备栏</h2>
+<p>左侧是你当前的麦克风及实时电平表，右侧是输出设备。这里有三件事要留意：</p>
+<ul>
+  <li>你说话时<strong>麦克风电平表</strong>应该会动。如果你说话时它一动不动，说明你的 Mac 在听错误的麦克风；请在“系统设置 → 声音”中选择正确的麦克风。</li>
+  <li>如果这里出现橙色的<strong>“麦克风被其他应用静音”</strong>，说明你的通话应用占用了麦克风，Parrot 正在努力夺回。它通常会成功。详见<a href="troubleshooting.html">故障排除</a>。</li>
+  <li>如果出现<strong>“听起来是土耳其语，切换到土耳其语”</strong>（显示 Parrot 听到的语言），说明通话使用的不是你选择的语言。点击它即可修正通话的剩余部分。参见<a href="transcript.html">语言</a>。</li>
+</ul>
+
+<h2>助手面板（左半边）</h2>
+<p>AI 对你通话的所有想法，一目了然：</p>
+<ul>
+  <li><strong>通话评分</strong>，那个大数字：0 到 100，表示通话整体进展如何。绿色是好，橙色是不稳，红色意味着需要挽救。</li>
+  <li>旁边的<strong>教练行</strong>，一句“现在该做什么”。它会随通话进展更新。</li>
+  <li>下方的小标签是<strong>指标</strong>：你的配置衡量的内容（例如销售配置中的购买意向），以及气氛判断。通话早期某个指标可能为空：助手会等到有相关的话出现，而不是乱猜。将鼠标悬停在标签上可查看确切数值；短横线表示还没有依据。</li>
+  <li>标题栏中的<strong>“你 44%”</strong>是你的发言占比。超过 70 时会变成橙色，这是应用礼貌地提醒你让对方说话。</li>
+  <li>状态旁的<strong>暂停按钮</strong>与<strong>助手</strong>开关作用相同：立即停止所有 AI 请求，包括已经发出的，并保留你的卡片；按播放可补上进度。详见<a href="copilot-live.html">通话中的助手</a>。</li>
+  <li>最右侧的<strong>状态</strong>：绿点表示正在聆听，转圈表示思考中，灰点表示关闭。</li>
+</ul>
+
+<h2>卡片</h2>
+<p>评分下方，当对话让助手有话可说时卡片就会出现。千万不要错过的是：带橙色警告图标的卡片是<strong>阻碍</strong>，它们会一直置顶，直到你勾选已处理。评分旁的“1 个未解决”计数告诉你有多少在等待。普通卡片在下方堆叠；每张卡片都显示它在通话中的时间（点击可跳转到转录中的那里），建议回答还带有复制按钮，如果说出来觉得别扭，可以把那句话粘贴到聊天中。用 × 忽略任何错误的卡片，它不会训练任何东西，也没有任何坏处。</p>
+
+<h2>右半边：转录与笔记</h2>
+<p><strong>转录</strong>标签页是实时对话，你在右侧以蓝色显示，其他人在左侧，有人说到一半时会显示浅色的预览气泡。它会自动跟随最新一行；向上滚动重读时它会礼貌地停止跟随，直到你滚回底部。</p>
+<p><strong>笔记</strong>标签页是一个纯文本记事本，记录 AI 无法替你产生的想法。笔记随会议保存，导出时也会一起带上。</p>
+<p>标签旁的小图标可以收起整个右侧，让助手全宽显示；最顶部栏中的闪光图标则相反，隐藏助手，只看转录。</p>
+
+<p class="muted">简体中文翻译：<a href="https://github.com/cknb6">CKNB</a> · <a href="../call-screen.html">English</a></p>
+</body>
+</html>

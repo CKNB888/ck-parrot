@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="keywords" content="cards, suggestions, blockers, pause assistant, pause copilot, assistant off, turn assistant off, assistant switch, record only, pace, fast, balanced, relaxed, rate limit, 429, free model, context window, tokens, cost control">
+<title>通话中的助手</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<a class="crumb" href="index.html">← Parrot 帮助</a>
+<h1>通话中的助手</h1>
+
+<img src="../img/copilot.png" alt="带通话评分和建议回答的助手面板">
+
+<h2>你看到的是什么</h2>
+<p>面板会持续显示通话进展的评分、一句话的教练判断，以及随事情发生而出现的卡片：对方提问时的建议回答、出现致命问题时的阻碍、达成一致时的行动项。阻碍会一直置顶，直到你标记为已处理。如果某张卡片有误或已经处理过，忽略它即可消失。</p>
+
+<p>标题栏中的“你 44%”是你的发言占比。如果它升得太高，那是应用在礼貌地提醒你让对方说话。</p>
+
+<h2>“已介绍”卡片</h2>
+<p>面板中的第一张卡片告诉你助手正在使用什么：配置、你的简介以及正在使用的文档。它会一直展开，直到第一条建议出现，然后折叠成一行，点击可重新打开。忘了写简介？“添加简介”让你在通话中输入，下一条建议就会用上。“知识库”链接会打开设置，让你无需离开通话就能添加或标记文档。</p>
+
+<h2>关闭助手</h2>
+<p>拨动通话界面顶部的<strong>助手</strong>开关，在菜单栏中选择<strong>关闭助手</strong>，或按下状态标记旁的暂停按钮。关闭期间不会向任何地方发送任何内容，也不会产生任何花费：没有请求、没有 token、不占配额。已经发出的请求也会被取消。录音和转录继续进行，通话结束时仍会撰写报告。重新开启后，助手会补上它错过的内容。你的卡片原样保留。适合私密片段、闲聊，或为重要会议节省免费套餐额度。</p>
+
+<h2 id="nudges">实时提醒</h2>
+<p>有时你屏幕顶部、通话画面之上会出现一条简短提示：<em>“自从你说了‘一月份涨价’之后，对方就沉默了。”</em>它大约十秒后淡出；点击它会在那一时刻打开 Parrot。同样的提示会显示在助手面板的教练行上方，直到你关闭它。</p>
+<ul>
+  <li><strong>陷入沉默</strong>：你说完一句话后，对方沉默的时间远长于他们平时回答所需的时间。</li>
+  <li><strong>长篇独白</strong>：你已经连续讲了一分半钟以上，对方一句话都没说。</li>
+  <li><strong>抢话</strong>：五分钟内三次在对方还在说话时开口。</li>
+  <li><strong>简短回答</strong>：对方的回答在之前较长之后变得简短。</li>
+  <li><strong>语速加快</strong>：你说话比通话早些时候快很多。</li>
+  <li><strong>重复观点</strong>：对方把同一件事说了三次。</li>
+  <li><strong>情绪变化</strong>、<strong>未回答的问题</strong>和<strong>收尾</strong>需要助手：某个指标急剧变化、对方提出的问题三分钟后仍未解决，或通话即将结束但还有未解决的事项。</li>
+</ul>
+<p>最多每两分钟一条提示，前两分钟没有。提示只依据时间和用词；不会尝试从任何人的声音中读取情绪。提示框不会出现在屏幕共享中，所以对方永远看不到。在“设置 → 助手 → 实时提醒”中可以关闭提示。</p>
+
+<h2>控制费用</h2>
+<p>“设置 → 助手”中有两项设置决定助手的消耗，无论是金钱还是免费套餐的速率限制：</p>
+<ul>
+  <li><strong>节奏</strong>是 Parrot 多久向模型请求一次建议。“快速”是经典的始终在线体验。“均衡”是每分钟几次请求。“从容”大约每分钟一次，适合那些请求太频繁就会限制你的免费模型套餐。坦白的取舍是：在“从容”模式下，提示可能最多晚一分钟到达。</li>
+  <li><strong>每次请求发送的对话</strong>是每次请求携带多少最近的对话：最近 2、5 或 10 分钟。越小越便宜越快，尤其是本地模型。无论哪种情况，助手都不会忘记通话前面的内容，因为它自己的卡片会作为记忆一起发送。</li>
+</ul>
+
+<div class="tip"><strong>免费套餐配方：</strong>“从容”节奏、“最近”窗口，并且大方地关闭助手。这个组合能让大多数免费套餐撑完整场会议。</div>
+
+<p class="muted">简体中文翻译：<a href="https://github.com/cknb6">CKNB</a> · <a href="../copilot-live.html">English</a></p>
+</body>
+</html>

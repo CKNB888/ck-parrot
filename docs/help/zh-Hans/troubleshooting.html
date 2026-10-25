@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="keywords" content="troubleshooting, mic muted, transcription stops, call starts, zoom, meet, safari, model loading, stuck, permission stuck, permission won't turn green, gibberish, nonsense transcript, wrong language, diagnostics, logs, echo, playback, two voices, doubled voice, speakers, their words as mine, my lines, missing lines, short replies, deepgram echo, english words, crackle, headphones recommended, set up assistant, set up copilot, ollama install, check key">
+<title>故障排除</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<a class="crumb" href="index.html">← Parrot 帮助</a>
+<h1>故障排除</h1>
+
+<h2>我一加入通话，我这一侧的转录就停了</h2>
+<p>经典问题。你启动 Parrot，一切正常，可一加入会议，你自己说的话就不再出现。原因是：某些通话应用（基于 Safari 的会议尤其臭名昭著）会独占麦克风，而 macOS 开始向其他所有应用输送纯静音，却不告诉任何人。Parrot 专门监测这种情况。你会看到橙色的<strong>“麦克风被其他应用静音”</strong>警告，它会每隔几秒重试，直到夺回麦克风，通常是通话应用一松手就成功。通话另一方的声音全程正常录制。如果你自己的话最重要，请先加入会议，再启动 Parrot。</p>
+
+<h2>“正在加载 WhisperKit 模型…”一直不结束</h2>
+<p>在网速较慢时，首次下载模型确实可能需要几分钟，这很正常。但如果它一直停在那里毫无进展，请退出 Parrot 再重新打开；几乎所有情况下重新启动都能解决。如果反复出现，请在“设置 → 转录”中重新选择模型。</p>
+<p>关闭设置窗口后下载会继续，如果中途退出，下次启动会从中断处继续。只有在一分钟内没有收到任何数据时下载才会放弃；按<strong>重试</strong>再试一次。</p>
+
+<h2>无法从设置中安装 Ollama</h2>
+<p>使用“安装”行下方的<strong>或从 ollama.com 下载</strong>，打开一次 Ollama 后回来：这些行会自动变绿。Parrot 只会打开经检查确认由 Ollama 签名的 Ollama，因此损坏的下载会被丢弃而不是运行。</p>
+
+<h2>权限行不变绿</h2>
+<p>在 macOS 15 及更新版本上，系统音频那一行会在 Parrot 第一次真正听到会议音频时自动确认，所以在你第一次录音之前它可能一直未确认。如果录音中没有对方的声音，请打开“系统设置 → 隐私与安全性 → 屏幕与系统音频录制”，确认 Parrot 列在“仅系统音频录制”下且开关已打开。</p>
+<p>在 macOS 14 上，“屏幕录制”权限只有重启后才生效。完全退出 Parrot 再重新打开。如果这一行仍然没有变成绿色对勾，请检查“系统设置 → 隐私与安全性 → 屏幕录制”中确实列出了 Parrot 且开关已打开。</p>
+
+<h2>出现没人说过的语言的奇怪文字</h2>
+<p>响亮的非语音声音（通常的罪魁祸首是紧挨着麦克风打字）会让 Whisper 幻觉出一个很笃定的句子，在开启自动检测时有时还是随机语言。在“设置 → 转录”中明确设置语言会有很大帮助。让键盘离麦克风远一点帮助更大。我们正在研究自动过滤这些内容。</p>
+
+<h2>整个转录都是胡言乱语</h2>
+<p>如果每一行读起来都像毫无意义的英语，很可能是通话使用了另一种语言，而“设置 → 转录 → <strong>语言</strong>”被设成了英语（或者 Deepgram 对它不支持的语言使用了自动检测）。Parrot 现在会在几秒内发现这种情况，并在通话界面顶部显示带有<strong>切换</strong>按钮的横幅。要完全跳过猜测，请在“开始录音”下方选择<strong>通话语言</strong>。你的音频始终会被保存，所以受影响的通话仍然可以用正确的语言重新转录。</p>
+
+<h2>回放听起来像有两个声音</h2>
+<p>用扬声器通话时，你的麦克风也会听到对方的声音。回声消除会去掉大部分，但仍会残留一点微弱的副本，与干净的录音放在一起，听起来就像慢一拍的回声。回放通话时，在只有对方说话时 Parrot 会调低你这一侧的音量，你说话时再调回来。如果对方的少数几句仍然听起来是双重的，说明转录也把那几句当成了你的，所以 Parrot 无法区分它们。使用耳机可以完全避免。</p>
+
+<h2>对方的话显示成了我的</h2>
+<p>同样的微弱副本可能变成你名下的行：对方的句子再出现一次，只是听错了一两个词，或者是另一种语言的“Yeah”之类的简短填充词，和对方那一行出现在同一秒。现在用扬声器时，回声消除能从你的麦克风中去掉更多对方的声音。以前在某些通话中它几乎不起作用，这些行大多来自那些通话。Parrot 还会去掉你这一侧只是比对方声音慢一拍跟随的行，以及重复对方内容的行，即使在你说得最多的通话中也是如此。当对方的几个词落在你的某一行中间时，它只剪掉那几个词，保留你的。它需要大约十秒的通话（其中有几秒对方在说话）才能察觉你的麦克风听到了扬声器，所以最开始的一句可能会漏网。当你和对方同时说话时，你的话会被保留，戴耳机时“好的”之类的简短回答也会保留。这在 Deepgram 下同样有效，<strong>每次通话后润色转录</strong>也会排除回声。使用耳机可以避免所有这些问题。一旦 Parrot 在通话中察觉到这种情况，实时界面会在你的麦克风旁显示<strong>建议使用耳机</strong>。</p>
+
+<h2>录音被中断了</h2>
+<p>崩溃、强制退出、断电：下次启动时，Parrot 会找到被中断的会议，挽救已经转录的内容，然后照常生成报告。只有一个字都没录到的会议才会被标记为失败。</p>
+
+<h2>报告 bug 时</h2>
+<img src="../img/bug-report.png" alt="报告 bug 的面板">
+<p>点击窗口右下角的小瓢虫，或使用<strong>帮助 → 报告问题…</strong>。写下发生了什么，其余由 Parrot 填写：你正在使用的版本、你的模型和转录设置，以及可选的窗口截图。不会自动发送任何东西。按钮会在 GitHub 上打开一个预填好的 issue，你检查一遍后再发布。截图只包含 Parrot 的窗口，绝不是你的整个屏幕，并且它会放到你的剪贴板上，由你自己用 <kbd>⌘V</kbd> 粘贴。如果窗口正在显示某人的转录，请先看一眼。</p>
+<p>同一个面板也接受想法和功能请求，不仅仅是 bug。</p>
+<p>对于音频问题，诊断日志能让问题更容易被发现。用 <code>PARROT_AUDIO_DEBUG=1</code> 运行应用，重现问题，然后用以下命令获取日志：</p>
+<p><code>log show --last 10m --predicate 'subsystem == "com.uygar.parrot"'</code></p>
+<p>把它也粘贴到 issue 中，你就让某个人的调试工作轻松多了。</p>
+
+<p class="muted">简体中文翻译：<a href="https://github.com/cknb6">CKNB</a> · <a href="../troubleshooting.html">English</a></p>
+</body>
+</html>

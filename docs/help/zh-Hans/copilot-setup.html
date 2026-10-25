@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="keywords" content="assistant, copilot, setup, claude, api key, ollama, local model, custom server, other ai service, openrouter, openai compatible, reports provider, enable">
+<title>设置助手</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<a class="crumb" href="index.html">← Parrot 帮助</a>
+<h1>设置助手</h1>
+
+<img src="../img/settings-copilot.png" alt="助手设置页面：启用开关、节奏、窗口和模型选择器">
+
+<p>助手是 AI 层：通话中的实时建议卡片，以及通话后的报告。它<strong>默认关闭</strong>，没有它 Parrot 作为录音和转录工具也完全够用。需要时，在“设置 → 助手”中打开它，并选择由谁来思考。</p>
+
+<h2>三种驱动方式</h2>
+<p>最快的方法是引导式设置：“设置 → 助手 → 设置助手”，或主页上的助手卡片。它会带你选择私密（在你的 Mac 上运行 Ollama，自动安装）、均衡（Claude，音频留在你的 Mac 上）或云端（Claude 加 Deepgram），并在保存前检查你的密钥。</p>
+<ul>
+  <li><strong>Claude（云端）。</strong>最聪明的选择。你需要自备 API 密钥（设置 → API 密钥），通话期间转录文字会发送给 Anthropic，音频永远不会。每次通话都会产生费用；Parrot 会在每次会议上准确显示花了多少。</li>
+  <li><strong>Ollama（本地）。</strong>免费且完全私密，AI 在你的 Mac 上运行。引导式设置会为你安装 <a href="https://ollama.com">Ollama</a>，你也可以自己安装后在 Parrot 设置中选择模型。如果模型尚未下载，Parrot 会提供带进度条的下载。实话实说：本地卡片明显比云端的慢，因为模型要和实时转录共享你的 Mac。用来写报告很好；实时卡片则请预期从容的节奏而不是即时响应。在 Apple 芯片上请使用原生版本，否则会非常慢。</li>
+  <li><strong>其他 AI 服务。</strong>任何兼容 OpenAI API 的服务：OpenRouter、OpenAI、Groq、你自己的机器或公司网关。粘贴其地址、模型名称和你的密钥。如果你使用的是限制严格的免费套餐，<a href="copilot-live.html">下一篇</a>中的节奏设置正是为你准备的。</li>
+</ul>
+
+<h3>使用 OpenRouter</h3>
+<p><a href="https://openrouter.ai">OpenRouter</a> 让你用一个密钥访问众多模型，包括便宜又快速的模型，在你的 Mac 跑本地模型太慢时很好用。</p>
+<ol>
+  <li>在 openrouter.ai 创建一个密钥。</li>
+  <li>在<strong>设置 → 助手 → 模型</strong>中选择<strong>其他 AI 服务</strong>。将<strong>服务器地址</strong>设为 <code>https://openrouter.ai/api/v1</code>，将<strong>模型</strong>设为其列表中的模型 ID，例如 <code>google/gemini-2.5-flash</code>。</li>
+  <li>在 <strong>API 密钥</strong>中粘贴密钥。</li>
+</ol>
+<p>转录文字会发送到 OpenRouter 和你选择的模型，与 Claude 的情况一样。Parrot 无法在此估算费用，请在 OpenRouter 上查看用量。</p>
+
+<h2>根据你的文档即时回答</h2>
+<p>使用 Claude 时，还有一个可选附加项：<strong>TypeSafe AI</strong> 密钥（设置 → API 密钥）。有了它，当对方问到你文档中涵盖的内容时，Parrot 会以“来自你的文档”卡片显示匹配的摘录，通常在一秒内，而 Claude 仍在撰写回答。随后 Claude 的卡片会接替。没有该密钥则一切照旧。它会把问题、几行上下文和你文档中匹配的片段发送给 TypeSafe，绝不发送音频，并且只查看<strong>用于</strong>中包含你当前通话配置的文档。</p>
+
+<h2>不同任务用不同的大脑</h2>
+<p>实时卡片需要快速而敏锐。通话后报告则有充足的时间。所以 Parrot 允许你为两者分别选择后端：常见组合是实时卡片用 Claude、报告用本地模型，这样报告免费且私密，又不会拖慢通话。如果你只设置了一个，两项任务都用它。</p>
+
+<p class="muted">简体中文翻译：<a href="https://github.com/cknb6">CKNB</a> · <a href="../copilot-setup.html">English</a></p>
+</body>
+</html>

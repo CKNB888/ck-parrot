@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="keywords" content="settings, preferences, general, dock, dock icon, hide dock, menu bar only, update, updates, restart now, what's new, changelog, appearance, storage, recording, echo cancellation, playback echo, transcription, model, language, vocabulary, backend, polish, api keys, saved, set up assistant, set up copilot, ollama install, check key">
+<title>设置逐页说明</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<a class="crumb" href="index.html">← Parrot 帮助</a>
+<h1>设置逐页说明</h1>
+
+<p>从侧边栏打开设置（或按 <kbd>⌘,</kbd>）。左侧是主题，每个主题一页。任何地方都没有“保存”按钮：每项更改在你做出的瞬间就会保存，一个小小的“已保存”标签会确认这一点。</p>
+
+<h2>通用</h2>
+<p><strong>登录时打开 Parrot</strong>会在你登录时启动 Parrot，好让它察觉你的第一次通话。它就是普通的 macOS 登录项，列在“系统设置 &rarr; 通用 &rarr; 登录项”中。开启<strong>关闭窗口时从程序坞隐藏</strong>后，窗口关闭期间 Parrot 只待在菜单栏；在菜单栏中选择<strong>打开 Parrot</strong>，程序坞图标会随窗口一起回来。接下来是外观（跟随系统，或强制浅色或深色）、音频文件在磁盘上的位置以及“在访达中显示”按钮，还有你正在运行的版本。更新会自动处理：“保持 Parrot 为最新”会在后台下载新版本，并在你退出时安装，绝不会在录音期间进行；“立即检查”会马上查找。更新准备好后，Parrot 会通过通知提示一次；<strong>立即重启</strong>会马上安装，但绝不会在通话中或撰写报告时进行。更新后，主页会显示一张简短的新功能卡片，点<strong>阅读完整内容</strong>可查看完整的更新日志。还有一个“打开用户指南”链接打开本指南，一个“显示欢迎导览”链接重新播放首次运行设置（权限和模型选择），主题列表底部有一行<strong>关于</strong>（那是我在向你<a href="hi.html">问好</a>），以及同样打开指南的小问号按钮。</p>
+
+<h2>录音</h2>
+<img src="../img/settings-recording.png" alt="录音设置页面">
+<p>这里有一个重要的开关：<strong>回声消除</strong>。如果你用扬声器通话，请保持开启；它会从你的麦克风听到的声音中减去对方的声音，这样他们的话就不会被当成你的再写一遍。仍可能有微弱的残留，因此回放通话时，在只有对方说话的时候 Parrot 会调低你这一侧的音量。使用耳机时没有什么需要消除的，可以关闭它。</p>
+<p>下方是：<strong>通话检测</strong>（通话开始时 Parrot 是询问、自动录音还是什么都不做，以及你让它忽略的应用）、<strong>日历</strong>（连接、Parrot 读取哪些日历、助手是否可以读取邀请，或你是否希望在会议前收到提醒），以及<strong>收藏</strong>（<kbd>&#8963;&#8997;M</kbd> 快捷键）。这三项都在<a href="recording.html">录制通话</a>中有说明。</p>
+
+<h2>连接</h2>
+<p>通话后会议去往何处：Markdown 笔记文件夹（Obsidian 很合适）、每次通话后的跟进邮件草稿、发送到 Zapier、Make 或 n8n 的 webhook，以及 Claude 和其他 AI 应用的开关，并附有其专属页面的链接。详见<a href="connections.html">连接</a>和<a href="claude.html">在 Claude 中使用你的会议</a>。</p>
+
+<h2>隐私</h2>
+<p>仅限本机（适用于每次通话，或在“配置”中按配置设置）、对云端 AI 隐藏个人信息、你的录音同意提示，以及自动清理旧音频和会议。参见<a href="privacy.html">哪些数据会离开你的 Mac</a>。</p>
+
+<h2>转录</h2>
+<img src="../img/settings-transcription.png" alt="转录设置页面">
+<p>关于语音如何变成文字的一切：</p>
+<ul>
+  <li><strong>模型</strong>：由哪个本机模型完成工作。<strong>Parakeet v3</strong> 最快，但只支持 25 种欧洲语言（不含土耳其语）；其他语言会自动切换到 Whisper（参见 <a href="transcript.html#parakeet">Parakeet 与其他语言</a>）。Whisper 模型中，<code>base</code> 速度快，<code>large-v3-turbo</code> 是 Apple 芯片上的精度之选，其 626 MB 的压缩版本精度几乎相同，内存占用却少得多。切换时会下载一次新模型。</li>
+  <li><strong>语言</strong>：默认自动检测。如果你的通话总是同一种语言，请设置它；语言出错的意外就会消失。如果 Parrot 在通话中听到不同的语言会提醒你。使用 Deepgram 时，请按名称选择土耳其语、阿拉伯语、中文或韩语：它的自动检测会跳过这些语言。</li>
+  <li><strong>自定义词汇</strong>：你的人名和行话，用逗号分隔，这样它们就不会再被“创造性地”拼错。参见<a href="transcript.html">实时转录</a>。</li>
+  <li><strong>引擎</strong>：本机是默认的私密选择。Groq 和 Deepgram 是需要手动开启的云端引擎，需要你自己的密钥，并且会把音频发送出去；如果它们出错，Parrot 会回退到本机。</li>
+  <li><strong>每次通话后润色转录</strong>：可选，在你按下停止后通过 Groq 重新转录保存的音频，在生成报告之前用更干净的版本替换实时转录。</li>
+  <li><strong>说话人识别</strong>：区分不同声音的小型本机模型、<strong>实时说话人标签</strong>（实验性：在通话中而不仅是通话后为对方命名）以及<strong>记住声音</strong>。参见<a href="reports.html">报告</a>。</li>
+  <li><strong>边说边显示文字</strong>：当前说话人说到一半时在其下方填充的灰色预览。它是草稿，下一次停顿时会被完成的句子替换。如果通话时你的 Mac 发烫，可以关闭它；无论开关与否，保存的转录都完全一样。</li>
+</ul>
+
+<h2>助手</h2>
+<img src="../img/settings-copilot.png" alt="助手设置页面">
+<p>AI 层的总开关、决定费用的节奏和对话窗口控制，以及驱动实时卡片和报告的模型（两者可以不同）。<strong>问问 Parrot</strong> 选择回答你关于过往通话问题的 AI（除非你更改，否则与报告相同）。参见<a href="ask.html">问问 Parrot</a>。第一次用？<strong>设置助手</strong>会在几分钟内带你完成私密、均衡或云端的设置。本页有专门的指南：服务商见<a href="copilot-setup.html">设置助手</a>，控制选项见<a href="copilot-live.html">通话中的助手</a>。</p>
+
+<h2>API 密钥</h2>
+<p>Claude、Groq、Deepgram 和 TypeSafe AI 的密钥，每项一个输入框。它们保存在 macOS 钥匙串中，而不是文件里，除了与各自的服务通信外绝不会离开这台电脑。粘贴即可。（<strong>其他 AI 服务</strong>的密钥在助手页面上，紧挨着它的地址。）</p>
+
+<h2>知识库</h2>
+<p>助手可以据以回答的文档，按文件夹组织，每个都有<strong>用于</strong>设置和说明行。完整说明见<a href="knowledge.html">知识库</a>。</p>
+
+<h2>配置</h2>
+<p>最深入的一页，有专门的指南：<a href="profiles.html">通话配置</a>。你在这里逐张卡片地定制助手要关注的内容。</p>
+
+<p class="muted">简体中文翻译：<a href="https://github.com/cknb6">CKNB</a> · <a href="../settings.html">English</a></p>
+</body>
+</html>

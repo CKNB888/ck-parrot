@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="keywords" content="ask, search, memory, question, past meetings, last call, promised, history, chat, follow-up, saved chats, rename chat, delete chat, stop, this week, last month, ollama, local, free, which ai, claude, api key, subscription, custom server, other ai service, openrouter, openai, beta, feedback, how many meetings, longest meetings, time in meetings, meetings with, count, turkish, türkçe, kaç toplantı, en uzun, bu hafta, geçen ay, last 30 days, monday, weekday, pazartesi, dünkü, did i meet">
+<title>问问 Parrot</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<a class="crumb" href="index.html">← Parrot 帮助</a>
+<h1>问问 Parrot</h1>
+
+<p>Parrot 会记住它完成的每一次通话。问它任何问题，比如<em>“我答应了 Acme 什么？”</em>或<em>“Jeremy 八月份对定价说了什么？”</em>，你会得到一个简短回答，每个事实都带有一个小标签，例如 <strong>12:34 · Acme 续约</strong>。点击标签，那次会议就会在那一行打开，可以直接播放。</p>
+
+<p>“问问 Parrot”是新功能，因此标记为<strong>测试版</strong>。它仍在学习，回答可能会有遗漏，所以请点击时间核实出处。新对话中有一个<strong>发送反馈</strong>链接：告诉我们哪些好用、哪些不好用。</p>
+
+<img src="../img/ask.png" alt="一次带引用回答的“问问 Parrot”对话">
+
+<h2>在哪里找到它</h2>
+<p>从侧边栏打开<strong>问问 Parrot</strong>，在任何地方按 <kbd>&#8984;K</kbd>，或在会议页面点击<strong>提问</strong>来询问那一次通话。</p>
+
+<h2>可以回看的对话</h2>
+<p>你提出的每个问题都会开始或继续一个已保存的对话，列在左侧。点击<strong>新对话</strong>重新开始。右键点击任意对话可<strong>重命名…</strong>或<strong>删除</strong>。</p>
+
+<h2>追问</h2>
+<p>追问诸如<em>“那我们给他们开了什么条件？”</em>，Parrot 会保持上下文，所以你不必重复你在问谁或什么。</p>
+
+<h2>每个回答都注明出处</h2>
+<p>点击时间标签即可在那一时刻打开对应会议。在关于单次会议的对话中，标签只显示时间。显示“已删除”的标签表示该会议已不存在。</p>
+
+<h2>按名称询问某次会议</h2>
+<p>在问题中提到会议名称，比如<em>“我们在 Northwind 通话中决定了什么？”</em>，Parrot 会读取整个会议来回答。这适用于你命名过的会议；仍叫“Meeting Sep 23…”的会议用其会议页面上的<strong>提问</strong>更容易找到。</p>
+
+<h2>次数、时长和你见过谁</h2>
+<p>关于会议本身的问题会在你的 Mac 上精确回答，不使用 AI：</p>
+<ul>
+  <li><em>“我上个月开了几次会？”</em></li>
+  <li><em>“我最长的 5 次会议”</em></li>
+  <li><em>“我这周在会议上花了多少时间？”</em></li>
+  <li><em>“我和 Northwind 开过会吗？”</em>或<em>“和 Acme 开过几次会？”</em>：Parrot 会统计名称出现在标题、参与者、报告或所说内容中的会议。</li>
+</ul>
+<p>这些回答会注明<strong>在此 Mac 上统计</strong>。回答中的每次会议都是一个可点击打开的标签。关于所说内容的问题，比如<em>“有几次会议是关于定价的？”</em>，则会交给 AI。</p>
+
+<h2>宽泛的问题</h2>
+<p>像<em>“我这周承诺了什么？”</em>这样的问题会同时覆盖许多会议。今天、昨天、本周、上周、本月、上月、“最近 30 天”以及星期几（“周一”指最近的那个周一）等词会把搜索范围缩小到相应时段。</p>
+
+<h2>用土耳其语或英语提问</h2>
+<p>用任一种语言提问，回答都会以你提问的语言返回。土耳其语的时间词也有效：bugün、dün、bu hafta、geçen hafta、bu ay、geçen ay、son 30 gün、pazartesi 等星期名，以及 dünkü 或 geçen haftaki 之类的形式。统计也支持土耳其语，比如 <em>“Geçen ay kaç toplantı yaptım?”</em>、<em>“Ahmet'le kaç toplantı yaptım?”</em>或<em>“En uzun toplantılarım”</em>。</p>
+
+<h2>由哪个 AI 回答</h2>
+<p>“问问 Parrot”可以使用三种 AI 之一：</p>
+<ul>
+  <li><strong>Claude（云端）</strong>：Anthropic 的 Claude，使用你在 console.anthropic.com 获取的 API 密钥。你按使用量向 Anthropic 付费，通常每个问题不到一美分。Claude.ai Pro 或 Max 订阅不能在这里使用；需要 API 密钥。</li>
+  <li><strong>Ollama（本地）</strong>：在你的 Mac 上运行的免费模型。不会有任何数据离开。</li>
+  <li><strong>其他 AI 服务</strong>：任何 OpenAI 风格的服务，如 OpenRouter、OpenAI、Groq 或 LM Studio，填写其地址（如需要还有密钥）。</li>
+</ul>
+<p>除非你另选，它会使用你的报告 AI。对话右上角的名称显示正在撰写回答的 AI。可以在那里切换，或在<strong>设置 → 助手 → 模型 → 问问 Parrot</strong>中切换。无论选哪个，搜索本身都在你的 Mac 上运行。</p>
+
+<p>如何选择：Claude 的回答最好，尤其是跨多次会议的问题。通过 Ollama 运行的小型本地模型适合关于单次会议的问题，统计在任何情况下都是精确的，但当问题涉及多次会议时它可能会把人或会议弄混。</p>
+
+<p>如果“问问”的 AI 是 Ollama 而 Ollama 没有打开，或模型尚未下载，对话顶部会出现提示，并提供<strong>再次检查</strong>或<strong>下载（大小）</strong>来解决。</p>
+
+<h2>尚未设置 AI</h2>
+<p>新对话会显示<strong>获取文字回答</strong>和两个按钮：<strong>使用 Claude（需要密钥）</strong>和<strong>使用本机免费 AI</strong>。没有 AI 时 Parrot 仍然可用：它会显示你会议中最接近的片段，而不是文字回答。</p>
+
+<h2>哪些数据会离开你的 Mac</h2>
+<p>搜索始终在你的 Mac 上运行。只有最相关的段落和本对话最近的消息会发送给云端 AI 来撰写回答；通过 Ollama 使用本地模型时，什么都不会离开。<a href="privacy.html">仅限本机</a>录制的会议永远不会离开你的 Mac，包括在之前用到它们的回答中。</p>
+
+<h2>停止</h2>
+<p><strong>停止</strong>会取消仍在撰写的回答。你的问题会回到输入框，方便你编辑或重新发送。</p>
+
+<h2>“来自你的上次通话”</h2>
+<p>当你连接了日历，并且与之前见过的人开始通话时（相同的受邀者，或周期性会议中的下一次），实时助手的<strong>已介绍</strong>卡片会显示上次遗留的事项：那次会议报告中的后续步骤和承诺。助手会记住它们，并在通话中提到时进行提示。这些内容直接从你自己的报告中读取，在你的 Mac 上完成，不额外调用 AI。</p>
+
+<p class="muted">简体中文翻译：<a href="https://github.com/cknb6">CKNB</a> · <a href="../ask.html">English</a></p>
+</body>
+</html>

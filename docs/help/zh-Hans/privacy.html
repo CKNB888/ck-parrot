@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="keywords" content="privacy, local, on device, cloud, what is sent, audio, transcript, api keys, keychain, security, set up assistant, set up copilot, ollama install, check key">
+<title>哪些数据会离开你的 Mac</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<a class="crumb" href="index.html">← Parrot 帮助</a>
+<h1>哪些数据会离开你的 Mac</h1>
+
+<p>简而言之：全新安装时，你的任何东西都不会离开。所有会改变这一点的选择都由你自己做出，下面是完整清单。</p>
+
+<h2>始终留在你的 Mac 上</h2>
+<ul>
+  <li>音频录音。它们写入你的磁盘，任何时候都不会被任何东西上传到任何地方。没有例外，没有遥测，没有账户。</li>
+  <li>转录（默认）：Whisper 模型在你的电脑上运行，拔掉网线也能工作。</li>
+  <li>会议、转录、洞察、报告：保存在应用自身容器中的本地数据库里。</li>
+  <li>你的 API 密钥（如果添加了）：保存在 macOS 钥匙串中，而不是文件里。设置时按下<strong>检查密钥</strong>，密钥只会发送一次给它自己的服务（Anthropic 或 Deepgram），以确认可用。</li>
+  <li>你的文档：在你的 Mac 上读取、切分并建立索引。文件本身永远不会被上传。</li>
+  <li>你的日历（如果连接了）：通过 macOS 自带的日历存储在你的 Mac 上读取，从不修改。会议名称和受邀者列表会随你的会议保存在本地。</li>
+  <li>通话检测：Parrot 会询问 macOS 哪些应用正在使用麦克风（即橙色圆点的信息）。它从不听取这些应用的音频。</li>
+</ul>
+
+<h2>下载</h2>
+<p>Parrot 只在第一次需要时下载一次模型：从 Hugging Face 下载 Whisper、语音检测和说话人识别模型；对于阿拉伯文、印度文字以及有时西里尔文的文档，从 Apple 下载语言模型。这些都是普通下载。不会附带任何关于你、你的通话或你的文档的信息，之后一切都离线运行。</p>
+
+<h2>只有在你设置后才会发送</h2>
+<ul>
+  <li><strong>使用 Claude 或自定义服务器的助手：</strong>当前通话的转录文字（加上匹配的知识库片段和你的配置说明）会在通话期间和生成报告时发送给该服务商。音频永远不会发送。</li>
+  <li><strong>文档即时回答（TypeSafe AI）：</strong>仅在有 TypeSafe 密钥且助手使用 Claude 时。当对方提问时，该问题、通话最后几行以及你文档中匹配的片段会发送给托管在美国的 TypeSafe AI，以便在一秒内显示匹配的摘录。音频永远不会发送。TypeSafe 声明不会用你发送的内容进行训练，且只在运行服务所需的时间内保留。</li>
+  <li><strong>供助手使用的日历邀请：</strong>仅当你开启“根据邀请向助手介绍情况”且助手使用 Claude 或自定义服务器时。匹配事件的标题、受邀者姓名和备注（去掉拨入链接和号码）会在该通话期间随助手的请求一起发送。默认关闭。</li>
+  <li><strong>使用云端 AI 的“问问 Parrot”：</strong>会议中最匹配的几段摘录（不是整个会议，绝不包括音频）会发送给通话后报告所用的 AI 来撰写回答。使用 Ollama 时什么都不会离开。</li>
+  <li><strong>跟进邮件：</strong>仅当你请求时（或开启“每次通话后”），会议转录才会发送给通话后报告所用的 AI 来撰写草稿。</li>
+  <li><strong>Webhook：</strong>完成的会议（总结、后续步骤、笔记，以及仅在你允许时的转录）会发送到你粘贴的地址。</li>
+  <li><strong>Claude 和其他 AI 应用（MCP）：</strong>你连接的应用（如 Claude 桌面版）会在你提问时读取你的会议，并将其发送到它自己的云端（对于 Claude，即以你的 Claude 账户发送给 Anthropic）。在你开启之前它是关闭的，它是只读的，并且由你在 <a href="claude.html">Claude 与 AI 应用</a>页面选择它能看到什么：转录、报告和笔记（开启）、助手卡片（关闭），以及要隐藏的通话类型。它永远看不到仅限本机的会议、音频、密钥或设置。Parrot 只记录应用读取内容的次数和时间，绝不记录内容本身。</li>
+  <li><strong>云端转录（Groq 或 Deepgram）：</strong>通话音频会实时发送给它们进行语音转文字。这是唯一会发送声音的可选项。本机始终是默认选项。</li>
+  <li><strong>更新检查：</strong>Parrot 每天读取一次托管在 GitHub Pages 上的更新源。请求中只带有应用的版本号，不含任何关于你或你通话的信息。更新经过签名，在后台下载并在你退出时安装，绝不会在录音期间进行。在“设置 &rarr; 通用”中关闭<strong>保持 Parrot 为最新</strong>即可手动安装。</li>
+</ul>
+
+<h2>你的控制项</h2>
+<p>“设置 &rarr; 隐私”中有四个开关：</p>
+<ul>
+  <li><strong>仅限本机。</strong>一个开关，什么都不离开这台 Mac。Whisper 负责转录，Ollama 运行助手和报告，并且没有润色、没有 TypeSafe 回答、没有 webhook。你也可以只为某个配置开启它（设置 &rarr; 配置），这样只有你的心理咨询或法律通话以这种方式运行。这样录制的会议不会进入由云端 AI 撰写回答的“问问 Parrot”，不会进入云端 AI 撰写的跟进邮件，不会进入 webhook，也不会进入 Claude 和其他 AI 应用。</li>
+  <li><strong>对云端 AI 隐藏个人信息。</strong>在任何内容发送给 Claude 或自定义服务器之前，电子邮件、电话号码、卡号和 IBAN 会被替换成 <code>[EMAIL_1]</code> 之类的占位符，返回结果中再放回真实值。姓名也可以隐藏，使用 Apple 的本机姓名检测。</li>
+  <li><strong>录音同意。</strong>通话界面上的“同意”按钮会复制你的提示，方便粘贴到通话聊天中，或记录所有人已口头同意。该记录随会议保存，并显示在其报告和导出中。</li>
+  <li><strong>自动清理。</strong>在设定的天数后删除通话音频（保留转录和报告）和/或整个会议。导入的录音从你导入的那天开始计算，而不是文件本身的日期。</li>
+</ul>
+<p>每次会议的标题下方还会显示一行<strong>离开此 Mac 的内容</strong>，根据该会议自身的记录生成：哪个服务收到了音频或文字，以及用途。</p>
+
+<h2>那 Ollama 呢？</h2>
+<p>Ollama 在你自己的电脑上运行，所以使用 Ollama 的助手让一切都留在本地：Parrot 只通过 localhost 与它通信。本地模型、本地转录、零出站字节。这个组合正是 Parrot 存在的全部理由。</p>
+<p>如果你在设置时选择<strong>私密</strong>，Parrot 可以为你安装 Ollama：它会从 ollama.com 下载官方应用，检查它确实由 Ollama 签名，然后打开它。macOS 会让你确认一次。</p>
+
+<p class="muted">简体中文翻译：<a href="https://github.com/cknb6">CKNB</a> · <a href="../privacy.html">English</a></p>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="keywords" content="transcript, live, sentences, language, turkish, auto detect, wrong language, switch language, deepgram language, custom vocabulary, glossary, names, spelling, typing bubble, delay">
+<title>实时转录</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<a class="crumb" href="index.html">← Parrot 帮助</a>
+<h1>实时转录</h1>
+
+<img src="../img/copilot-bubbles.png" alt="带聊天气泡的实时转录">
+
+<h2>文字如何出现</h2>
+<p>Parrot 按完整句子写出转录，而不是一堆零碎的词。有人说话时你会看到浅色的预览逐渐填充，他们一停顿，完成的句子就会以气泡形式出现。如果有人长时间不停顿地讲话，Parrot 每 12 秒提交一次已有内容，让转录不会落后太多。</p>
+
+<p>坦白说明一点：只有说话人真正停顿后句子才能完成，所以最终文字总会比说话晚一拍。这一拍是换取干净、完整句子而非碎片的代价。在此期间预览会陪着你。</p>
+
+<h2>语言</h2>
+<p>默认情况下 Parrot 会按句自动检测语言，这对混合语言的通话很方便，但在嘈杂片段上偶尔会猜错，预览也可能先闪过错误的语言再出现真正的句子。如果你的通话总是使用同一种语言，请在“设置 → 转录”中明确设置，一切都会更稳定。</p>
+<p>你设置的语言会被严格遵循，所以如果土耳其语通话选了英语，结果会是听起来像英语的胡言乱语。Parrot 大约每半分钟的语音就会检查通话的每一方，以发现这种情况，包括中途换语言的通话。如果它听到了不同的语言，通话界面顶部会出现横幅：<strong>这次通话听起来是土耳其语，但 Parrot 设置为英语</strong>（显示实际涉及的语言）。点击<strong>切换到土耳其语</strong>，通话剩余部分以及你之后的通话都会用土耳其语转录；<strong>保留英语</strong>则在本次通话中关闭横幅。</p>
+<h2 id="parakeet">Parakeet 与其他语言</h2>
+<p>Parakeet v3 是最快的本机模型，但它只支持 25 种欧洲语言（英语、德语、法语、西班牙语、意大利语、葡萄牙语、荷兰语、俄语、乌克兰语、波兰语等）。土耳其语、阿拉伯语、中文、日语、韩语和印地语不在其中，而遇到这些语言时它不会保持沉默：它会写出看似欧洲语言的胡言乱语。</p>
+<p>因此在使用 Parakeet 且语言为自动检测时，Parrot 会先保留通话每一方最初约十秒的语音，检查语言后再交给 Parakeet，其他语言则交给 Whisper。检查期间你的前几行会比平时晚几秒出现；状态栏显示<strong>正在检查语言</strong>。只有通话需要时才会加载 Whisper。如果某一方之后换了语言，Parrot 会在约一分钟内察觉，把这一方转到 Whisper 并重做最后一段。你手动选择的语言会原样使用：选了 Parakeet 不支持的语言，通话就会使用 Whisper。</p>
+<p>最快的办法：在按下录音之前，在主页“开始录音”下方选择<strong>通话语言</strong>。无需检测，通话从第一个词起就使用正确的引擎。</p>
+<p>使用 Deepgram？它的自动检测只支持英语、西班牙语、法语、德语、印地语、俄语、葡萄牙语、日语、意大利语和荷兰语。土耳其语、阿拉伯语、中文或韩语的通话请按名称选择语言。</p>
+
+<h2>教它认识你的用词</h2>
+<p>Whisper 从没听过你的公司名。如果转录总是弄错名字或行话（“LaunchEase”变成“Lawn Cheese”就是这个应用历史上的真实例子），请在“设置 → 转录 → 自定义词汇”中添加这些词，用逗号分隔。Parrot 每次都会把它们提示给模型，让它拼写正确。</p>
+
+<h2>云端引擎（如果你需要）</h2>
+<p>本机转录是默认选项，无需账户。如果你愿意，也可以在“设置 → 转录”中用你自己的 API 密钥通过 Groq 转录或通过 Deepgram 流式转录。如果云端引擎在通话中出现故障，Parrot 会悄悄地对受影响的部分改用本机模型，因此网络不稳定也不会让你丢失转录。</p>
+
+<p class="muted">简体中文翻译：<a href="https://github.com/cknb6">CKNB</a> · <a href="../transcript.html">English</a></p>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="keywords" content="knowledge base, documents, faq, pricing, grounded answers, references, upload, folders, use for, call types, off, paused, not used on calls, about line, search documents, same as folder">
+<title>知识库</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<a class="crumb" href="index.html">← Parrot 帮助</a>
+<h1>知识库</h1>
+
+<p>当对方问“年度套餐多少钱？”时，通用 AI 只能即兴发挥。知识库就是为了避免这种情况：在“设置 → 知识库”中放入你自己的文档（价格表、常见问题、安全说明页），助手就会根据它们回答，并在卡片上注明引用了哪份文档。</p>
+
+<img src="../img/settings-knowledge.png" alt="知识库设置页面">
+
+<h2>工作原理</h2>
+<p>文档会在你的 Mac 上被切分并建立索引。通话期间，Parrot 会挑出与当前所说内容匹配的几段文字，只把这些连同转录一起交给模型。使用云端的用户请注意：这意味着匹配文档的片段可能会在通话期间发送给你选择的服务商。如果某份文档绝不能离开这台电脑，请使用本地模型或不要添加该文档。</p>
+
+<h2>语言</h2>
+<p>文档可以使用大多数主要语言，包括土耳其语、荷兰语、波兰语、俄语、阿拉伯语、印地语、中文、日语和韩语，以及英语和主要的西欧语言。英文问题可以在用另一种拉丁字母语言（如土耳其语或西班牙语）写成的文档中找到答案。</p>
+<p>对于少数文字（阿拉伯文和印度文字，以及部分 Mac 上的西里尔文），第一次添加此类文档时 macOS 会从 Apple 下载语言模型。文档可以立即使用，但在下载完成之前只能匹配精确的词。你的文档永远不会被上传。</p>
+
+<h2>文件夹</h2>
+<p>按你的思路给文档分组：公司基本资料放一个文件夹，某笔交易的所有资料放另一个。点击<strong>新建文件夹</strong>，然后把文档拖进去，或使用文档的<strong>…</strong>菜单中的<strong>移到文件夹</strong>。文件夹的<strong>…</strong>菜单有<strong>重命名</strong>、<strong>在此添加文档…</strong>和<strong>删除文件夹…</strong>。删除文件夹永远不会删除其中的文档：它们会移到<strong>无文件夹</strong>，并照常工作。</p>
+
+<h2>用于：哪些通话可以使用某份文档</h2>
+<p>你的价格表属于销售通话；它不应出现在一对一面谈中。每个文件夹都有一个<strong>用于</strong>设置，即其所在行上的标签：<strong>所有通话类型</strong>、一种或多种通话类型（你的<a href="profiles.html">配置</a>），或<strong>已关闭，通话中不使用</strong>，可以在不删除任何东西的情况下暂停整个文件夹。新文件夹默认为“所有通话类型”，“无文件夹”也是如此，所以你刚添加的文档会立即被使用。</p>
+<p>文档跟随其文件夹，显示<strong>与文件夹相同</strong>。通过文档的标签给它单独设置后，它会显示为蓝色：它会取代文件夹的设置，因此一个交易文件夹可以用于销售通话，而其中的保密协议只用于供应商通话。</p>
+<p>助手在任何通话中都不能使用的文档会显示<strong>通话中不使用</strong>。如果你在更新 Parrot 后看到这个，说明该文档之前没有选择任何通话类型，而那时这意味着它从未被使用。什么都没改变；只是现在能看到了。要启用它，点击<strong>通话中不使用</strong>并选择<strong>所有通话类型</strong>或你想要的通话类型。仅仅把它移进文件夹是不够的，因为文档移动时会保留自己的设置：选择<strong>与文件夹相同</strong>即可让它跟随文件夹。</p>
+
+<h2>说明行与搜索</h2>
+<p>每份文档名称下方有一行简短说明，描述其内容，例如“已签署的保密协议，2026 年 9 月”。点击即可输入，或选择<strong>编辑说明</strong>。你会在列表中看到它，助手在引用该文档的每一段时也会读到它。<strong>搜索文档</strong>按名称或说明行查找文档，忽略大小写和重音，所以“gorusme”能找到“Görüşme”。</p>
+<p>同名的两个文件不能放在不同的文件夹中，因为 Parrot 按文件名识别文档。重命名其中一个即可两者都保留。把文件再次添加到它自己的文件夹会更新它，并保留其说明行和“用于”设置。</p>
+
+<div class="tip"><strong>提示：</strong>你还可以告诉某个配置，模型是否可以在你的文档之外使用其通用知识，还是严格按你提供的内容回答。严格模式更慢说出“我不知道”，但绝不会编造你的价格。</div>
+
+<p class="muted">简体中文翻译：<a href="https://github.com/cknb6">CKNB</a> · <a href="../knowledge.html">English</a></p>
+</body>
+</html>

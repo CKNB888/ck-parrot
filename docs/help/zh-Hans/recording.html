@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="keywords" content="record, start recording, stop, quit, crash, recover, mic muted, another app, device, headphones, auto record, detect call, calendar, calendars parrot reads, shared calendar, invite, bookmark, mark moment, mute, mute me, unmute, muted in zoom, off the record, menu bar, menu bar icon, call time, join and record, next call, copy report, last call, call saved, name the call, title, note, about this call, turn assistant off">
+<title>录制通话</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<a class="crumb" href="index.html">← Parrot 帮助</a>
+<h1>录制通话</h1>
+
+<p>按下主页上的大红色按钮（或使用菜单栏图标），Parrot 会同时开始录制两条音轨：系统音频，也就是通话中的其他所有人；以及你的麦克风，也就是你。因为音轨是分开的，转录天然就知道谁说了什么。</p>
+
+<p>如果助手已开启，录音按钮下方的卡片会包含它从第一秒起就会知道的一切：选择通话配置、为本次通话输入简介，并检查正在使用的文档。简介是用你自己的话写的一两行，比如“与 Northwind 的续约通话，法务想知道数据存储在哪里”。文档那一行显示助手在所选配置下可以引用哪些文件，旁边的“知识库”链接会直接带你去添加更多文档的地方。配置在<a href="profiles.html">通话配置</a>中说明，文档在<a href="knowledge.html">知识库</a>中说明。</p>
+
+<h2>Parrot 可以替你察觉通话</h2>
+<p>当 Zoom、Google Meet、Teams、FaceTime 或任何其他应用开始使用你的麦克风时，Parrot 会察觉到通话，并通过通知询问<strong>“Zoom 通话已开始。要用 Parrot 录制吗？”</strong>同样的问题也会以横幅形式显示在 Parrot 窗口顶部和菜单栏图标中，所以即使关闭了通知你也能看到。当通话应用释放麦克风时，Parrot 会询问是否也停止。Parrot 只能看到麦克风<em>正在被使用</em>（与菜单栏中的橙色圆点显示的信息相同），永远听不到其他应用的音频。</p>
+
+<p>这个询问是 macOS 通知，所以 Parrot 需要发送通知的权限。欢迎导览会在“设为自动”这一步请求该权限；如果通知已关闭，“设置 &rarr; 录音 &rarr; 通话检测”会提示并提供开启按钮。</p>
+
+<p>在“设置 &rarr; 录音 &rarr; 通话检测”中选择会发生什么：<strong>询问我</strong>（默认）、<strong>自动录音</strong>或<strong>关闭</strong>。在自动模式下，Parrot 会自行开始并在通话结束时停止。各地录音法律不同，许多地方要求告知通话中的每个人，因此自动模式把这一责任交给你。听写应用（FluidVoice、Wispr Flow、Superwhisper、MacWhisper、VoiceInk）永远不会被误认为通话。如果另一个应用总是被误认为通话，请在通知中选择<strong>此应用永不</strong>。设置中会列出这些应用并提供“再次询问”按钮。</p>
+
+<p>检测只在 Parrot 运行时有效，所以请在“设置 &rarr; 通用”中开启<strong>登录时打开 Parrot</strong>。</p>
+
+<h2>菜单栏</h2>
+<p>菜单栏中的鹦鹉是 Parrot 的快捷菜单，即使窗口关闭也在那里。录音时旁边会显示通话时长，静音时还会显示一个划掉的麦克风，让你一眼就能看出 Parrot 正在聆听以及你是否已静音。</p>
+
+<p>点击它可以<strong>开始录音</strong>、在<strong>配置</strong>下选择通话配置、在<strong>上次</strong>下打开或复制上次通话的报告，或就你的会议<strong>问问 Parrot</strong>。通话期间，同一个菜单中有<strong>标记时刻</strong>、<strong>静音我</strong>和<strong>停止录音</strong>，每项都有快捷键；只需要录音时还有<strong>关闭助手</strong>。<strong>打开 Parrot</strong> 会把窗口找回来，即使你已经关闭了它。</p>
+
+<h2>用日历为会议命名</h2>
+<p>在“设置 &rarr; 录音 &rarr; 日历”（或欢迎导览）中连接你的日历后，与日历事件时间吻合的通话会采用该事件的名称和受邀者列表。在通话后为声音命名时，受邀者会显示为一键姓名建议。对于 Parrot 自己察觉到的通话，“Interview: Jane”或“Acme demo”之类的事件标题还会选择匹配的通话配置，但仅当恰好只有一个配置符合时。Parrot 使用你 Mac 上已有的日历（iCloud、Google、Outlook），只读取，从不修改。</p>
+
+<p>只有你自己的事件会为通话命名：你组织的、已接受的或回复“可能”的。你未回复或已拒绝的邀请会被排除。在<strong>Parrot 读取的日历</strong>下，你还可以取消勾选整个日历，比如共享的团队日历或在“邮件”中发现的事件。</p>
+
+<p>连接后会出现两个额外开关。<strong>根据邀请向助手介绍情况</strong>让实时助手读取事件的标题、受邀者和备注。它默认关闭，因为那是别人写的内容，而使用云端 AI 的助手会收到它。<strong>会议前提醒我</strong>会在有受邀者或视频链接的会议开始前一分钟发送通知。</p>
+
+<p>连接日历后，菜单栏菜单还会显示你今天的下一次通话，比如<strong>下一个“Acme demo”在 14:00</strong>。从开始前 10 分钟起，它会变成<strong>加入并录音</strong>：一键打开事件的 Zoom、Meet 或 Teams 链接并开始录音，以事件命名，并使用其标题选中的配置。只有通话才算，即有受邀者或视频链接的事件，所以专注时间块永远不会出现在那里。</p>
+
+<h2>录音期间</h2>
+<p>顶部的栏显示你的输入和输出设备，以及每条音轨的实时电平表。如果你在通话中途切换 AirPods 或蓝牙耳机没电了，Parrot 会自动重建麦克风连接并继续录制。</p>
+
+<p>有一个警告值得了解：如果橙色文字<strong>“麦克风被其他应用静音”</strong>出现，意味着你的通话应用独占了麦克风，macOS 正在向 Parrot 输送静音。Parrot 会每隔几秒尝试夺回，通常都能成功。通话另一方全程持续录制，所以最坏的情况是你丢失一些自己的话，而不是整场会议。更多内容见<a href="troubleshooting.html">故障排除</a>。</p>
+
+<h2>告知他人正在录音</h2>
+<p>通话界面顶部的<strong>同意</strong>按钮会复制一段简短提示（“提醒：我正在用 Parrot 录制这次通话……”）以便粘贴到通话聊天中，或记录所有人已口头同意。无论哪种方式，会议都会保留记录，显示在其标题下方和导出内容中。在“设置 &rarr; 隐私”中编辑提示内容。开启提醒后，按钮在你使用之前会一直显示为橙色。</p>
+
+<h2>标记时刻</h2>
+<p>刚刚发生了重要的事？点击通话界面顶部的<strong>标记</strong>，选择“录音 &rarr; 标记时刻”，使用菜单栏图标，或在任何应用中按 <kbd>&#8963;&#8997;M</kbd>，即使 Zoom 或浏览器在前台也可以。按钮会提供一个输入框让你说明是什么（“定价问题”）；输入是可选的。标记的时刻会出现在报告的<strong>你标记的时刻</strong>下，报告在撰写时也会知道这些时刻对你很重要。通话后，将鼠标悬停在任意转录行上，点击行末的书签图标（或右键点击该行的时间并选择<strong>收藏这一行</strong>）。</p>
+<p><kbd>&#8963;&#8997;M</kbd> 快捷键只在录音进行时存在，并且它是 Parrot 唯一能看到的按键。在“设置 &rarr; 录音 &rarr; 收藏”中可以关闭它。</p>
+
+<h2>将自己静音</h2>
+<p>Parrot 独立监听你的麦克风，所以在 Zoom、Teams 或 Meet 中静音不会影响它。要让你这一侧暂时不被记录，请点击通话界面顶部的<strong>静音我</strong>，选择“录音 &rarr; 静音我”，使用菜单栏图标，或在任何应用中按 <kbd>&#8963;&#8997;&#8679;M</kbd>。静音期间，你这一侧录为静音，你的名下不会写入任何内容，控制按钮下方的栏会以橙色提示。另一方继续录制。点击<strong>取消静音</strong>或再次按快捷键即可恢复。与“标记”一样，该快捷键只在录音进行时存在。</p>
+
+<h2>停止</h2>
+<p>按下停止后，Parrot 会写完最后的话，保存两个音频文件，并在后台开始生成报告。会议会打开并显示<strong>通话已保存</strong>框：趁记忆犹新为它填写<strong>标题</strong>和<strong>备注</strong>，或点击<strong>跳过</strong>。标题留空的话，Parrot 会在报告写好后为通话命名，并在顶部添加一两行说明是和谁、关于什么。你输入的标题或来自日历的标题会被保留。你的备注也会显示在会议顶部，让你不用滚动就能区分不同的通话。</p>
+<img src="../img/call-saved.png" alt="通话已保存框：标题字段、备注字段、跳过和保存">
+
+<h2>忘了停止？</h2>
+<p>如果 15 分钟内没有人说话，Parrot 会发送“仍在录音？”通知，之后每 15 分钟再发一次，直到有人说话或你停止。macOS 会询问一次是否允许 Parrot 发送通知；如果你拒绝，程序坞图标会改为跳动。安静的房间不会被写成文字，所以忘记停止的录音只会占用磁盘空间。要删掉通话结束后的内容，右键点击某一行并选择<strong>删除此行之后的所有内容</strong>。</p>
+
+<h2>通话中途退出也没关系</h2>
+<p>如果你在录音时退出 Parrot，它会先完成录音再退出。如果你的 Mac 在通话中崩溃或应用被强制退出，下次启动时会找到被中断的会议并挽救它：已写好的转录会被保留，说话人会被重新检查，报告照常生成。已经说过的内容不会丢失。</p>
+
+<p class="muted">简体中文翻译：<a href="https://github.com/cknb6">CKNB</a> · <a href="../recording.html">English</a></p>
+</body>
+</html>

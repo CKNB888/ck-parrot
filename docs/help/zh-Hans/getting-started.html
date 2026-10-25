@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="keywords" content="install, setup, permissions, screen recording, microphone, whisper model, download, first run, claude, cursor, codex, ai apps">
+<title>快速上手</title>
+<link rel="stylesheet" href="../help.css">
+</head>
+<body>
+<a class="crumb" href="index.html">← Parrot 帮助</a>
+<h1>快速上手</h1>
+
+<h2>安装</h2>
+<p>从<a href="https://github.com/turantekin/Parrot/releases">发布页面</a>下载最新的 DMG，打开后把 Parrot 拖进“应用程序”。就这样。如果你更想从源码构建，克隆仓库并运行 <code>make run</code>。</p>
+
+<h2>两项权限</h2>
+<img src="../img/onboarding-permissions.png" alt="引导中的权限步骤">
+<p>首次启动时，Parrot 会引导你授予两项 macOS 权限。点击每个深色按钮，回应系统对话框，这一行会自动变成绿色对勾。正常录制通话两项都需要：</p>
+<ul>
+  <li><strong>系统音频录制。</strong>Parrot 借此听到通话的<em>另一方</em>。在 macOS 15 及更新版本上，这是一项仅限音频的权限：Parrot 完全不会请求屏幕访问。在 macOS 14 上，同样的工作要通过传统的“屏幕录制”权限完成；这常让人意外，所以坦白解释一下：这只是旧版 macOS 提供系统音频的方式。无论哪种情况，Parrot 都不会捕获你的屏幕内容，只捕获声音。</li>
+  <li><strong>麦克风。</strong>你这一方的声音。</li>
+</ul>
+
+<div class="tip"><strong>注意：</strong>在 macOS 14 上，“屏幕录制”权限要在应用重启后才生效。如果授权后这一行没有变成绿色对勾，请退出 Parrot 再重新打开。macOS 就是这样。macOS 15 及以上无需重启；Parrot 第一次听到会议音频时这一行会自动确认。</div>
+
+<h2>认识助手</h2>
+<img src="../img/onboarding-meet-copilot.png" alt="“认识助手”步骤：一个示例通话和四个好处">
+<p>接下来是一个简短示例，展示助手在通话中做什么：当对方提问时，它会根据你自己的文档建议回答，把关键阻碍置顶直到你处理，实时打分，并在通话后撰写报告。只有你能看到它；不会有机器人加入你的通话。</p>
+
+<h2>选择助手的工作方式</h2>
+<img src="../img/onboarding-path.png" alt="私密、均衡和云端三种选择">
+<ul>
+  <li><strong>私密。</strong>一切都留在你的 Mac 上，而且免费。Parrot 会为你安装 Ollama 应用（约 200 MB；macOS 会让你确认一次）并下载一个模型。下载期间你可以继续操作；完成后助手会自动开启。</li>
+  <li><strong>均衡。</strong>推荐。音频留在你的 Mac 上，只有文字发送给 Claude。粘贴 Claude 密钥并点击“检查密钥”。</li>
+  <li><strong>云端。</strong>Deepgram 实时写出文字，Claude 运行助手。需要 Claude 密钥；Deepgram 密钥可选。</li>
+</ul>
+<p>还没想好？选<strong>稍后决定</strong>。主页上的卡片让你随时设置助手，“设置 → 助手 → 设置助手”也可以。</p>
+
+<h2>语音转文字</h2>
+<img src="../img/onboarding-model.png" alt="语音模型选择器">
+<p>转录在你的 Mac 上进行。Parrot 会挑选适合你 Mac 的模型并立即开始下载。<strong>Parakeet v3</strong> 最快，但它只支持 25 种欧洲语言，不包括土耳其语，因此只有当你 Mac 的语言（以及你过往的通话，如果有的话）都符合时 Parrot 才会推荐它。否则它会选择 Whisper：12 GB 及以上内存的 Mac 用 <strong>Large V3 Turbo</strong>，更小的用 <strong>Base</strong>。<strong>Large V3 Turbo Compressed</strong> 介于两者之间：精度接近大模型，下载量只有三分之一。关闭设置窗口后下载会继续，录音按钮会等到下载完成。之后转录可以离线工作。</p>
+
+<p>你可以随时在“设置 → 转录”中切换模型。</p>
+
+<h2>在 Claude 中使用你的会议</h2>
+<img src="../img/onboarding-ai-apps.png" alt="连接 Claude、Cursor 或 Codex 的步骤">
+<p>接近尾声时，导览会展示如何向 Claude、Cursor 或 Codex 询问你的通话。<strong>连接 Claude</strong> 会开启<strong>允许 AI 应用读取我的会议</strong>并打开 Claude 的安装界面：在那里点击“安装”。<strong>继续</strong>会跳过此步，Cursor、Codex 和 Claude Code 可以随时从侧边栏的<strong>Claude 与 AI 应用</strong>连接。</p>
+<p>这是 Parrot 中唯一不像其他部分那样私密的功能。当你提问时，该应用读取的内容会以你的账户发送给其公司（Anthropic、OpenAI 或 Cursor 的 AI 服务商）。在你连接之前它保持关闭，并且从不接触音频、API 密钥或仅限本机的会议。如果你选择了<strong>私密</strong>，导览会略过这一步。详见<a href="claude.html">在 Claude 中使用你的会议</a>。</p>
+
+<h2>就这些</h2>
+<img src="../img/dashboard.png" alt="主页：录音按钮、配置标签、统计和最近的会议">
+<p>漏看了什么，或者设置到一半退出了？在你完成之前，Parrot 会自动再次显示导览，你也可以随时从“帮助 &rarr; 显示欢迎导览”重新播放。</p>
+<p>按下大大的录音按钮开始说话。转录会随着你说话出现。想了解 Parrot 的 AI 部分时，请阅读<a href="copilot-setup.html">设置助手</a>。它是可选的，默认关闭。</p>
+
+<p class="muted">简体中文翻译：<a href="https://github.com/cknb6">CKNB</a> · <a href="../getting-started.html">English</a></p>
+</body>
+</html>

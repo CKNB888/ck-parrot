@@ -16,6 +16,22 @@ mkdir -p "$LPROJ"
 cp "$SRC"/*.html "$SRC"/help.css "$LPROJ/"
 cp -R "$SRC/img" "$LPROJ/img"
 
+# Simplified Chinese pages live in docs/help/zh-Hans and reference the shared
+# css/images via ../ (so GitHub Pages works). Inside the book each lproj is
+# self-contained, so copy the assets and rewrite those paths.
+ZH_SRC="$SRC/zh-Hans"
+ZH_LPROJ="$BOOK/Contents/Resources/zh-Hans.lproj"
+if [ -d "$ZH_SRC" ]; then
+  mkdir -p "$ZH_LPROJ"
+  cp "$SRC"/help.css "$ZH_LPROJ/"
+  cp -R "$SRC/img" "$ZH_LPROJ/img"
+  for f in "$ZH_SRC"/*.html; do
+    sed -e 's#"\.\./help\.css"#"help.css"#g' -e 's#"\.\./img/#"img/#g' \
+        -e 's#href="\.\./\([a-z0-9-]*\.html\)#href="../en.lproj/\1#g' \
+      "$f" > "$ZH_LPROJ/$(basename "$f")"
+  done
+fi
+
 # The book's own identity. HPDBookAccessPath is the landing page; the index
 # file is what gives the Help menu's search field results from our pages.
 cat > "$BOOK/Contents/Info.plist" <<'PLIST'
@@ -58,6 +74,10 @@ PLIST
 # present in the CS index.
 hiutil -Caf "$LPROJ/Parrot.helpindex" "$LPROJ"
 hiutil -C -a -I corespotlight -f "$LPROJ/Parrot.cshelpindex" "$LPROJ"
+if [ -d "$ZH_LPROJ" ]; then
+  hiutil -Caf "$ZH_LPROJ/Parrot.helpindex" "$ZH_LPROJ"
+  hiutil -C -a -I corespotlight -f "$ZH_LPROJ/Parrot.cshelpindex" "$ZH_LPROJ"
+fi
 
 # A built book is useless unless the app's Info.plist points at it: without
 # these two keys Help Viewer says "Help isn't available for Parrot" and the
