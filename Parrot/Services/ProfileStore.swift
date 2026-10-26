@@ -150,6 +150,7 @@ final class ProfileStore {
                 continue
             }
             p.persona = preset.persona
+            p.summary = preset.summary
             p.counterpart = preset.counterpart
             p.kinds = preset.kinds
             p.gauges = preset.gauges
@@ -163,6 +164,7 @@ final class ProfileStore {
     func resetToBuiltIn(_ p: CallProfile, in context: ModelContext) {
         guard p.isBuiltIn, let preset = ProfilePresets.all().first(where: { $0.id == p.id }) else { return }
         p.persona = preset.persona
+        p.summary = preset.summary
         p.tone = preset.tone
         p.counterpart = preset.counterpart
         p.kinds = preset.kinds

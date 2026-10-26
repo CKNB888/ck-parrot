@@ -261,15 +261,6 @@ struct CallDetector {
         let known: [(String, String)] = [
             ("com.tencent.xinWeChat", "微信"),
             ("com.tencent.qq", "QQ"),
-            // ck-parrot v2.1.1: domestic meeting apps by bundle id.
-            ("com.tencent.meeting", "腾讯会议"),
-            ("com.tencent.wemeet", "腾讯会议"),
-            ("com.alibaba.DingTalkMac", "钉钉"),
-            ("com.bytedance.macos.feishu", "飞书"),
-            ("com.electron.lark", "飞书"),
-            ("com.tencent.WeWorkMac", "企业微信"),
-            ("com.tencent.xinWeChat", "微信"),
-            ("com.tencent.qq", "QQ"),
             ("us.zoom", "Zoom"),
             ("com.microsoft.teams", "Microsoft Teams"),
             ("com.apple.FaceTime", "FaceTime"),
@@ -298,42 +289,9 @@ struct CallDetector {
         return appID.split(separator: ".").last.map(String.init) ?? appID
     }
 
-    /// Browser bundle ids whose window titles may name a web meeting.
-    static let browserIDs: [String] = ["com.google.Chrome", "com.apple.Safari", "company.thebrowser",
-                                       "com.microsoft.edgemac", "org.mozilla.firefox", "com.brave.Browser"]
-
-    /// ck-parrot v2.1.1: a web meeting named by a browser window title
-    /// ("Meet - abc-defg-hij" → "Google Meet"). Pure, so it is unit-tested.
-    static func webMeeting(inTitle title: String) -> String? {
-        let t = title.lowercased()
-        let rules: [(String, String)] = [
-            ("meet.google.com", "Google Meet"), ("google meet", "Google Meet"), ("meet - ", "Google Meet"),
-            ("腾讯会议", "腾讯会议"), ("voovmeeting", "腾讯会议"), ("meeting.tencent.com", "腾讯会议"),
-            ("钉钉", "钉钉"), ("飞书会议", "飞书"), ("vc.feishu.cn", "飞书"),
-            ("zoom meeting", "Zoom"), ("app.zoom.us", "Zoom"),
-            ("microsoft teams", "Microsoft Teams"), ("webex", "Webex"),
-        ]
-        return rules.first(where: { t.contains($0.0) })?.1
-    }
-
-    /// The name to show for a detected call. For browsers, looks at the
-    /// browser's on-screen window titles; titles are only readable with the
-    /// Screen Recording permission, otherwise falls back to the browser name.
-    static func meetingName(for appID: String) -> String {
-        let base = displayName(for: appID)
-        guard browserIDs.contains(where: { appID.hasPrefix($0) }) else { return base }
-        let pids = Set(NSRunningApplication.runningApplications(withBundleIdentifier: appID).map(\.processIdentifier))
-        guard !pids.isEmpty,
-              let info = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID)
-                as? [[String: Any]] else { return base }
-        for w in info {
-            guard let pid = w[kCGWindowOwnerPID as String] as? pid_t, pids.contains(pid),
-                  let title = w[kCGWindowName as String] as? String, let hit = webMeeting(inTitle: title)
-            else { continue }
-            return "\(hit)（\(base)）"
-        }
-        return base
-    }
+    /// The name to show for a detected call (browser meetings resolve through
+    /// `BrowserMeeting` inside `displayName`).
+    static func meetingName(for appID: String) -> String { displayName(for: appID) }
 
     /// The app declined the offer for now (model still loading, an import
     /// running): offer again on the next reading if the call is still on.

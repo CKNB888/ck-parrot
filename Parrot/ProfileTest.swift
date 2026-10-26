@@ -570,6 +570,10 @@ enum ProfileTest {
         check("v2.1.1 Chinese prompt library present", ["会议助手", "求职面试", "同声翻译", "课堂答疑·理科", "课堂答疑·语言"].allSatisfy { n in all.contains { $0.name == n } })
         check("preset ids unique", Set(all.map(\.id)).count == all.count)
         check("Chinese personas stay compact", all.filter { $0.name.unicodeScalars.contains { $0.value > 0x4E00 } }.allSatisfy { $0.persona.count < 400 })
+        check("v2.1.1: every built-in summary is Chinese",
+              all.filter(\.isBuiltIn).allSatisfy { $0.summary.unicodeScalars.contains { $0.value >= 0x4E00 && $0.value <= 0x9FFF } })
+        check("v2.1.1: every built-in persona is Chinese",
+              all.filter(\.isBuiltIn).allSatisfy { $0.persona.contains("简体中文") || $0.persona.contains("中文") })
         check("classroom preset answers in Chinese, conclusion first", all.first { $0.name == "课堂答疑" }?.persona.contains("一句话结论") == true)
         let vendor = all.first { $0.name == "Vendor call" }
         check("vendor call preset exists with the vendor as counterpart", vendor?.counterpart == "the vendor")
@@ -3414,9 +3418,6 @@ enum ProfileTest {
         check("pill: valid spot restored as is", PillPosition.restore(ok, screens: scr) == ok)
         check("腾讯会议 named", D.displayName(for: "com.tencent.meeting") == "腾讯会议")
         check("钉钉 named", D.displayName(for: "com.alibaba.DingTalkMac") == "钉钉")
-        check("web meeting: Google Meet title", D.webMeeting(inTitle: "Meet - abc-defg-hij") == "Google Meet")
-        check("web meeting: 腾讯会议网页版", D.webMeeting(inTitle: "腾讯会议 - 网页版") == "腾讯会议")
-        check("web meeting: ordinary page is not a meeting", D.webMeeting(inTitle: "GitHub - CKNB888") == nil)
         check("user-ignored app dropped", D.relevantApps(["us.zoom.xos"], ignored: ["us.zoom.xos"]).isEmpty)
         check("ignoring Chrome covers its helper",
               D.relevantApps(["com.google.Chrome.helper"], ignored: ["com.google.Chrome"]).isEmpty)

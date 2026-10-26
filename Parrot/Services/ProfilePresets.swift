@@ -32,8 +32,9 @@ enum ProfilePresets {
     /// v6: card and persona text users can read in Settings (no shouting
     /// capitals or em-dashes), the job-only rule on Interview's live Red flag,
     /// "You're talking" on Interview, Frustration cue its own color.
+    /// v8 (ck-parrot 2.1.1): upstream presets' summary and persona in Chinese.
     /// v7 (ck-parrot 2.1.1): Chinese prompt library — 会议助手, 求职面试, 同声翻译, 课堂·理科, 课堂·语言.
-    static let presetVersion = 7
+    static let presetVersion = 8
 
     // The hex strings below are persisted in user data — never change them when
     // retheming the app. KindResolver.adaptiveColor maps each one to an adaptive
@@ -61,7 +62,7 @@ enum ProfilePresets {
     static func makeDefault(persona: String, tone: String, allowGeneralKnowledge: Bool) -> CallProfile {
         shipped(CallProfile(
             id: defaultProfileID, name: "Default", iconSystemName: "person.wave.2",
-            summary: "For most calls. A good place to start.",
+            summary: "适用于大多数通话，入门首选。",
             isBuiltIn: true, sortOrder: 0, persona: persona, tone: tone,
             counterpart: "the other person",
             allowGeneralKnowledge: allowGeneralKnowledge, presetVersion: presetVersion,
@@ -80,7 +81,7 @@ enum ProfilePresets {
         [
             makeDefault(persona: defaultPersona, tone: "", allowGeneralKnowledge: true),
             CallProfile(id: salesID, name: "Sales discovery", iconSystemName: "dollarsign.circle",
-                summary: "Discovery & objection handling for sales calls.",
+                summary: "销售沟通：挖掘需求、应对异议。",
                 isBuiltIn: true, sortOrder: 1,
                 persona: salesPersona,
                 tone: "", counterpart: "the prospect", allowGeneralKnowledge: true,
@@ -97,9 +98,9 @@ enum ProfilePresets {
                 gauges: [gauge("buying_temperature", "Buying temp", "Cold", "Hot", "E8943A"),
                          gauge("my_dominance", "You're talking", "Balanced", "Dominating", "5F6470")]),
             CallProfile(id: coachingID, name: "1:1 coaching", iconSystemName: "heart.text.square",
-                summary: "Supportive listening for coaching / 1:1s.",
+                summary: "辅导与一对一：倾听、回应、提开放式问题。",
                 isBuiltIn: true, sortOrder: 2,
-                persona: "You are a warm, non-judgmental coaching assistant. Help the user listen deeply, reflect back, and ask open questions. Never frame the other person as an objection or obstacle.",
+                persona: "你是温和、不评判的辅导助手。帮我认真倾听、复述确认、提出开放式问题；所有输出用简体中文，结论在前。不要把对方当成异议或阻碍。",
                 tone: "", counterpart: "the person", allowGeneralKnowledge: true,
                 presetVersion: presetVersion,
                 kinds: [
@@ -112,9 +113,9 @@ enum ProfilePresets {
                 gauges: [gauge("client_openness", "Openness", "Guarded", "Open", "2F7E96"),
                          gauge("my_dominance", "You're talking", "Balanced", "Dominating", "5F6470")]),
             CallProfile(id: interviewID, name: "Interview", iconSystemName: "person.crop.rectangle.stack",
-                summary: "For when you're interviewing a candidate.",
+                summary: "我是面试官：评估候选人。",
                 isBuiltIn: true, sortOrder: 3,
-                persona: "You are an interview assistant helping the user assess a candidate fairly. Surface follow-ups, signals, and red flags; help them cover the ground they planned.",
+                persona: "你是面试官助手，帮我公平地评估候选人：提示可追问的问题、积极信号和风险点，帮我覆盖计划要问的内容。所有输出用简体中文，结论在前。",
                 tone: "", counterpart: "the candidate", allowGeneralKnowledge: true,
                 presetVersion: presetVersion,
                 kinds: [
@@ -127,9 +128,9 @@ enum ProfilePresets {
                 gauges: [gauge("candidate_confidence", "Confidence", "Hesitant", "Confident", "3F9168"),
                          gauge("my_dominance", "You're talking", "Balanced", "Dominating", "5F6470")]),
             CallProfile(id: supportID, name: "Customer support", iconSystemName: "lifepreserver",
-                summary: "Resolve issues and keep customers calm.",
+                summary: "客户支持：解决问题，安抚情绪。",
                 isBuiltIn: true, sortOrder: 4,
-                persona: "You are a calm, helpful support assistant. Help the user resolve the customer's issue clearly and keep them reassured.",
+                persona: "你是冷静、可靠的客户支持助手。帮我把客户的问题讲清楚、解决掉，并让客户安心。所有输出用简体中文，结论在前。",
                 tone: "", counterpart: "the customer", allowGeneralKnowledge: true,
                 presetVersion: presetVersion,
                 kinds: [
@@ -141,9 +142,9 @@ enum ProfilePresets {
                 ],
                 gauges: [gauge("customer_frustration", "Frustration", "Calm", "Upset", "E8943A")]),
             CallProfile(id: genericID, name: "Generic", iconSystemName: "bubble.left.and.bubble.right",
-                summary: "Fewer cards, nothing assumed about the call.",
+                summary: "卡片更少，不对通话做任何预设。",
                 isBuiltIn: true, sortOrder: 5,
-                persona: "You are a neutral meeting assistant. Surface useful suggestions, open questions, and action items without assuming the call's purpose.",
+                persona: "你是中立的会议助手。给出有用的建议、未解决的问题和待办，不预设通话目的。所有输出用简体中文，结论在前。",
                 tone: "", counterpart: "the other person", allowGeneralKnowledge: true,
                 presetVersion: presetVersion,
                 kinds: [
@@ -154,7 +155,7 @@ enum ProfilePresets {
                 ],
                 gauges: [gauge("engagement", "Engagement", "Flat", "Engaged", "2F7E96")]),
             CallProfile(id: vendorID, name: "Vendor call", iconSystemName: "building.columns",
-                summary: "You're the customer: a bank or supplier onboards you.",
+                summary: "我是客户：银行或供应商向我介绍服务。",
                 isBuiltIn: true, sortOrder: 6,
                 persona: vendorPersona,
                 tone: "", counterpart: "the vendor", allowGeneralKnowledge: true,
@@ -170,7 +171,7 @@ enum ProfilePresets {
                 gauges: [gauge("fit", "Fit", "Poor", "Strong", "3F9168"),
                          gauge("my_dominance", "You're talking", "Balanced", "Dominating", "5F6470")]),
             CallProfile(id: investorID, name: "Investor pitch", iconSystemName: "chart.line.uptrend.xyaxis",
-                summary: "Pitching to VCs and angels.",
+                summary: "向风投和天使投资人路演。",
                 isBuiltIn: true, sortOrder: 7,
                 persona: investorPersona,
                 tone: "", counterpart: "the investor", allowGeneralKnowledge: true,
@@ -406,31 +407,25 @@ enum ProfilePresets {
     static func reportTemplate(for id: UUID) -> ReportTemplate? { reportTemplates[id] }
 
     /// The framing scaffold the Default profile uses (mirrors today's hardcoded prompt intent).
-    private static let defaultPersona = "You are a live call assistant. Draft short, concrete lines the user can say, flag obstacles, and capture commitments."
+    private static let defaultPersona = "你是实时通话助手。所有输出用简体中文，结论在前：给出我可以直接说的简短回答，提示阻碍，记下对方的承诺。"
 
     /// Vendor call persona — the user is buying, and the copilot protects their side.
     private static let vendorPersona = """
-    You assist someone who is the customer on this call: a bank, payment provider, supplier or agency \
-    is explaining what it offers, answering their questions, or onboarding them. The user is not \
-    selling anything and the other party is never a prospect. Protect the user's interests: capture \
-    exactly what the vendor commits to and what it costs, flag risks, holds, exclusions and unanswered \
-    questions, and suggest what to ask next. Keep the vendor's numbers verbatim.
+    这通电话里我是客户：银行、支付机构、供应商或代理商在介绍服务、回答问题或为我办理开通。我不是在推销，\
+    对方也不是潜在客户。维护我的利益：原样记下对方承诺的内容和费用，提示风险、冻结、免责条款和没答清的问题，\
+    并建议下一句该问什么。对方说的数字一字不改。所有输出用简体中文，结论在前。
     """
 
     /// Investor pitch persona — the user is the founder asking for money.
     private static let investorPersona = """
-    You are coaching a founder pitching to an investor (a VC or angel) on a live call. Help the \
-    founder answer crisply with numbers, handle pushback without getting defensive, notice what the \
-    investor cares about, and make sure the call ends with a clear next step. Every card must be \
-    usable in the next 30 seconds.
+    你在实时辅导一位正在向投资人（风投或天使）路演的创始人。帮创始人用数字干脆地回答，面对质疑不防御，\
+    抓住投资人真正关心的点，并确保通话以明确的下一步结束。每张卡片都要在 30 秒内用得上。所有输出用简体中文，结论在前。
     """
 
     /// Sales discovery persona — a real-time coach, not just a suggestion engine.
     private static let salesPersona = """
-    You are an elite B2B sales coach embedded in a live discovery call, coaching the user in real time. \
-    Push qualification over pitching: help the user uncover pain, budget, authority, and timeline. \
-    Don't just hand over lines: coach. Call it out when the user is talking too much, skips a buying \
-    signal, leaves the prospect's question unanswered, or misses a chance to dig into a stated pain. \
-    Every card must be usable in the next 30 seconds.
+    你是嵌在实时销售沟通里的资深 B2B 销售教练，实时辅导我。重在判断客户资质而不是推销：帮我挖出痛点、预算、\
+    决策人和时间表。不只是给台词，要辅导：我说得太多、错过购买信号、没回答客户的问题、没追问客户提到的痛点时直接指出。\
+    每张卡片都要在 30 秒内用得上。所有输出用简体中文，结论在前。
     """
 }

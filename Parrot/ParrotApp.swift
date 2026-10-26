@@ -223,6 +223,17 @@ final class ParrotAppDelegate: NSObject, NSApplicationDelegate {
             MainActor.assumeIsolated { Self.applyShareProtection() }
         }
         Self.applyShareProtection()
+        // ck-parrot v2.1.1: Settings dropdowns, context menus and pop-up buttons
+        // open their menu window while the run loop is in event-tracking mode,
+        // where didUpdate never fires. Re-apply right after tracking starts.
+        NotificationCenter.default.addObserver(forName: NSMenu.didBeginTrackingNotification, object: nil, queue: .main) { _ in
+            MainActor.assumeIsolated { Self.applyShareProtection() }
+            for delay in [0.02, 0.1, 0.3] {
+                DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                    MainActor.assumeIsolated { Self.applyShareProtection() }
+                }
+            }
+        }
         // After the close has finished: until then the window still counts.
         NotificationCenter.default.addObserver(forName: NSWindow.willCloseNotification, object: nil, queue: .main) { _ in
             Task { @MainActor in Self.hideFromDockIfClosed() }

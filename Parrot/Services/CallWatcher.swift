@@ -274,10 +274,14 @@ final class CallWatcher: NSObject, UNUserNotificationCenterDelegate {
     // MARK: Notifications
 
     private func post(id: String, title: String, body: String, category: String?) {
+        // ck-parrot v2.1.1: a notification banner shows up in a shared screen.
+        // In automatic mode the panel already shows 正在监听, so call prompts
+        // stay silent while share protection is on; others never play a sound.
+        let hideFromShare = UserDefaults.standard.object(forKey: ParrotAppDelegate.hideFromShareKey) as? Bool ?? true
+        if id == Self.promptID, AutoRecordMode.current == .auto, hideFromShare { return }
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body
-        content.sound = .default
         if let category { content.categoryIdentifier = category }
         Task {
             let center = UNUserNotificationCenter.current()
