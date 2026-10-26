@@ -1152,3 +1152,6 @@
 "Add Key" = "Add Key";
 "Keys are tried in order. When one hits a rate limit, quota or auth error it rests for a while and the next key is used." = "Keys are tried in order. When one hits a rate limit, quota or auth error it rests for a while and the next key is used.";
 "Reset to Default" = "Reset to Default";
+"AI Model" = "AI Model";
+"Switch" = "Switch";
+"Takes effect from the next recording." = "Takes effect from the next recording.";

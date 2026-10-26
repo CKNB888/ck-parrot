@@ -1152,3 +1152,6 @@
 "Add Key" = "添加密钥";
 "Keys are tried in order. When one hits a rate limit, quota or auth error it rests for a while and the next key is used." = "按顺序使用密钥。某个密钥遇到限流、额度用完或认证失败时会暂停一段时间，自动换用下一个。";
 "Reset to Default" = "恢复默认";
+"AI Model" = "AI 模型";
+"Switch" = "切换";
+"Takes effect from the next recording." = "下次录音起生效。";

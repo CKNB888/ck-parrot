@@ -109,6 +109,7 @@ enum ProfileTest {
         testCopilotSetupState()
         testProviderKeyCheck()
         testKeyRotation()
+        testPanelModelSwitch()
         testProgressStall()
         testOllamaService()
         testOllamaInstaller()
@@ -539,6 +540,28 @@ enum ProfileTest {
         check("keys: quota 30 min, auth 10 min", KeyRotation.cooldown(status: 402, retryAfter: nil) == 1800 && KeyRotation.cooldown(status: 401, retryAfter: nil) == 600)
         check("keys: rotate on 401/402/403/429 only", KeyRotation.rotateStatus == [401, 402, 403, 429])
         KeyRotation.reset()
+    }
+
+    static func testPanelModelSwitch() {
+        let d = UserDefaults.standard
+        let keys = ["copilotProvider", "copilotOllamaModel", "copilotCustomModel", PanelModelSwitch.customHistoryKey, TranscriptionBackend.defaultsKey]
+        let saved = keys.map { d.object(forKey: $0) }
+        defer { for (k, v) in zip(keys, saved) { if let v { d.set(v, forKey: k) } else { d.removeObject(forKey: k) } } }
+        PanelModelSwitch.setProvider(.custom)
+        check("panel: provider switch drives the next request", CopilotProviderKind.selected == .custom)
+        check("panel: custom model set", PanelModelSwitch.setModel(" llama-3.3-70b-versatile ", for: .custom)
+              && OpenAICompatibleProvider.customModel == "llama-3.3-70b-versatile")
+        check("panel: active model name follows", CopilotProviderKind.activeModelName == "llama-3.3-70b-versatile")
+        PanelModelSwitch.setModel("gpt-4o-mini", for: .custom)
+        check("panel: custom history newest first", PanelModelSwitch.models(for: .custom).prefix(2) == ["gpt-4o-mini", "llama-3.3-70b-versatile"])
+        check("panel: empty model rejected", !PanelModelSwitch.setModel("  ", for: .custom) && OpenAICompatibleProvider.customModel == "gpt-4o-mini")
+        check("panel: Claude model fixed", !PanelModelSwitch.setModel("x", for: .claude))
+        PanelModelSwitch.setProvider(.ollama)
+        PanelModelSwitch.setModel("gemma3:4b", for: .ollama)
+        check("panel: ollama switch", CopilotProviderKind.selected == .ollama && OpenAICompatibleProvider.ollamaModel == "gemma3:4b")
+        check("panel: ollama chips include catalog", Set(OllamaCatalog.ids).isSubset(of: Set(PanelModelSwitch.models(for: .ollama))))
+        PanelModelSwitch.setTranscription(.groq)
+        check("panel: transcription switch persisted", d.string(forKey: TranscriptionBackend.defaultsKey) == "groq")
     }
 
     static func testPresets() {

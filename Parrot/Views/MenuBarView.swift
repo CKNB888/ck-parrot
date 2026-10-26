@@ -16,6 +16,16 @@ struct MenuBarView: View {
     @Query(Self.recentFirst) private var recent: [Meeting]
     @AppStorage(ParrotAppDelegate.hideFromShareKey) private var hideFromShare = true
     @State private var tab: Tab = .now
+    @Environment(\.openSettings) private var openSettings
+    // ck-parrot v2.1.1: provider / model switching right in the panel.
+    @AppStorage("copilotProvider") private var providerRaw = CopilotProviderKind.claude.rawValue
+    @AppStorage("copilotOllamaModel") private var ollamaModel = ""
+    @AppStorage("copilotCustomModel") private var customModel = ""
+    @AppStorage(TranscriptionBackend.defaultsKey) private var backendRaw = TranscriptionBackend.local.rawValue
+    @State private var showModels = false
+    @State private var modelDraft = ""
+    /// Shown inline: an NSAlert is a separate window and would steal focus from the panel.
+    @State private var startError: String?
 
     enum Tab: Hashable { case now, recent }
 
@@ -105,7 +115,70 @@ struct MenuBarView: View {
             idleCard
         }
 
+        modelSection
+
         stats
+    }
+
+    /// Read from the @AppStorage mirrors so the panel redraws on every change.
+    private var panelModel: String {
+        switch providerKind {
+        case .claude: ClaudeAnalysisProvider.model
+        case .ollama: ollamaModel.isEmpty ? "llama3.2:3b" : ollamaModel
+        case .custom: customModel
+        }
+    }
+
+    private var providerKind: CopilotProviderKind { CopilotProviderKind(rawValue: providerRaw) ?? .claude }
+
+    /// Plain buttons, no Picker/Menu: a menu is a separate NSMenu window that
+    /// screen sharing can see; everything here stays inside the protected panel.
+    private var modelSection: some View {
+        MBCard {
+            VStack(alignment: .leading, spacing: 8) {
+                Button { showModels.toggle() } label: {
+                    HStack {
+                        Text("AI Model").font(.system(size: 12)).foregroundStyle(.secondary)
+                        Spacer()
+                        Text(verbatim: "\(providerKind.label) · \(panelModel")
+                            .font(.system(size: 12, weight: .medium)).lineLimit(1)
+                        Image(systemName: showModels ? "chevron.up" : "chevron.down").font(.system(size: 10))
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("panel-model-toggle")
+
+                if showModels {
+                    MBChips(items: CopilotProviderKind.allCases.map { ($0.rawValue, $0.label) }, selected: providerRaw) {
+                        PanelModelSwitch.setProvider(CopilotProviderKind(rawValue: $0) ?? .claude)
+                    }
+                    MBChips(items: PanelModelSwitch.models(for: providerKind).map { ($0, $0) },
+                            selected: panelModel, mono: true) {
+                        PanelModelSwitch.setModel($0, for: providerKind)
+                    }
+                    if providerKind != .claude {
+                        HStack(spacing: 6) {
+                            TextField("Model name", text: $modelDraft)
+                                .textFieldStyle(.roundedBorder)
+                                .font(.system(size: 11, design: .monospaced))
+                                .onSubmit { if PanelModelSwitch.setModel(modelDraft, for: providerKind) { modelDraft = "" } }
+                            Button("Switch") { if PanelModelSwitch.setModel(modelDraft, for: providerKind) { modelDraft = "" } }
+                                .controlSize(.small)
+                                .disabled(modelDraft.trimmingCharacters(in: .whitespaces).isEmpty)
+                        }
+                    }
+                    Divider()
+                    Text("Transcription").font(.system(size: 12)).foregroundStyle(.secondary)
+                    MBChips(items: TranscriptionBackend.allCases.map { ($0.rawValue, $0.label) }, selected: backendRaw) {
+                        PanelModelSwitch.setTranscription(TranscriptionBackend(rawValue: $0) ?? .local)
+                    }
+                    if recordingManager.isRecording {
+                        Text("Takes effect from the next recording.").font(.system(size: 11)).foregroundStyle(.secondary)
+                    }
+                }
+            }
+        }
     }
 
     private var recordingCard: some View {
@@ -162,7 +235,7 @@ struct MenuBarView: View {
         MBCard {
             VStack(alignment: .leading, spacing: 10) {
                 nextCall
-                Button { startRecording() } label: {
+                Button { startError = nil; startRecording() } label: {
                     Label(L("Start Recording"), systemImage: "record.circle")
                         .frame(maxWidth: .infinity)
                 }
@@ -170,6 +243,11 @@ struct MenuBarView: View {
                 .controlSize(.large)
                 .keyboardShortcut("r")
                 .disabled(!recordingManager.transcriptionEngine.isReady)
+
+                if let startError {
+                    Text("Couldn't start recording").font(.system(size: 12, weight: .medium)).foregroundStyle(.red)
+                    Text(verbatim: startError).font(.system(size: 11)).foregroundStyle(.secondary)
+                }
 
                 if !recordingManager.transcriptionEngine.isReady {
                     Text("Loading speech model…")
@@ -280,7 +358,13 @@ struct MenuBarView: View {
 
     private var footer: some View {
         HStack {
-            SettingsLink {
+            // SettingsLink from a menu-bar panel can open Settings behind other
+            // apps (the app is not active): activate first, then open.
+            Button {
+                ParrotAppDelegate.showInDock()
+                NSApp.activate(ignoringOtherApps: true)
+                openSettings()
+            } label: {
                 Label(L("Settings…"), systemImage: "slider.horizontal.3")
             }
             Spacer()
@@ -303,11 +387,7 @@ struct MenuBarView: View {
             do {
                 try await recordingManager.preflightPermissionsAndStart(modelContext: modelContext)
             } catch {
-                NSApp.activate(ignoringOtherApps: true)
-                let alert = NSAlert()
-                alert.messageText = String(localized: "Couldn't start recording")
-                alert.informativeText = error.localizedDescription
-                alert.runModal()
+                startError = error.localizedDescription
             }
         }
     }
@@ -348,6 +428,38 @@ private struct MBHeaderIcon: View {
         .foregroundStyle(.secondary)
         .help(help)
         .onHover { hovering = $0 }
+    }
+}
+
+/// One-tap choices drawn inside the panel (no NSMenu popup).
+private struct MBChips: View {
+    let items: [(id: String, label: String)]
+    let selected: String
+    var mono = false
+    let onPick: (String) -> Void
+
+    init(items: [(String, String)], selected: String, mono: Bool = false, onPick: @escaping (String) -> Void) {
+        self.items = items.map { (id: $0.0, label: $0.1) }
+        self.selected = selected
+        self.mono = mono
+        self.onPick = onPick
+    }
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 6) {
+                ForEach(items, id: \.id) { item in
+                    Button { onPick(item.id) } label: {
+                        Text(verbatim: item.label)
+                            .font(mono ? .system(size: 11, design: .monospaced) : .system(size: 11))
+                            .lineLimit(1)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                    .tint(item.id == selected ? .accentColor : nil)
+                }
+            }
+        }
     }
 }
 
