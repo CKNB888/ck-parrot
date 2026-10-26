@@ -70,13 +70,17 @@
 	<key>NSScreenCaptureUsageDescription</key>
 	<string>CK Parrot captures system audio from your meetings via screen recording. Only audio is used — never screen content.</string>
 	<key>SUAutomaticallyUpdate</key>
-	<false/>
+	<true/>
 	<key>SUEnableAutomaticChecks</key>
-	<false/>
+	<true/>
+	<key>SUFeedURL</key>
+	<string>https://github.com/CKNB888/ck-parrot/releases/download/appcast/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>wOS1o9R03Cx717sQ1+n/b7bViUUfYxvkHMKJVHtVykM=</string>
 	<key>SUEnableInstallerLauncherService</key>
 	<true/>
 	<key>SUScheduledCheckInterval</key>
-	<integer>86400</integer>
+	<integer>21600</integer>
 	<key>UTExportedTypeDeclarations</key>
 	<array>
 		<dict>

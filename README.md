@@ -4,7 +4,7 @@
 
 > 基于 Parrot（作者 turantekin / Uygar，GPL-3.0）二次开发，维护者 **CKNB**。
 > 仓库：<https://github.com/CKNB888/ck-parrot> · 包标识 `io.github.cknb6.ckparrot`（可与上游 Parrot 同时安装）
-> 当前版本：**v2.1.0** · 系统要求：macOS 14+，Apple Silicon
+> 当前版本：**v2.1.1** · 系统要求：macOS 14+，Apple Silicon
 
 ## 它能做什么
 同时录制系统音频（对方）和麦克风（你），**在本机实时转写**（WhisperKit，也可选云端 Groq / OpenAI 兼容接口），通话中由助手结合你的文档给出提示卡片，会后自动生成摘要、复盘报告与评分，可导出 Markdown / TXT / SRT / PDF。
@@ -21,11 +21,15 @@
 | 知识库 | 让助手引用你的文档；「问问 Parrot」搜索所有历史通话 |
 | 会后 | 摘要、复盘报告与评分、导出、Webhook / 笔记文件夹 / 跟进邮件 |
 | 备份与恢复（v2.1.0） | `.ckbak` 单文件，带校验，恢复前自动备份、失败回滚 |
+| 多 Key 轮换（v2.1.1） | 同一服务商可填多个 Key（如多个 Groq），被限流或额度用完自动换下一个，冷却后再用 |
+| 内置提示词（v2.1.1） | 会议助手、求职面试、同声翻译、课堂答疑·理科 / 语言；结论在前、要点精简；可编辑、可恢复默认 |
+| 面板切换模型（v2.1.1） | 菜单栏面板里直接切换服务商、模型、转写引擎，下一次请求生效并保留 |
+| 会议识别 | 谁在用麦克风就识别谁：腾讯会议、钉钉、飞书、企业微信、Zoom 等显示中文名；浏览器网页会议按窗口标题识别 |
 | 防共享 | 所有窗口、面板、弹出框默认不出现在腾讯会议 / 钉钉 / Zoom 的共享画面中 |
 
 ## 界面截图
 
-以下均为 CK Parrot 在 GitHub macOS 机器上实际渲染的界面（简体中文界面，示例通话内容为英文演示数据）。英文界面截图见 [docs/screenshots/en](docs/screenshots/en)。
+以下均为 CK Parrot v2.1.1 在 GitHub macOS 机器上由应用自身渲染的真实界面（CI 每次构建重新生成）（简体中文界面，示例通话内容为英文演示数据）。英文界面截图见 [docs/screenshots/en](docs/screenshots/en)。
 
 | | |
 |---|---|
@@ -36,7 +40,7 @@
 | <img src="docs/screenshots/zh/09-ask.png" width="420"><br>问问 Parrot：搜索你的所有通话 | <img src="docs/screenshots/zh/10-settings-transcription.png" width="420"><br>转写引擎与模型下载源 |
 | <img src="docs/screenshots/zh/11-settings-profiles.png" width="420"><br>按通话类型配置助手 | <img src="docs/screenshots/zh/12-settings-knowledge.png" width="420"><br>知识库：让助手引用你的文档 |
 | <img src="docs/screenshots/zh/13-settings-privacy.png" width="420"><br>隐私：仅限本机、隐藏个人信息 | <img src="docs/screenshots/zh/14-settings-connections.png" width="420"><br>连接：保存笔记、Webhook、跟进邮件 |
-| <img src="docs/screenshots/zh/15-ai-apps.png" width="420"><br>在 Claude / Cursor 中使用你的会议 |  |
+| <img src="docs/screenshots/zh/15-ai-apps.png" width="420"><br>在 Claude / Cursor 中使用你的会议 | <img src="docs/screenshots/zh/00-menubar-panel.png" width="300"><br>菜单栏隐身面板：录音控制、切换模型，共享屏幕时不可见 |
 
 ## 安装
 1. 在 [Releases](https://github.com/CKNB888/ck-parrot/releases) 下载 `ck-parrot_*_macOS_arm64.dmg`（或 `.pkg`）。
@@ -52,6 +56,8 @@
 3. 停止录音（⌘.）后查看摘要、复盘报告，导出或用「问问 Parrot」（⌘K）搜索。
 
 ## 升级
+v2.1.1 起应用内自动更新：启动时及每 6 小时检查一次，后台下载并校验 EdDSA 签名，退出时安装；录音中不检查、不弹窗。设置 → 关于 可关闭或立即检查。从 v2.1.0 及更早版本升级需手动安装一次。
+
 下载新版 dmg 覆盖安装即可，数据保存在沙盒容器中不会丢失。升级前建议先运行一次备份（见下）。v2.1.1 新增的提示词预设同样自动出现，原有 Key 会作为第一个 Key 继续使用。v2.1.0 新增的「课堂答疑」预设会自动出现在通话类型列表里，不影响你修改过的其他预设。
 
 ## 备份与恢复
@@ -95,7 +101,7 @@ macOS 15+ 整屏共享存在系统限制，建议只共享单个窗口。可开�
 
 ## 更新记录
 详见 [CHANGELOG.zh-CN.md](CHANGELOG.zh-CN.md)。
-- **v2.1.1** 同一服务商多个 Key 自动轮换（429 / 额度 / 鉴权失败冷却后换下一个）；内置中文提示词库（会议、面试、翻译、课堂·理科 / 语言），可编辑、可恢复默认；菜单栏隐身面板可直接切换服务商、模型和转写引擎；国内会议应用中文名、浏览器网页会议识别；备份可加密包含 Key；静态检查全量扫描
+- **v2.1.1** 应用内自动更新（Sparkle，签名校验，录音中不打扰）；同一服务商多个 Key 自动轮换（429 / 额度 / 鉴权失败冷却后换下一个）；内置中文提示词库（会议、面试、翻译、课堂·理科 / 语言），可编辑、可恢复默认；菜单栏隐身面板可直接切换服务商、模型和转写引擎；国内会议应用中文名、浏览器网页会议识别；备份可加密包含 Key；静态检查全量扫描
 - **v2.1.0** 课堂答疑通话类型（结论优先、≤3 要点、易错点 / 待回答 / 追问建议）；`.ckbak` 备份与恢复脚本（校验、预览、恢复前自动备份、失败回滚），CI 自测；README 重写
 - **v2.0.0** 我的声纹；课堂模式标签；导出提问；菜单栏面板与新图标；按配置推荐模型、下载前检查磁盘、停止后释放模型内存；完全卸载；去掉 emoji
 - **v1.0.6** 刘海 / 菜单栏实时提示；防共享加固（新面板、PDF 离屏窗口）；只保留本仓库链接；赞助信息

@@ -71,3 +71,53 @@ jobs:
           gh release create "$TAG" ck-parrot_*_macOS_arm64.zip ck-parrot_*_macOS_arm64.dmg ck-parrot_*_macOS_arm64.pkg \
             --repo "$GITHUB_REPOSITORY" --title "CK Parrot $TAG" \
             --notes-file RELEASE_NOTES.zh-CN.md
+
+      # ck-parrot v2.1.1: Sparkle appcast for in-app updates (tag runs only).
+      # The zip is EdDSA-signed with the SPARKLE_ED_PRIVATE_KEY secret; the app
+      # carries the matching SUPublicEDKey and rejects anything else. The feed
+      # lives on a fixed "appcast" release so its URL never changes.
+      - name: Publish Sparkle appcast
+        if: ${{ env.SKIP != '1' && startsWith(github.ref, 'refs/tags/v') }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SPARKLE_KEY: ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          [ -n "$SPARKLE_KEY" ] || { echo "SPARKLE_ED_PRIVATE_KEY missing"; exit 1; }
+          V="${TAG#v}"; ZIP="ck-parrot_${V}_macOS_arm64.zip"
+          # sign_update ships in Sparkle's release tarball, not in the SwiftPM artifact.
+          SV="$(python3 -c 'import json;print([p["state"]["version"] for p in json.load(open("Package.resolved"))["pins"] if p["identity"]=="sparkle"][0])')"
+          mkdir -p /tmp/sparkle && curl -fsSL "https://github.com/sparkle-project/Sparkle/releases/download/${SV}/Sparkle-${SV}.tar.xz" | tar -xJ -C /tmp/sparkle
+          SIGN=/tmp/sparkle/bin/sign_update
+          [ -x "$SIGN" ] || { echo "sign_update not found"; exit 1; }
+          KF="$(mktemp)"; printf %s "$SPARKLE_KEY" > "$KF"
+          ATTRS="$("$SIGN" --ed-key-file "$KF" "$ZIP")"; rm -f "$KF"
+          echo "$ATTRS" | grep -q 'sparkle:edSignature=' || { echo "signing failed"; exit 1; }
+          BUILD="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "dist/CK Parrot.app/Contents/Info.plist")"
+          URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/${ZIP}"
+          cat > appcast.xml <<XML
+          <?xml version="1.0" encoding="utf-8"?>
+          <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+            <channel>
+              <title>CK Parrot</title>
+              <item>
+                <title>CK Parrot ${V}</title>
+                <pubDate>$(date -R)</pubDate>
+                <sparkle:version>${BUILD}</sparkle:version>
+                <sparkle:shortVersionString>${V}</sparkle:shortVersionString>
+                <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+                <sparkle:releaseNotesLink>https://github.com/${GITHUB_REPOSITORY}/releases/tag/${TAG}</sparkle:releaseNotesLink>
+                <enclosure url="${URL}" ${ATTRS} type="application/octet-stream"/>
+              </item>
+            </channel>
+          </rss>
+          XML
+          xmllint --noout appcast.xml
+          gh release upload "$TAG" appcast.xml --clobber --repo "$GITHUB_REPOSITORY"
+          if gh release view appcast --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload appcast appcast.xml --clobber --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create appcast appcast.xml --target "${GITHUB_SHA}" --prerelease --title "更新源（自动维护）" \
+              --notes "CK Parrot 应用内更新使用的 appcast，请勿删除。" --repo "$GITHUB_REPOSITORY"
+          fi
+          cat appcast.xml

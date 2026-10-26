@@ -8,6 +8,7 @@
 - 备份：`scripts/backup.command --with-keys` 用密码加密（AES-256 + PBKDF2 20 万次）后一并备份所有 Key（含多 Key 列表），恢复时输入密码；不加参数时仍不包含 Key
 - 代码检查：swiftlint、semgrep（swift + secrets 规则）、osv-scanner（依赖漏洞）、typos 全量扫描，修正一处失效的 swiftlint 指令；无依赖漏洞、无密钥泄漏
 - README 重写：删除 GIF，改用当前版本界面实拍截图
+- 应用内自动更新（Sparkle 2）：启动时及每 6 小时检查 CKNB888/ck-parrot 的更新源，更新包用 EdDSA 签名校验，后台下载、退出时安装，数据不受影响；录音进行中不做后台检查、不弹窗；设置 → 关于 可关闭自动更新或「立即检查」。v2.1.0 及更早版本需手动安装一次 v2.1.1，之后即可自动更新
 - 发布流程版本号默认 2.1.1
 
 ## v2.1.0 — 课堂答疑、备份与恢复

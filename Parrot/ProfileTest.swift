@@ -153,7 +153,7 @@ enum ProfileTest {
 
     @MainActor
     static func testUpdateNotice() {
-        check("update notice: the title", UpdateNotice.title(version: "0.28.0") == "Parrot 0.28.0 is perched and ready")
+        check("update notice: the title", UpdateNotice.title(version: "0.28.0") == "CK Parrot 0.28.0 已下载")
         check("update notice: posts when free", UpdateNotice.onReady(version: "0.28.0", alreadyPosted: nil, busy: false) == .post)
         check("update notice: waits during a call", UpdateNotice.onReady(version: "0.28.0", alreadyPosted: nil, busy: true) == .hold)
         check("update notice: once per version", UpdateNotice.onReady(version: "0.28.0", alreadyPosted: "0.28.0", busy: false) == .skip)

@@ -3,9 +3,9 @@ import UserNotifications
 
 /// The words and the one decision behind "an update is waiting".
 enum UpdateNotice {
-    static func title(version: String) -> String { "Parrot \(version) is perched and ready" }
-    static let body = "It moves in next time you quit Parrot. Or right now, if you can't wait."
-    static let busyBody = "Finish your call first. Parrot will be right here."
+    static func title(version: String) -> String { "CK Parrot \(version) 已下载" }
+    static let body = "退出时自动安装，数据不受影响。也可以现在重启完成更新。"
+    static let busyBody = "录音结束后再更新。"
 
     enum Action: Equatable { case post, hold, skip }
 
@@ -84,6 +84,17 @@ final class AppUpdater: NSObject, SPUUpdaterDelegate {
     /// version row, the sidebar footer and bug reports all read this.
     nonisolated static var currentVersion: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "dev"
+    }
+
+    /// ck-parrot v2.1.1: background checks never run while a call records, so
+    /// no Sparkle window can appear over a shared lesson. Manual checks still run.
+    nonisolated func updater(_ updater: SPUUpdater, mayPerform updateCheck: SPUUpdateCheck) throws {
+        guard updateCheck == .updatesInBackground else { return }
+        let busy = MainActor.assumeIsolated { isBusy() }
+        if busy {
+            throw NSError(domain: "io.github.cknb6.ckparrot.update", code: 1,
+                          userInfo: [NSLocalizedDescriptionKey: UpdateNotice.busyBody])
+        }
     }
 
     // MARK: - Update waiting
