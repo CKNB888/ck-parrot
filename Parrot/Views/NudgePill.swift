@@ -16,15 +16,28 @@ final class NudgePillController {
     private var hideTask: Task<Void, Never>?
     private var hovering = false
     private var generation = 0
+    /// True while Parrot itself moves the pill, so only user drags are saved.
+    private var animating = false
+    private var moveObserver: NSObjectProtocol?
 
     func show(_ nudge: Nudge) {
         generation += 1
         hovering = false
         let panel = self.panel ?? Self.makePanel()
+        if self.panel == nil {
+            moveObserver = NotificationCenter.default.addObserver(
+                forName: NSWindow.didMoveNotification, object: panel, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated { self?.panelMoved() }
+            }
+        }
         self.panel = panel
         // The menu bar screen decides the style: notch → island, else under the icon.
-        let screen = NSScreen.screens.first ?? NSScreen.main
-        let placement = PillPlacement.detect(safeAreaTop: screen?.safeAreaInsets.top ?? 0)
+        // ck-parrot v2.1.1: a pill the user dragged comes back where they left it,
+        // on that display; a missing display or off-screen spot falls back to the default.
+        let saved = PillPosition.load().flatMap { PillPosition.restore($0, screens: Self.screenFrames()) }
+        let screen = saved.flatMap { s in NSScreen.screens.first { Self.displayID($0) == s.displayID } }
+            ?? NSScreen.screens.first ?? NSScreen.main
+        let placement = saved != nil ? .menuBar : PillPlacement.detect(safeAreaTop: screen?.safeAreaInsets.top ?? 0)
         let notchInset: CGFloat
         if case .notch(let inset) = placement { notchInset = inset } else { notchInset = 0 }
         let host = NSHostingView(rootView: NudgePillView(
@@ -46,6 +59,7 @@ final class NudgePillController {
             target.origin = PillPlacement.origin(placement, size: size, frame: screen.frame,
                                                  menuBarHeight: menuBarHeight,
                                                  statusItemMidX: Self.statusItemMidX(on: screen))
+            if let saved { target.origin = CGPoint(x: saved.x, y: saved.y) }
         }
         // Island above the menu bar; otherwise just under it.
         panel.level = notchInset > 0 ? NSWindow.Level(rawValue: NSWindow.Level.statusBar.rawValue + 1) : .statusBar
@@ -56,12 +70,15 @@ final class NudgePillController {
             panel.alphaValue = 0
         }
         panel.orderFrontRegardless()
-        NSAnimationContext.runAnimationGroup { context in
+        animating = true
+        NSAnimationContext.runAnimationGroup({ context in
             context.duration = 0.28
             context.timingFunction = CAMediaTimingFunction(controlPoints: 0.2, 0.8, 0.2, 1)
             panel.animator().setFrame(target, display: true)
             panel.animator().alphaValue = 1
-        }
+        }, completionHandler: { [weak self] in
+            MainActor.assumeIsolated { self?.animating = false }
+        })
         scheduleHide()
     }
 
@@ -103,6 +120,20 @@ final class NudgePillController {
         }?.frame.midX
     }
 
+    private func panelMoved() {
+        guard !animating, let panel, panel.isVisible, let screen = panel.screen else { return }
+        PillPosition.save(PillPosition(displayID: Self.displayID(screen), x: panel.frame.minX, y: panel.frame.minY,
+                                       width: panel.frame.width, height: panel.frame.height))
+    }
+
+    static func displayID(_ screen: NSScreen) -> UInt32 {
+        (screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.uint32Value ?? 0
+    }
+
+    private static func screenFrames() -> [(id: UInt32, frame: CGRect)] {
+        NSScreen.screens.map { (displayID($0), $0.visibleFrame) }
+    }
+
     private static func makePanel() -> NSPanel {
         let panel = NSPanel(contentRect: NSRect(x: 0, y: 0, width: Theme.Metrics.pillWidth, height: 48),
                             styleMask: [.nonactivatingPanel, .borderless], backing: .buffered, defer: true)
@@ -110,6 +141,7 @@ final class NudgePillController {
         panel.level = .statusBar
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]
         panel.hidesOnDeactivate = false
+        panel.isMovableByWindowBackground = true
         panel.isOpaque = false
         panel.backgroundColor = .clear
         panel.hasShadow = true
@@ -191,5 +223,34 @@ struct NudgeBanner: View {
         .padding(10)
         .background(Theme.Colors.nudge, in: RoundedRectangle(cornerRadius: Theme.Metrics.radius))
         .overlay(RoundedRectangle(cornerRadius: Theme.Metrics.radius).strokeBorder(Theme.Colors.nudgeLine))
+    }
+}
+
+/// ck-parrot v2.1.1: where the user last dragged the pill (display + frame).
+struct PillPosition: Codable, Equatable {
+    static let defaultsKey = "nudgePillPosition"
+    var displayID: UInt32
+    var x: CGFloat
+    var y: CGFloat
+    var width: CGFloat
+    var height: CGFloat
+
+    static func load(_ defaults: UserDefaults = .standard) -> PillPosition? {
+        defaults.data(forKey: defaultsKey).flatMap { try? JSONDecoder().decode(PillPosition.self, from: $0) }
+    }
+
+    static func save(_ p: PillPosition, _ defaults: UserDefaults = .standard) {
+        if let data = try? JSONEncoder().encode(p) { defaults.set(data, forKey: defaultsKey) }
+    }
+
+    /// The saved spot if its display is still attached and the pill's centre is
+    /// on it (nudged fully inside); nil means "use the default placement".
+    static func restore(_ p: PillPosition, screens: [(id: UInt32, frame: CGRect)]) -> PillPosition? {
+        guard let frame = screens.first(where: { $0.id == p.displayID })?.frame else { return nil }
+        guard frame.contains(CGPoint(x: p.x + p.width / 2, y: p.y + p.height / 2)) else { return nil }
+        var q = p
+        q.x = min(max(p.x, frame.minX), frame.maxX - p.width)
+        q.y = min(max(p.y, frame.minY), frame.maxY - p.height)
+        return q
     }
 }

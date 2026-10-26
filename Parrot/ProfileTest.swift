@@ -3402,6 +3402,16 @@ enum ProfileTest {
         check("notifications: warn for meeting reminders alone", N.needsWarning(.off, mode: .off, reminders: true))
         check("notifications: quiet when nothing needs them", !N.needsWarning(.off, mode: .off, reminders: false))
         check("notifications: quiet when on", !N.needsWarning(.on, mode: .ask, reminders: true))
+        let pp = PillPosition(displayID: 2, x: 100, y: 700, width: 360, height: 48)
+        let scr: [(id: UInt32, frame: CGRect)] = [(1, CGRect(x: 0, y: 0, width: 1440, height: 875)),
+                                                  (2, CGRect(x: 1440, y: 0, width: 1920, height: 1055))]
+        check("pill: missing display falls back", PillPosition.restore(pp, screens: [scr[0]]) == nil)
+        check("pill: off-screen spot falls back", PillPosition.restore(pp, screens: scr) == nil)
+        let on = PillPosition(displayID: 2, x: 3100, y: 1020, width: 360, height: 48)
+        check("pill: partly off-screen is clamped inside",
+              PillPosition.restore(on, screens: scr).map { $0.x == 3000 && $0.y == 1007 } == true)
+        let ok = PillPosition(displayID: 1, x: 500, y: 800, width: 360, height: 48)
+        check("pill: valid spot restored as is", PillPosition.restore(ok, screens: scr) == ok)
         check("腾讯会议 named", D.displayName(for: "com.tencent.meeting") == "腾讯会议")
         check("钉钉 named", D.displayName(for: "com.alibaba.DingTalkMac") == "钉钉")
         check("web meeting: Google Meet title", D.webMeeting(inTitle: "Meet - abc-defg-hij") == "Google Meet")
