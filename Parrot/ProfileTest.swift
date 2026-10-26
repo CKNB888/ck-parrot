@@ -579,7 +579,7 @@ enum ProfileTest {
         check("vendor call preset exists with the vendor as counterpart", vendor?.counterpart == "the vendor")
         check("vendor call pins open questions and red flags",
               vendor?.kinds.first { $0.key == "my_open_question" }?.isPinned == true && vendor?.kinds.first { $0.key == "red_flag" }?.isPinned == true)
-        check("vendor call never treats the other side as a prospect", vendor?.persona.lowercased().contains("prospect") == true && vendor?.persona.lowercased().contains("never") == true)
+        check("vendor call never treats the other side as a prospect", vendor?.persona.contains("不是潜在客户") == true && vendor?.persona.contains("我不是在推销") == true)
         check("default first by sortOrder", all.sorted { $0.sortOrder < $1.sortOrder }.first?.id == ProfilePresets.defaultProfileID)
         let coaching = all.first { $0.name == "1:1 coaching" }
         check("coaching has reflection kind", coaching?.kinds.contains { $0.key == "reflection" } == true)
