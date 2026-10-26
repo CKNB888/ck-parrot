@@ -108,6 +108,7 @@ enum ProfileTest {
         testOnboardingFlow()
         testCopilotSetupState()
         testProviderKeyCheck()
+        testKeyRotation()
         testProgressStall()
         testOllamaService()
         testOllamaInstaller()
@@ -522,9 +523,30 @@ enum ProfileTest {
         check("profile unknown key nil", p.style(forKey: "nope") == nil)
     }
 
+    static func testKeyRotation() {
+        KeyRotation.reset()
+        let keys = KeyRotation.split(" a1,b2\nc3  a1 ")
+        check("keys: split on comma/space/newline, dedupe", keys == ["a1", "b2", "c3"])
+        check("keys: join with newlines", KeyRotation.join(keys) == "a1\nb2\nc3")
+        check("keys: mask hides all but last 4", KeyRotation.mask("gsk_abcdefgh1234") == "gsk_****1234")
+        let now = Date()
+        check("keys: order unchanged when none rest", KeyRotation.order(scope: "t", keys: keys, now: now) == keys)
+        KeyRotation.markFailure(scope: "t", key: "a1", status: 429, retryAfter: "30", now: now)
+        check("keys: rate-limited key moves to the back", KeyRotation.order(scope: "t", keys: keys, now: now) == ["b2", "c3", "a1"])
+        check("keys: cooldown scoped", KeyRotation.order(scope: "other", keys: keys, now: now) == keys)
+        check("keys: recovers after Retry-After", KeyRotation.order(scope: "t", keys: keys, now: now.addingTimeInterval(31)) == keys)
+        check("keys: 429 cooldown clamped 20s..15min", KeyRotation.cooldown(status: 429, retryAfter: "1") == 20 && KeyRotation.cooldown(status: 429, retryAfter: "99999") == 900)
+        check("keys: quota 30 min, auth 10 min", KeyRotation.cooldown(status: 402, retryAfter: nil) == 1800 && KeyRotation.cooldown(status: 401, retryAfter: nil) == 600)
+        check("keys: rotate on 401/402/403/429 only", KeyRotation.rotateStatus == [401, 402, 403, 429])
+        KeyRotation.reset()
+    }
+
     static func testPresets() {
         let all = ProfilePresets.all()
-        check("nine presets", all.count == 9)
+        check("fourteen presets", all.count == 14)
+        check("v2.1.1 Chinese prompt library present", ["会议助手", "求职面试", "同声翻译", "课堂答疑·理科", "课堂答疑·语言"].allSatisfy { n in all.contains { $0.name == n } })
+        check("preset ids unique", Set(all.map(\.id)).count == all.count)
+        check("Chinese personas stay compact", all.filter { $0.name.unicodeScalars.contains { $0.value > 0x4E00 } }.allSatisfy { $0.persona.count < 400 })
         check("classroom preset answers in Chinese, conclusion first", all.first { $0.name == "课堂答疑" }?.persona.contains("一句话结论") == true)
         let vendor = all.first { $0.name == "Vendor call" }
         check("vendor call preset exists with the vendor as counterpart", vendor?.counterpart == "the vendor")

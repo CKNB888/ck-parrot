@@ -47,4 +47,19 @@ cp -R "$TMP/x/Data" "$DATA"
 [ -f "$TMP/x/preferences.plist" ] && command -v defaults >/dev/null && defaults import "$ID" "$TMP/x/preferences.plist"
 trap - ERR
 rm -rf "$OLD"
-echo "恢复完成。请在设置里重新填写 API Key。"
+if [ -f "$TMP/x/keys.enc" ] && command -v security >/dev/null; then
+  PW="${CK_BACKUP_PASSWORD:-}"
+  if [ -z "$PW" ]; then read -r -s -p "输入备份密码以恢复 API Key（直接回车跳过）：" PW; echo; fi
+  if [ -n "$PW" ] && printf %s "$PW" | openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -pass stdin -in "$TMP/x/keys.enc" -out "$TMP/keys.txt" 2>/dev/null; then
+    while IFS=$'\t' read -r acct b64; do
+      case "$acct" in claude-api-key|groq-api-key|deepgram-api-key|custom-llm-api-key) ;; *) continue;; esac
+      security add-generic-password -U -s "$ID" -a "$acct" -w "$(printf %s "$b64" | base64 -d)" >/dev/null 2>&1 && echo "  已恢复 $acct"
+    done < "$TMP/keys.txt"
+    rm -f "$TMP/keys.txt"
+    echo "恢复完成（含 API Key）。"
+  else
+    echo "恢复完成。API Key 未恢复（密码错误或已跳过），请在设置里重新填写。"
+  fi
+else
+  echo "恢复完成。请在设置里重新填写 API Key。"
+fi

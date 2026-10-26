@@ -10,6 +10,12 @@ enum ProfilePresets {
     private static let vendorID   = UUID(uuidString: "00000000-0000-0000-0000-0000000000C6")!
     private static let investorID = UUID(uuidString: "00000000-0000-0000-0000-0000000000C7")!
     private static let classroomID = UUID(uuidString: "00000000-0000-0000-0000-0000000000C8")!
+    // ck-parrot v2.1.1: built-in Chinese prompt library.
+    private static let meetingZhID = UUID(uuidString: "00000000-0000-0000-0000-0000000000C9")!
+    private static let interviewZhID = UUID(uuidString: "00000000-0000-0000-0000-0000000000CA")!
+    private static let translateID = UUID(uuidString: "00000000-0000-0000-0000-0000000000CB")!
+    private static let classScienceID = UUID(uuidString: "00000000-0000-0000-0000-0000000000CC")!
+    private static let classLanguageID = UUID(uuidString: "00000000-0000-0000-0000-0000000000CD")!
 
     /// Bump when the built-in preset definitions change (persona, kinds, counterpart).
     /// `ProfileStore` refreshes built-in profiles whose stored version is older,
@@ -26,7 +32,8 @@ enum ProfilePresets {
     /// v6: card and persona text users can read in Settings (no shouting
     /// capitals or em-dashes), the job-only rule on Interview's live Red flag,
     /// "You're talking" on Interview, Frustration cue its own color.
-    static let presetVersion = 6
+    /// v7 (ck-parrot 2.1.1): Chinese prompt library — 会议助手, 求职面试, 同声翻译, 课堂·理科, 课堂·语言.
+    static let presetVersion = 7
 
     // The hex strings below are persisted in user data — never change them when
     // retheming the app. KindResolver.adaptiveColor maps each one to an adaptive
@@ -192,8 +199,85 @@ enum ProfilePresets {
                     kind("note", "课堂记录", "5F6470", "note.text", "A key point, assignment or announcement worth recording for the lesson summary."),
                 ],
                 gauges: [gauge("my_dominance", "You're talking", "Balanced", "Dominating", "5F6470")]),
+            CallProfile(id: meetingZhID, name: "会议助手", iconSystemName: "person.3",
+                summary: "开会时：有人问我就给可直接说的回答，并记下决定和待办。",
+                isBuiltIn: true, sortOrder: 9, persona: meetingZhPersona,
+                tone: "", counterpart: "the other participants", allowGeneralKnowledge: true,
+                presetVersion: presetVersion,
+                kinds: [
+                    kind("suggestion", "建议回答", "4F6FB0", "text.bubble.fill", "Someone asked the user a question. Title = a one-sentence answer in Simplified Chinese the user can say now; body = at most 2 short supporting points.", pinned: true, priority: 10),
+                    kind("decision", "决定", "3F9168", "checkmark.seal.fill", "The group decided something. Title states the decision in one sentence.", priority: 8),
+                    kind("action_item", "待办", "C29218", "checkmark.circle.fill", "Someone committed to do something. Title = who does what; include any date mentioned.", pinned: true, priority: 9),
+                    kind("question", "待确认", "C0563B", "questionmark.bubble.fill", "A question was raised and left unanswered. Flag it briefly."),
+                ],
+                gauges: [gauge("my_dominance", "You're talking", "Balanced", "Dominating", "5F6470")]),
+            CallProfile(id: interviewZhID, name: "求职面试", iconSystemName: "person.text.rectangle",
+                summary: "我是求职者：面试官提问时给出第一人称、可照着说的回答。",
+                isBuiltIn: true, sortOrder: 10, persona: interviewZhPersona,
+                tone: "", counterpart: "the interviewer", allowGeneralKnowledge: true,
+                presetVersion: presetVersion,
+                kinds: [
+                    kind("answer", "参考回答", "4F6FB0", "text.bubble.fill", "The interviewer asked a question. Title = the one-sentence core answer in first person, Simplified Chinese; body = 2-3 short points grounded in the user's notes. Never invent experience.", pinned: true, priority: 10),
+                    kind("clarify", "可以反问", "2F7E96", "questionmark.circle.fill", "A short clarifying or closing question the user could ask the interviewer."),
+                    kind("caution", "注意", "E8943A", "exclamationmark.triangle.fill", "The user's answer rambled, contradicted their notes, or missed the question. One sentence on how to fix it.", priority: 7),
+                ],
+                gauges: [gauge("my_dominance", "You're talking", "Balanced", "Dominating", "5F6470")]),
+            CallProfile(id: translateID, name: "同声翻译", iconSystemName: "character.bubble",
+                summary: "外语会议：把对方说的话实时译成中文，我的中文译成对方语言。",
+                isBuiltIn: true, sortOrder: 11, persona: translatePersona,
+                tone: "", counterpart: "the other person", allowGeneralKnowledge: false,
+                presetVersion: presetVersion,
+                kinds: [
+                    kind("translation", "译文", "4F6FB0", "character.bubble.fill", "The other person said something in a foreign language. Title = the faithful Simplified Chinese translation of the key sentence; body = the rest, translated, keeping names and numbers.", pinned: true, priority: 10),
+                    kind("reply", "用对方语言回复", "3F9168", "arrowshape.turn.up.left.fill", "The user should reply. Title = a short reply in the other person's language; body = its Chinese meaning."),
+                ],
+                gauges: [gauge("my_dominance", "You're talking", "Balanced", "Dominating", "5F6470")]),
+            CallProfile(id: classScienceID, name: "课堂答疑·理科", iconSystemName: "function",
+                summary: "数学 / 物理 / 化学 / 编程课：结论 + 依据 + 步骤。",
+                isBuiltIn: true, sortOrder: 12, persona: classSciencePersona,
+                tone: "", counterpart: "the students", allowGeneralKnowledge: true,
+                presetVersion: presetVersion,
+                kinds: [
+                    kind("answer", "答案", "4F6FB0", "text.bubble.fill", "A student asked a question. Title = the result (with units) or conclusion in Simplified Chinese; body = the law/formula used, then numbered steps, one line each.", pinned: true, priority: 10),
+                    kind("misconception", "易错点", "E8943A", "exclamationmark.triangle.fill", "A common mistake shown or likely here. Title names it; body gives the fix in one sentence.", priority: 8),
+                    kind("unanswered_question", "待回答", "C0563B", "questionmark.bubble.fill", "A student question the lesson moved past without answering.", pinned: true, priority: 9),
+                ],
+                gauges: [gauge("my_dominance", "You're talking", "Balanced", "Dominating", "5F6470")]),
+            CallProfile(id: classLanguageID, name: "课堂答疑·语言", iconSystemName: "textformat.abc",
+                summary: "语文 / 英语课：答案要点 + 规则 + 例句。",
+                isBuiltIn: true, sortOrder: 13, persona: classLanguagePersona,
+                tone: "", counterpart: "the students", allowGeneralKnowledge: true,
+                presetVersion: presetVersion,
+                kinds: [
+                    kind("answer", "答案", "4F6FB0", "text.bubble.fill", "A student asked a question. Title = the answer in one sentence; body = the rule in Chinese and one correct example (English examples stay in English).", pinned: true, priority: 10),
+                    kind("misconception", "易错点", "E8943A", "exclamationmark.triangle.fill", "A typical error: title names it, body shows wrong vs right in one line each.", priority: 8),
+                    kind("unanswered_question", "待回答", "C0563B", "questionmark.bubble.fill", "A student question the lesson moved past without answering.", pinned: true, priority: 9),
+                ],
+                gauges: [gauge("my_dominance", "You're talking", "Balanced", "Dominating", "5F6470")]),
         ].map(shipped)
     }
+
+    private static let meetingZhPersona = """
+    你是我的会议助手，参会者发言来自转写（可能有错字，按上下文理解）。所有输出用简体中文，结论放最前面。\
+    有人向我提问时，给出专业、简洁、可直接说出口的回答（不超过 60 字）；只记录真正的决定和待办，不编造，不寒暄。
+    """
+    private static let interviewZhPersona = """
+    你是我的求职面试助手，我是求职者，面试官的话来自转写。用第一人称、口语化的简体中文给出我可以照着说的回答：\
+    先一句话核心回答，再 2-3 个要点，必须来自我的笔记或简历里的真实经历，绝不编造。技术题先说思路和复杂度。不要回答我自己说的话。
+    """
+    private static let translatePersona = """
+    你是同声翻译。对方说外语时，把意思忠实、简短地译成简体中文；需要我回应时，用对方的语言给出一句简短回复并附中文意思。\
+    保留人名、数字和专有名词，不解释、不评论、不添加原话没有的内容。
+    """
+    private static let classSciencePersona = """
+    你是老师的理科课堂答疑助手（数学、物理、化学、编程），学生提问来自转写。所有输出用简体中文，标题就是结果或结论，\
+    物理量带单位。正文先写「依据：」所用定律或公式，再分步列式，每步一行；化学方程式要配平并注明条件；编程给最短可运行代码。\
+    最多 4 行，不寒暄、不复述问题、不回答老师自己说的话。
+    """
+    private static let classLanguagePersona = """
+    你是老师的语文、英语课堂答疑助手，学生提问来自转写。标题是一句话答案；正文用中文讲规则或赏析要点\
+    （赏析按「手法—内容—效果」），英语例句保持英文并给出正确例句，最多 3 行。引用原文要准确，不编造。
+    """
 
     private static let classroomPersona = """
     你是老师的课堂答疑助手，老师正在上课，学生的提问来自转写（可能有错字，请按上下文理解）。\
@@ -287,6 +371,31 @@ enum ProfilePresets {
             section("misconceptions", "易错点", "bullets", "Common mistakes or confusions students showed, each with the correct idea."),
             section("followups", "课后跟进", "bullets", "Questions still open, homework or anything the teacher said they'd do, with any date.", commitments: true),
         ], coaching: coach("teaching coach", "Clear answers, checking understanding, and giving students time to ask.")),
+        meetingZhID: ReportTemplate(sections: [
+            section("overview", "会议结论", "prose", "1-2 sentences in Simplified Chinese: what the meeting was about and what was concluded."),
+            section("decisions", "决定事项", "bullets", "Each decision made, one line each."),
+            section("actions", "待办（负责人｜截止时间）", "bullets", "Who will do what, with any date.", commitments: true),
+            section("open", "待确认问题", "bullets", "Questions raised but not settled."),
+        ], coaching: coach("meeting coach", "Clear answers, staying on topic, and leaving with owners and dates.")),
+        interviewZhID: ReportTemplate(sections: [
+            section("overview", "面试概要", "prose", "1-2 sentences in Simplified Chinese: the role and how the interview went."),
+            section("questions", "被问到的问题", "bullets", "Each question the interviewer asked, with a one-line note on how the user answered."),
+            section("improve", "可以更好", "bullets", "Answers that could be stronger, each with a better one-sentence version."),
+            section("next", "后续", "bullets", "Next steps or anything someone promised, with any date.", commitments: true),
+        ], coaching: coach("interview coach", "Answering the question asked, concrete examples, and concise delivery.")),
+        translateID: .standard,
+        classScienceID: ReportTemplate(sections: [
+            section("overview", "课堂概要", "prose", "1-2 sentences in Simplified Chinese: what the lesson covered."),
+            section("questions", "学生提问", "bullets", "Each student question with the one-sentence answer given (or 未回答)."),
+            section("misconceptions", "易错点", "bullets", "Common mistakes students showed, each with the correct idea."),
+            section("followups", "课后跟进", "bullets", "Open questions or homework, with any date.", commitments: true),
+        ], coaching: coach("teaching coach", "Clear steps, checking understanding, and giving students time to ask.")),
+        classLanguageID: ReportTemplate(sections: [
+            section("overview", "课堂概要", "prose", "1-2 sentences in Simplified Chinese: what the lesson covered."),
+            section("questions", "学生提问", "bullets", "Each student question with the one-sentence answer given (or 未回答)."),
+            section("misconceptions", "易错点", "bullets", "Typical errors students made, each with the right form."),
+            section("followups", "课后跟进", "bullets", "Open questions or homework, with any date.", commitments: true),
+        ], coaching: coach("teaching coach", "Clear explanations, good examples, and giving students time to ask.")),
     ]
 
     /// The built-in reports a profile can start from, by profile name.

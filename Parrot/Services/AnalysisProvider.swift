@@ -599,7 +599,24 @@ final class ClaudeAnalysisProvider: AnalysisProvider {
 
     // MARK: - HTTP
 
-    private func performRequest(body: [String: Any], apiKey: String) async throws -> Data {
+    private struct RotateKey: Error { let status: Int; let retryAfter: String?; let message: String }
+
+    /// ck-parrot v2.1.1: several Anthropic keys; rotate on 401/402/403/429.
+    private func performRequest(body: [String: Any], apiKey raw: String) async throws -> Data {
+        let keys = KeyRotation.split(raw)
+        let ordered = keys.isEmpty ? [raw] : KeyRotation.order(scope: "claude", keys: keys)
+        for (index, key) in ordered.enumerated() {
+            do {
+                return try await performRequest(body: body, apiKey: key, canRotate: index < ordered.count - 1)
+            } catch let rotate as RotateKey {
+                KeyRotation.markFailure(scope: "claude", key: key, status: rotate.status, retryAfter: rotate.retryAfter)
+                if index == ordered.count - 1 { throw AnalysisError.badResponse(rotate.message) }
+            }
+        }
+        throw AnalysisError.badResponse("Unreachable")
+    }
+
+    private func performRequest(body: [String: Any], apiKey: String, canRotate: Bool) async throws -> Data {
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.timeoutInterval = 60
@@ -632,6 +649,10 @@ final class ClaudeAnalysisProvider: AnalysisProvider {
 
             guard let http = response as? HTTPURLResponse else {
                 throw AnalysisError.badResponse("No HTTP response")
+            }
+            if KeyRotation.rotateStatus.contains(http.statusCode), canRotate || http.statusCode != 429 {
+                throw RotateKey(status: http.statusCode, retryAfter: http.value(forHTTPHeaderField: "Retry-After"),
+                                message: Self.errorMessage(from: data) ?? "HTTP \(http.statusCode)")
             }
             if attempt < ProviderNet.maxAttempts - 1, http.statusCode == 429 || http.statusCode >= 500 {
                 try await ProviderNet.backoff(attempt)  // throws on cancel — aborts the retry

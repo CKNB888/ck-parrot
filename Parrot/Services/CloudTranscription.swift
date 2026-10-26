@@ -119,25 +119,33 @@ enum GroqTranscriber {
 
     private static func post(fileData: Data, fileName: String,
                              fields: [(String, String)], apiKey: String) async throws -> Data {
-        var request = URLRequest(url: endpoint)
-        request.httpMethod = "POST"
-        request.timeoutInterval = 60
-        let boundary = "parrot-\(UUID().uuidString)"
-        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
-        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-        request.httpBody = Multipart.body(boundary: boundary, fields: fields,
-                                          file: (name: "file", fileName: fileName,
-                                                 mimeType: "audio/wav", data: fileData))
+        // ck-parrot v2.1.1: several Groq keys; rotate on 401/402/403/429.
+        let keys = KeyRotation.split(apiKey)
+        let ordered = keys.isEmpty ? [apiKey] : KeyRotation.order(scope: "groq-stt", keys: keys)
+        var lastError: Error = CloudTranscriptionError.badResponse("No HTTP response")
+        for (index, key) in ordered.enumerated() {
+            var request = URLRequest(url: endpoint)
+            request.httpMethod = "POST"
+            request.timeoutInterval = 60
+            let boundary = "parrot-\(UUID().uuidString)"
+            request.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization")
+            request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+            request.httpBody = Multipart.body(boundary: boundary, fields: fields,
+                                              file: (name: "file", fileName: fileName,
+                                                     mimeType: "audio/wav", data: fileData))
 
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard let http = response as? HTTPURLResponse else {
-            throw CloudTranscriptionError.badResponse("No HTTP response")
-        }
-        guard http.statusCode == 200 else {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let http = response as? HTTPURLResponse else {
+                throw CloudTranscriptionError.badResponse("No HTTP response")
+            }
+            if http.statusCode == 200 { return data }
             let detail = String(data: data.prefix(300), encoding: .utf8) ?? ""
-            throw CloudTranscriptionError.badResponse("Groq HTTP \(http.statusCode): \(detail)")
+            lastError = CloudTranscriptionError.badResponse("Groq HTTP \(http.statusCode): \(detail)")
+            guard KeyRotation.rotateStatus.contains(http.statusCode), index < ordered.count - 1 else { throw lastError }
+            KeyRotation.markFailure(scope: "groq-stt", key: key, status: http.statusCode,
+                                    retryAfter: http.value(forHTTPHeaderField: "Retry-After"))
         }
-        return data
+        throw lastError
     }
 }
 
@@ -218,7 +226,9 @@ final class DeepgramStreamer {
     /// Called once on any socket/API failure; the engine falls back to local.
     var onError: ((String) -> Void)?
 
-    func connect(apiKey: String, language: String?) {
+    func connect(apiKey rawKey: String, language: String?) {
+        // ck-parrot v2.1.1: with several keys, stream with the first one not resting.
+        let apiKey = KeyRotation.order(scope: "deepgram", keys: KeyRotation.split(rawKey)).first ?? rawKey
         var components = URLComponents(string: "wss://api.deepgram.com/v1/listen")!
         components.queryItems = [
             URLQueryItem(name: "model", value: "nova-3"),

@@ -247,9 +247,25 @@ private struct ProfileDetailView: View {
             SettingsCard(title: "Persona & Tone") {
                 SettingsRow(first: true) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Persona")
-                            .font(Theme.Typography.secondary)
-                            .foregroundStyle(Theme.Colors.ink2)
+                        HStack {
+                            Text("Persona")
+                                .font(Theme.Typography.secondary)
+                                .foregroundStyle(Theme.Colors.ink2)
+                            Spacer()
+                            // ck-parrot v2.1.1: built-in prompts can be edited and put back.
+                            if profile.isBuiltIn, profile.isUserModified {
+                                Button("Reset to Default") {
+                                    profileStore.resetToBuiltIn(profile, in: context)
+                                    // The persona onChange below marks it tuned again; clear after it runs.
+                                    DispatchQueue.main.async {
+                                        profile.isUserModified = false
+                                        try? context.save()
+                                    }
+                                }
+                                .font(Theme.Typography.secondary)
+                                .buttonStyle(.borderless)
+                            }
+                        }
                         TextEditor(text: $profile.persona)
                             .font(Theme.Typography.body)
                             .frame(minHeight: 90)

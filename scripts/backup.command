@@ -1,13 +1,14 @@
 #!/bin/bash
 # CK Parrot 备份：把会议记录、录音、设置、声纹、知识库打包成一个 .ckbak 文件。
-# 不包含 API Key（保存在钥匙串里），恢复后需要重新填写。
-# 用法：双击运行，或 scripts/backup.command [输出目录] [--no-models] [--no-audio]
+# 默认不包含 API Key（保存在钥匙串里）；加 --with-keys 时用你设置的密码加密后一并备份（含多 Key 列表）。
+# 用法：双击运行，或 scripts/backup.command [输出目录] [--no-models] [--no-audio] [--with-keys]
 set -euo pipefail
 ID="io.github.cknb6.ckparrot"
 L="${CK_LIBRARY:-$HOME/Library}"
 OUT_DIR="${1:-$HOME/Desktop}"; [ "${OUT_DIR#--}" != "$OUT_DIR" ] && OUT_DIR="$HOME/Desktop"
-NO_MODELS=0; NO_AUDIO=0
-for a in "$@"; do case "$a" in --no-models) NO_MODELS=1;; --no-audio) NO_AUDIO=1;; esac; done
+NO_MODELS=0; NO_AUDIO=0; WITH_KEYS=0
+for a in "$@"; do case "$a" in --no-models) NO_MODELS=1;; --no-audio) NO_AUDIO=1;; --with-keys) WITH_KEYS=1;; esac; done
+KEY_ACCOUNTS=(claude-api-key groq-api-key deepgram-api-key custom-llm-api-key)
 DATA="$L/Containers/$ID/Data"
 PREF="$L/Containers/$ID/Data/Library/Preferences/$ID.plist"
 [ -d "$DATA" ] || { echo "没有找到 CK Parrot 的数据目录：$DATA"; exit 1; }
@@ -30,11 +31,27 @@ if command -v sqlite3 >/dev/null; then
     sqlite3 "$db" "VACUUM INTO '$TMP/snap.db'" 2>/dev/null && mv "$TMP/snap.db" "$TMP/payload/Data/$rel"
   done < <(find "$DATA" -name "*.store" -print0 -o -name "*.sqlite" -print0)
 fi
+INCLUDES_KEYS=false
+if [ $WITH_KEYS = 1 ] && command -v security >/dev/null && command -v openssl >/dev/null; then
+  PW="${CK_BACKUP_PASSWORD:-}"
+  if [ -z "$PW" ]; then read -r -s -p "设置备份密码（恢复 API Key 时需要）：" PW; echo; fi
+  [ ${#PW} -ge 6 ] || { echo "密码至少 6 位"; exit 1; }
+  : > "$TMP/keys.txt"; chmod 600 "$TMP/keys.txt"
+  for acct in "${KEY_ACCOUNTS[@]}"; do
+    v="$(security find-generic-password -s "$ID" -a "$acct" -w 2>/dev/null || true)"
+    [ -n "$v" ] && printf '%s\t%s\n' "$acct" "$(printf %s "$v" | base64 | tr -d '\n')" >> "$TMP/keys.txt"
+  done
+  if [ -s "$TMP/keys.txt" ]; then
+    printf %s "$PW" | openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt -pass stdin -in "$TMP/keys.txt" -out "$TMP/payload/keys.enc"
+    INCLUDES_KEYS=true
+  fi
+  rm -f "$TMP/keys.txt"
+fi
 cd "$TMP/payload"
 {
   echo "{"
   echo "  \"app\": \"ck-parrot\", \"schemaVersion\": 1, \"appVersion\": \"$VER\","
-  echo "  \"createdAt\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\", \"includesKeys\": false,"
+  echo "  \"createdAt\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\", \"includesKeys\": $INCLUDES_KEYS,"
   echo "  \"checksums\": {"
   first=1
   while IFS= read -r -d '' f; do
@@ -48,4 +65,4 @@ OUT="$OUT_DIR/ck-parrot-$TS.ckbak"
 zip -qr -X "$OUT.part" manifest.json $(ls -A | grep -v '^manifest.json$')
 mv "$OUT.part" "$OUT"
 echo "备份完成：$OUT（$(du -h "$OUT" | cut -f1)）"
-echo "API Key 不在备份中，恢复后请在设置里重新填写。"
+if [ "$INCLUDES_KEYS" = true ]; then echo "API Key 已加密包含在备份中（恢复时需要密码）。"; else echo "API Key 不在备份中，恢复后请在设置里重新填写（或加 --with-keys 加密备份）。"; fi

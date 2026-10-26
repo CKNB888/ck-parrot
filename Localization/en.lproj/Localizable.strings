@@ -1144,3 +1144,11 @@
 "Classroom labels" = "Classroom labels";
 "Other voices show as 学生1, 学生2 instead of Speaker 1, Speaker 2." = "Other voices show as 学生1, 学生2 instead of Speaker 1, Speaker 2.";
 "Export Questions" = "Export Questions";
+
+"Resting" = "Resting";
+"Remove key" = "Remove key";
+"Round-robin across keys" = "Round-robin across keys";
+"Add another key" = "Add another key";
+"Add Key" = "Add Key";
+"Keys are tried in order. When one hits a rate limit, quota or auth error it rests for a while and the next key is used." = "Keys are tried in order. When one hits a rate limit, quota or auth error it rests for a while and the next key is used.";
+"Reset to Default" = "Reset to Default";

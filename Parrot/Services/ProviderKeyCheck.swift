@@ -41,7 +41,8 @@ enum ProviderKeyCheck {
     }
 
     static func check(_ service: Service, key: String) async -> Outcome {
-        let response = try? await URLSession.shared.data(for: request(service, key: key)).1
+        let first = KeyRotation.split(key).first ?? key
+        let response = try? await URLSession.shared.data(for: request(service, key: first)).1
         return classify(status: (response as? HTTPURLResponse)?.statusCode)
     }
 

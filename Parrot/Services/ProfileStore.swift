@@ -159,6 +159,19 @@ final class ProfileStore {
         if changed { try? context.save() }
     }
 
+    /// ck-parrot v2.1.1: put a tuned built-in back to its shipped prompt and cards.
+    func resetToBuiltIn(_ p: CallProfile, in context: ModelContext) {
+        guard p.isBuiltIn, let preset = ProfilePresets.all().first(where: { $0.id == p.id }) else { return }
+        p.persona = preset.persona
+        p.tone = preset.tone
+        p.counterpart = preset.counterpart
+        p.kinds = preset.kinds
+        p.gauges = preset.gauges
+        p.presetVersion = ProfilePresets.presetVersion
+        p.isUserModified = false
+        try? context.save()
+    }
+
     func profiles(in context: ModelContext) -> [CallProfile] {
         let all = (try? context.fetch(FetchDescriptor<CallProfile>())) ?? []
         return all.sorted { $0.sortOrder < $1.sortOrder }

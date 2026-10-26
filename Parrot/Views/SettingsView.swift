@@ -923,9 +923,13 @@ struct ProviderKeyField: View {
     let placeholder: String
     let hint: String
 
-    @State private var key: String
+    /// ck-parrot v2.1.1: several keys per provider, tried in this order;
+    /// a key that hits a rate limit / quota / auth error rests and the next one is used.
+    @State private var keys: [String]
+    @State private var key = ""
     @State private var saved = false
     @State private var failed = false
+    @AppStorage(KeyRotation.roundRobinKey) private var roundRobin = false
 
     init(label: String, account: String?, placeholder: String, hint: String) {
         self.label = label
@@ -933,12 +937,42 @@ struct ProviderKeyField: View {
         self.placeholder = placeholder
         self.hint = hint
         let stored = account.map { APIKeyStore.load(account: $0) } ?? APIKeyStore.load()
-        _key = State(initialValue: stored ?? "")
+        _keys = State(initialValue: KeyRotation.split(stored))
+    }
+
+    private func persist(_ next: [String]) {
+        let joined = KeyRotation.join(next)
+        let ok = account.map { APIKeyStore.save(joined, account: $0) } ?? APIKeyStore.save(joined)
+        failed = !ok
+        saved = ok
+        if ok { keys = next }
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            SecureField(placeholder, text: $key, prompt: Text(placeholder))
+            if !keys.isEmpty {
+                ForEach(Array(keys.enumerated()), id: \.element) { index, k in
+                    HStack(spacing: 6) {
+                        Text("\(index + 1).").foregroundStyle(.secondary).monospacedDigit()
+                        Text(KeyRotation.mask(k)).font(.system(.body, design: .monospaced))
+                        if KeyRotation.isResting(scope: "groq-stt", key: k) || KeyRotation.isResting(scope: "claude", key: k) {
+                            Text("Resting").font(Theme.Typography.secondary).foregroundStyle(Theme.Colors.warn)
+                        }
+                        Spacer()
+                        Button { var n = keys; n.swapAt(index, index - 1); persist(n) } label: { Image(systemName: "arrow.up") }
+                            .buttonStyle(.borderless).disabled(index == 0).help("Move up")
+                        Button { var n = keys; n.swapAt(index, index + 1); persist(n) } label: { Image(systemName: "arrow.down") }
+                            .buttonStyle(.borderless).disabled(index == keys.count - 1).help("Move down")
+                        Button { var n = keys; n.remove(at: index); persist(n) } label: { Image(systemName: "xmark.circle") }
+                            .buttonStyle(.borderless).help("Remove key")
+                    }
+                }
+                if keys.count > 1 {
+                    Toggle("Round-robin across keys", isOn: $roundRobin)
+                }
+            }
+
+            SecureField(placeholder, text: $key, prompt: Text(LocalizedStringKey(keys.isEmpty ? placeholder : "Add another key")))
                 .textFieldStyle(.roundedBorder)
                 .onChange(of: key) {
                     saved = false
@@ -946,12 +980,10 @@ struct ProviderKeyField: View {
                 }
 
             HStack {
-                Button("Save Key") {
-                    let trimmed = key.trimmingCharacters(in: .whitespacesAndNewlines)
-                    let ok = account.map { APIKeyStore.save(trimmed, account: $0) }
-                        ?? APIKeyStore.save(trimmed)
-                    failed = !ok
-                    saved = ok
+                Button(LocalizedStringKey(keys.isEmpty ? "Save Key" : "Add Key")) {
+                    let added = KeyRotation.split(key).filter { !keys.contains($0) }
+                    persist(keys + added)
+                    if !failed { key = "" }
                 }
                 .disabled(key.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
 
@@ -967,6 +999,9 @@ struct ProviderKeyField: View {
             }
 
             Hint(hint)
+            if keys.count > 1 {
+                Hint("Keys are tried in order. When one hits a rate limit, quota or auth error it rests for a while and the next key is used.")
+            }
         }
     }
 }

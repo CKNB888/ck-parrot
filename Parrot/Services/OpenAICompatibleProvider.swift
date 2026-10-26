@@ -420,12 +420,37 @@ final class OpenAICompatibleProvider: AnalysisProvider {
     }
 
     private func sendOnce(body: [String: Any], config: Config) async throws -> String {
+        // ck-parrot v2.1.1: several keys per provider; rotate on 401/402/403/429.
+        let keys = KeyRotation.split(config.apiKey)
+        let scope = "llm|\(config.baseURL.host ?? "")"
+        let ordered: [String?] = keys.isEmpty ? [nil] : KeyRotation.order(scope: scope, keys: keys).map { Optional($0) }
+        var lastError: Error = AnalysisError.badResponse("Unreachable")
+        for (index, key) in ordered.enumerated() {
+            let hasNext = index < ordered.count - 1
+            do {
+                return try await sendWithKey(body: body, config: config, key: key, canRotate: hasNext)
+            } catch let rotate as RotateKey {
+                if let key { KeyRotation.markFailure(scope: scope, key: key, status: rotate.status, retryAfter: rotate.retryAfter) }
+                lastError = AnalysisError.badResponse(rotate.message)
+                if !hasNext { throw lastError }
+            }
+        }
+        throw lastError
+    }
+
+    private struct RotateKey: Error {
+        let status: Int
+        let retryAfter: String?
+        let message: String
+    }
+
+    private func sendWithKey(body: [String: Any], config: Config, key: String?, canRotate: Bool) async throws -> String {
         var request = URLRequest(url: config.baseURL.appendingPathComponent("chat/completions"))
         request.httpMethod = "POST"
         // Local models can take a while on first token (model load); generous cap.
         request.timeoutInterval = 120
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        if let key = config.apiKey?.nilIfEmpty {
+        if let key = key?.nilIfEmpty {
             request.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization")
         }
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
@@ -447,6 +472,13 @@ final class OpenAICompatibleProvider: AnalysisProvider {
             let (data, response) = result
             guard let http = response as? HTTPURLResponse else {
                 throw AnalysisError.badResponse("No HTTP response")
+            }
+            if KeyRotation.rotateStatus.contains(http.statusCode), key != nil,
+               canRotate || http.statusCode != 429 {
+                // Another key is available (or the key itself is bad): rest this one.
+                throw RotateKey(status: http.statusCode,
+                                retryAfter: http.value(forHTTPHeaderField: "Retry-After"),
+                                message: Self.errorMessage(from: data) ?? "HTTP \(http.statusCode)")
             }
             if attempt < ProviderNet.maxAttempts - 1, http.statusCode == 429 || http.statusCode >= 500 {
                 try await ProviderNet.backoff(attempt)
