@@ -510,6 +510,9 @@ enum HelpShots {
         shot("menubar-panel.png", size: .init(width: 340, height: 520),
              MenuBarView().environment(rm).environment(rm.profileStore).environment(AppSession())
                 .modelContainer(container))
+        shot("menubar-panel-models.png", size: .init(width: 340, height: 520),
+             MenuBarView(modelsExpanded: true).environment(rm).environment(rm.profileStore).environment(AppSession())
+                .modelContainer(container))
         shot("settings-general.png", size: .init(width: 780, height: 620), settings(.general))
         shot("settings-recording.png", size: .init(width: 780, height: 620), settings(.recording))
         shot("settings-transcription.png", size: .init(width: 780, height: 620), settings(.transcription))

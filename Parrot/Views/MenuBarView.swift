@@ -22,14 +22,21 @@ struct MenuBarView: View {
     @AppStorage("copilotOllamaModel") private var ollamaModel = ""
     @AppStorage("copilotCustomModel") private var customModel = ""
     @AppStorage(TranscriptionBackend.defaultsKey) private var backendRaw = TranscriptionBackend.local.rawValue
-    @State private var showModels = false
+    @State private var showModels: Bool
     @State private var modelDraft = ""
     /// Shown inline: an NSAlert is a separate window and would steal focus from the panel.
     @State private var startError: String?
 
     enum Tab: Hashable { case now, recent }
 
+    init(modelsExpanded: Bool = false) {
+        _showModels = State(initialValue: modelsExpanded)
+    }
+
     static let repoURL = URL(string: "https://github.com/CKNB888/ck-parrot")!
+
+    /// A label from the strings table as plain text (chips take a String).
+    static func tr(_ key: String) -> String { Bundle.main.localizedString(forKey: key, value: key, table: nil) }
 
     private static var recentFirst: FetchDescriptor<Meeting> {
         var descriptor = FetchDescriptor<Meeting>(sortBy: [SortDescriptor(\.date, order: .reverse)])
@@ -140,7 +147,7 @@ struct MenuBarView: View {
                     HStack {
                         Text("AI Model").font(.system(size: 12)).foregroundStyle(.secondary)
                         Spacer()
-                        Text(verbatim: "\(providerKind.label) · \(panelModel)")
+                        Text(verbatim: "\(Self.tr(providerKind.label)) · \(panelModel)")
                             .font(.system(size: 12, weight: .medium)).lineLimit(1)
                         Image(systemName: showModels ? "chevron.up" : "chevron.down").font(.system(size: 10))
                     }
@@ -150,7 +157,7 @@ struct MenuBarView: View {
                 .accessibilityIdentifier("panel-model-toggle")
 
                 if showModels {
-                    MBChips(items: CopilotProviderKind.allCases.map { ($0.rawValue, $0.label) }, selected: providerRaw) {
+                    MBChips(items: CopilotProviderKind.allCases.map { ($0.rawValue, Self.tr($0.label)) }, selected: providerRaw) {
                         PanelModelSwitch.setProvider(CopilotProviderKind(rawValue: $0) ?? .claude)
                     }
                     MBChips(items: PanelModelSwitch.models(for: providerKind).map { ($0, $0) },
@@ -170,7 +177,7 @@ struct MenuBarView: View {
                     }
                     Divider()
                     Text("Transcription").font(.system(size: 12)).foregroundStyle(.secondary)
-                    MBChips(items: TranscriptionBackend.allCases.map { ($0.rawValue, $0.label) }, selected: backendRaw) {
+                    MBChips(items: TranscriptionBackend.allCases.map { ($0.rawValue, Self.tr($0.label)) }, selected: backendRaw) {
                         PanelModelSwitch.setTranscription(TranscriptionBackend(rawValue: $0) ?? .local)
                     }
                     if recordingManager.isRecording {
