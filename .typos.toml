@@ -1,0 +1,15 @@
+# ck-parrot: false positives found by `typos` (2.1.1 audit)
+[default.extend-words]
+caf = "caf"          # Core Audio Format files
+replayd = "replayd"  # macOS ScreenCaptureKit daemon
+Langauge = "Langauge" # WhisperKit API spelling (detectLangauge)
+mis = "mis"
+versin = "versin"    # Turkish test transcript
+summar = "summar"    # regex stem
+decid = "decid"
+ded = "ded"
+unparseable = "unparseable"
+optio = "optio"
+invokable = "invokable"
+[files]
+extend-exclude = ["Vendor/", "docs/", "*.strings"]

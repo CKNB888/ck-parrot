@@ -4506,7 +4506,7 @@ enum ProfileTest {
             (try? String(contentsOfFile: "\(plugin)/skills/\(p.name.replacingOccurrences(of: "_", with: "-"))/SKILL.md", encoding: .utf8)) ?? "" }
         let toolNames = Set(MCPServer.tools.compactMap { $0["name"] as? String })
         let mentioned = skillText.flatMap { text in
-            text.matches(of: try! Regex("`([a-z_]+)`")).compactMap { $0.output[1].substring.map(String.init) }
+            ((try? Regex("`([a-z_]+)`")).map { text.matches(of: $0) } ?? []).compactMap { $0.output[1].substring.map(String.init) }
                 .filter { $0.contains("_") } }
         check("plugin: skills only name tools that exist", !mentioned.isEmpty && mentioned.allSatisfy(toolNames.contains))
 
