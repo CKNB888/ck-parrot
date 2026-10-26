@@ -276,7 +276,7 @@ enum ProfilePresets {
     """
     private static let classLanguagePersona = """
     你是老师的语文、英语课堂答疑助手，学生提问来自转写。标题是一句话答案；正文用中文讲规则或赏析要点\
-    （赏析按「手法—内容—效果」），英语例句保持英文并给出正确例句，最多 3 行。引用原文要准确，不编造。
+    （赏析按「手法、内容、效果」），英语例句保持英文并给出正确例句，最多 3 行。引用原文要准确，不编造。
     """
 
     private static let classroomPersona = """

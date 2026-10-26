@@ -636,9 +636,9 @@ enum AskEngine {
     // MARK: Parsing the answer
 
     private static let group: NSRegularExpression = {
-        // swiftlint:disable:next force_try
         // [M1 12:34] and, from local models, (M1, M2): parentheses only
         // count when their content is a real citation.
+        // swiftlint:disable:next force_try
         try! NSRegularExpression(pattern: #"\s*(?:\[([^\[\]\n]{1,120})\]|\(([^()\n]{1,120})\))"#)
     }()
 

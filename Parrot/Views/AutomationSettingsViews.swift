@@ -45,7 +45,7 @@ struct LoginItemRow: View {
 /// Off / Ask me / Record automatically, plus the apps the user told us to
 /// leave alone.
 struct CallDetectionCard: View {
-    @AppStorage(AutoRecordMode.defaultsKey) private var modeRaw = AutoRecordMode.ask.rawValue
+    @AppStorage(AutoRecordMode.defaultsKey) private var modeRaw = AutoRecordMode.fallback.rawValue
     @State private var ignored: [String] = CallWatcher.ignoredApps.sorted()
     @AppStorage(CalendarService.remindersKey) private var reminders = false
     @State private var notifications: NotificationAccess.State = .on
@@ -66,7 +66,7 @@ struct CallDetectionCard: View {
             SettingsRow {
                 Hint(detail)
             }
-            if NotificationAccess.needsWarning(notifications, mode: AutoRecordMode(rawValue: modeRaw) ?? .ask,
+            if NotificationAccess.needsWarning(notifications, mode: AutoRecordMode(rawValue: modeRaw) ?? .fallback,
                                                reminders: reminders) {
                 SettingsLabeledRow(title: "Notifications are off",
                                    detail: "Parrot can't ask to record a call or remind you of a meeting. It only bounces its Dock icon.") {
@@ -103,7 +103,7 @@ struct CallDetectionCard: View {
     }
 
     private var detail: String {
-        switch AutoRecordMode(rawValue: modeRaw) ?? .ask {
+        switch AutoRecordMode(rawValue: modeRaw) ?? .fallback {
         case .off:
             return "Parrot won't watch for calls. Start recordings yourself."
         case .ask:

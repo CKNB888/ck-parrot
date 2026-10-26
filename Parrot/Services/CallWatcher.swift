@@ -11,10 +11,13 @@ enum AutoRecordMode: String, CaseIterable, Identifiable {
     case auto
 
     static let defaultsKey = "autoRecordMode"
+    /// ck-parrot 2.1.1: listening starts on its own when a meeting is detected
+    /// (the user asked for 打开即监听). Settings can switch to Ask me / Off.
+    static let fallback: AutoRecordMode = .auto
     var id: String { rawValue }
 
     static var current: AutoRecordMode {
-        UserDefaults.standard.string(forKey: defaultsKey).flatMap(AutoRecordMode.init) ?? .ask
+        UserDefaults.standard.string(forKey: defaultsKey).flatMap(AutoRecordMode.init) ?? fallback
     }
 
     var label: String {
@@ -46,6 +49,9 @@ final class CallWatcher: NSObject, UNUserNotificationCenterDelegate {
     }
 
     private(set) var prompt: Prompt?
+    /// ck-parrot 2.1.1: the meeting app being listened to, for the panel
+    /// header line 正在监听：腾讯会议. Nil when not recording.
+    private(set) var listeningApp: String?
     /// Today's next calendar call, for the menu bar. Refreshed with the
     /// reminders, so it's at most 30 s stale.
     private(set) var nextCall: CalendarService.NextCall?
@@ -119,6 +125,7 @@ final class CallWatcher: NSObject, UNUserNotificationCenterDelegate {
         // Not while a start is in flight: auto mode sets the flag just before
         // the recording (a few awaits away) actually begins.
         if !isRecording, !manager.isBusy, !autoStartInFlight { autoStarted = false }
+        if !isRecording, !autoStartInFlight, listeningApp != nil { listeningApp = nil }
         // A stop prompt outlives its recording only until the recording ends,
         // and a start prompt is moot once a recording runs (started from the
         // dashboard, say).
@@ -158,7 +165,7 @@ final class CallWatcher: NSObject, UNUserNotificationCenterDelegate {
                 detector.rearm()
                 return
             }
-            let name = CallDetector.displayName(for: appID)
+            let name = CallDetector.meetingName(for: appID)
             let eventTitle = manager.calendar.isConnected ? manager.calendar.currentEvent()?.title : nil
             if mode == .auto {
                 autoStarted = true
@@ -167,6 +174,7 @@ final class CallWatcher: NSObject, UNUserNotificationCenterDelegate {
                     let started = await manager.startDetectedCall(appID: appID)
                     autoStartInFlight = false
                     if started {
+                        listeningApp = name
                         post(id: Self.promptID, title: "Parrot is recording",
                              body: "Your \(eventTitle.map { "“\($0)” " } ?? "")\(name) call is being recorded.",
                              category: Self.stopCategory)
@@ -204,7 +212,9 @@ final class CallWatcher: NSObject, UNUserNotificationCenterDelegate {
         guard let prompt, let manager = recordingManager else { return }
         clearPrompt()
         switch prompt.kind {
-        case .start: Task { _ = await manager.startDetectedCall(appID: prompt.appID) }
+        case .start:
+            let name = prompt.appName
+            Task { if await manager.startDetectedCall(appID: prompt.appID) { listeningApp = name } }
         case .stop: Task { await manager.stopRecording() }
         }
     }

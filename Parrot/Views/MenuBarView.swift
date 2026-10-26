@@ -186,7 +186,11 @@ struct MenuBarView: View {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 8) {
                     Circle().fill(Color.red).frame(width: 8, height: 8)
-                    Text(L("Recording")).font(.system(size: 13, weight: .medium))
+                    if let app = recordingManager.callWatcher.listeningApp {
+                        Text("Listening: \(app)").font(.system(size: 13, weight: .medium)).lineLimit(1)
+                    } else {
+                        Text(L("Recording")).font(.system(size: 13, weight: .medium))
+                    }
                     Spacer()
                     Text(recordingManager.formattedElapsedTime)
                         .font(.system(size: 13).monospacedDigit())
@@ -287,7 +291,7 @@ struct MenuBarView: View {
         if let next = recordingManager.callWatcher.nextCall {
             let name = next.event.title.isEmpty ? "" : " “\(Self.short(next.event.title))”"
             if next.joinable {
-                Button(next.event.callLink == nil ? "Record\(name)" : "Join & Record\(name)") {
+                Button(next.event.callLink == nil ? LocalizedStringKey("Record\(name)") : LocalizedStringKey("Join & Record\(name)")) {
                     if let link = next.event.callLink { NSWorkspace.shared.open(link) }
                     Task { await recordingManager.startDetectedCall(appID: nil) }
                 }

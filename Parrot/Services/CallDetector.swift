@@ -49,6 +49,30 @@ enum MicActivity {
         return apps
     }
 
+    /// ck-parrot 2.1.1: known meeting apps playing audio (students talking)
+    /// count too. Tencent Meeting / DingTalk release the mic while the
+    /// teacher is muted, which made a muted class read as "no call".
+    static func meetingOutputProcesses(excludingPID ownPID: pid_t = getpid()) -> [String] {
+        guard #available(macOS 14.2, *) else { return [] }
+        let system = AudioObjectID(kAudioObjectSystemObject)
+        var address = AudioObjectPropertyAddress(
+            mSelector: kAudioHardwarePropertyProcessObjectList,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        var size: UInt32 = 0
+        guard AudioObjectGetPropertyDataSize(system, &address, 0, nil, &size) == noErr, size > 0 else { return [] }
+        var ids = [AudioObjectID](repeating: 0, count: Int(size) / MemoryLayout<AudioObjectID>.size)
+        guard AudioObjectGetPropertyData(system, &address, 0, nil, &size, &ids) == noErr else { return [] }
+        var apps: [String] = []
+        for id in ids where uint32(id, kAudioProcessPropertyIsRunningOutput) == 1 {
+            if processPID(id) == ownPID { continue }
+            guard let bundleID = string(id, kAudioProcessPropertyBundleID), !bundleID.isEmpty else { continue }
+            if CallDetector.isMeetingApp(bundleID) { apps.append(bundleID) }
+        }
+        return apps
+    }
+
     /// Pre-14.2 fallback: whether ANY process (us included) uses the default
     /// input device. Only meaningful while Parrot itself isn't recording.
     static func defaultInputInUse() -> Bool {
@@ -70,7 +94,7 @@ enum MicActivity {
     /// detector for a nil reading instead of treating it as "mic released"
     /// (which would re-offer a call the moment a mid-call recording stops).
     static func snapshot(isRecording: Bool) -> [String]? {
-        if let apps = inputProcesses() { return apps }
+        if let apps = inputProcesses() { return apps + meetingOutputProcesses() }
         if isRecording { return nil }
         return defaultInputInUse() ? [CallDetector.unknownApp] : []
     }
@@ -203,9 +227,49 @@ struct CallDetector {
         return id
     }
 
+    /// ck-parrot 2.1.1: dedicated meeting apps (prefix match, helpers included).
+    /// Their audio output alone means a meeting is on.
+    static let meetingApps: [(String, String)] = [
+        ("com.tencent.meeting", "腾讯会议"),
+        ("com.tencent.tencentmeeting", "腾讯会议"),
+        ("com.alibaba.DingTalkMac", "钉钉"),
+        ("com.alibaba.dingtalk", "钉钉"),
+        ("com.bytedance.macos.feishu", "飞书"),
+        ("com.bytedance.lark", "飞书"),
+        ("com.larksuite", "Lark"),
+        ("com.electron.lark", "飞书"),
+        ("com.tencent.WeWorkMac", "企业微信"),
+        ("com.huawei.welink", "华为云 WeLink"),
+        ("com.huawei.cloudlink", "华为云会议"),
+        ("us.zoom", "Zoom"),
+        ("com.microsoft.teams", "Microsoft Teams"),
+        ("com.cisco.webexmeetingsapp", "Webex"),
+        ("Cisco-Systems.Spark", "Webex"),
+    ]
+
+    static func isMeetingApp(_ bundleID: String) -> Bool {
+        let id = bundleID.lowercased()
+        return meetingApps.contains { id == $0.0.lowercased() || id.hasPrefix($0.0.lowercased() + ".") }
+    }
+
     /// A friendly name for prompts ("Zoom", "Chrome").
     static func displayName(for appID: String) -> String {
+        if let hit = meetingApps.first(where: { appID.lowercased() == $0.0.lowercased() || appID.lowercased().hasPrefix($0.0.lowercased() + ".") }) {
+            return hit.1
+        }
+        if let meeting = BrowserMeeting.title(for: appID) { return meeting }
         let known: [(String, String)] = [
+            ("com.tencent.xinWeChat", "微信"),
+            ("com.tencent.qq", "QQ"),
+            // ck-parrot v2.1.1: domestic meeting apps by bundle id.
+            ("com.tencent.meeting", "腾讯会议"),
+            ("com.tencent.wemeet", "腾讯会议"),
+            ("com.alibaba.DingTalkMac", "钉钉"),
+            ("com.bytedance.macos.feishu", "飞书"),
+            ("com.electron.lark", "飞书"),
+            ("com.tencent.WeWorkMac", "企业微信"),
+            ("com.tencent.xinWeChat", "微信"),
+            ("com.tencent.qq", "QQ"),
             ("us.zoom", "Zoom"),
             ("com.microsoft.teams", "Microsoft Teams"),
             ("com.apple.FaceTime", "FaceTime"),
@@ -232,6 +296,43 @@ struct CallDetector {
                 .replacingOccurrences(of: ".app", with: "")
         }
         return appID.split(separator: ".").last.map(String.init) ?? appID
+    }
+
+    /// Browser bundle ids whose window titles may name a web meeting.
+    static let browserIDs: [String] = ["com.google.Chrome", "com.apple.Safari", "company.thebrowser",
+                                       "com.microsoft.edgemac", "org.mozilla.firefox", "com.brave.Browser"]
+
+    /// ck-parrot v2.1.1: a web meeting named by a browser window title
+    /// ("Meet - abc-defg-hij" → "Google Meet"). Pure, so it is unit-tested.
+    static func webMeeting(inTitle title: String) -> String? {
+        let t = title.lowercased()
+        let rules: [(String, String)] = [
+            ("meet.google.com", "Google Meet"), ("google meet", "Google Meet"), ("meet - ", "Google Meet"),
+            ("腾讯会议", "腾讯会议"), ("voovmeeting", "腾讯会议"), ("meeting.tencent.com", "腾讯会议"),
+            ("钉钉", "钉钉"), ("飞书会议", "飞书"), ("vc.feishu.cn", "飞书"),
+            ("zoom meeting", "Zoom"), ("app.zoom.us", "Zoom"),
+            ("microsoft teams", "Microsoft Teams"), ("webex", "Webex"),
+        ]
+        return rules.first(where: { t.contains($0.0) })?.1
+    }
+
+    /// The name to show for a detected call. For browsers, looks at the
+    /// browser's on-screen window titles; titles are only readable with the
+    /// Screen Recording permission, otherwise falls back to the browser name.
+    static func meetingName(for appID: String) -> String {
+        let base = displayName(for: appID)
+        guard browserIDs.contains(where: { appID.hasPrefix($0) }) else { return base }
+        let pids = Set(NSRunningApplication.runningApplications(withBundleIdentifier: appID).map(\.processIdentifier))
+        guard !pids.isEmpty,
+              let info = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID)
+                as? [[String: Any]] else { return base }
+        for w in info {
+            guard let pid = w[kCGWindowOwnerPID as String] as? pid_t, pids.contains(pid),
+                  let title = w[kCGWindowName as String] as? String, let hit = webMeeting(inTitle: title)
+            else { continue }
+            return "\(hit)（\(base)）"
+        }
+        return base
     }
 
     /// The app declined the offer for now (model still loading, an import
@@ -277,5 +378,42 @@ struct CallDetector {
             return .callEnded
         }
         return nil
+    }
+}
+
+/// ck-parrot 2.1.1: a browser holding the mic is named after the meeting
+/// in its window title ("Google Meet（Chrome）"). Window titles need the
+/// screen-recording permission Parrot already asks for; without it the
+/// titles are empty and the plain browser name is used.
+enum BrowserMeeting {
+    static let browsers: [String: String] = [
+        "com.google.Chrome": "Chrome", "com.apple.Safari": "Safari", "com.microsoft.edgemac": "Edge",
+        "org.mozilla.firefox": "Firefox", "com.brave.Browser": "Brave", "company.thebrowser.Browser": "Arc",
+    ]
+    static let markers: [(String, String)] = [
+        ("Google Meet", "Google Meet"), ("meet.google.com", "Google Meet"), ("Meet - ", "Google Meet"),
+        ("腾讯会议", "腾讯会议"), ("meeting.tencent.com", "腾讯会议"), ("Zoom", "Zoom"),
+        ("Microsoft Teams", "Microsoft Teams"), ("钉钉", "钉钉"), ("飞书", "飞书"), ("Webex", "Webex"),
+    ]
+
+    /// Pure: which meeting a set of window titles shows, if any.
+    static func meeting(in titles: [String]) -> String? {
+        for title in titles {
+            if let hit = markers.first(where: { title.localizedCaseInsensitiveContains($0.0) }) { return hit.1 }
+        }
+        return nil
+    }
+
+    static func title(for appID: String) -> String? {
+        guard let browser = browsers.first(where: { appID == $0.key || appID.hasPrefix($0.key + ".") }) else { return nil }
+        let pids = Set(NSRunningApplication.runningApplications(withBundleIdentifier: browser.key).map(\.processIdentifier))
+        guard !pids.isEmpty,
+              let info = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]]
+        else { return nil }
+        let titles = info.compactMap { w -> String? in
+            guard let pid = w[kCGWindowOwnerPID as String] as? pid_t, pids.contains(pid) else { return nil }
+            return w[kCGWindowName as String] as? String
+        }
+        return meeting(in: titles).map { "\($0)（\(browser.value)）" }
     }
 }

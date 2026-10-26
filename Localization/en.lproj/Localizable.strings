@@ -1155,3 +1155,10 @@
 "AI Model" = "AI Model";
 "Switch" = "Switch";
 "Takes effect from the next recording." = "Takes effect from the next recording.";
+
+/* ck-parrot 2.1.1 menu-bar panel */
+"Record %@ Call" = "Record %@ Call";
+"Record%@" = "Record%@";
+"Join & Record%@" = "Join & Record%@";
+"Next%@ at %@" = "Next%@ at %@";
+"Listening: %@" = "Listening: %@";

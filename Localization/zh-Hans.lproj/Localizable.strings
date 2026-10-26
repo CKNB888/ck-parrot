@@ -1155,3 +1155,10 @@
 "AI Model" = "AI 模型";
 "Switch" = "切换";
 "Takes effect from the next recording." = "下次录音起生效。";
+
+/* ck-parrot 2.1.1 menu-bar panel */
+"Record %@ Call" = "录制%@通话";
+"Record%@" = "录制%@";
+"Join & Record%@" = "加入并录制%@";
+"Next%@ at %@" = "下一场%1$@：%2$@";
+"Listening: %@" = "正在监听：%@";

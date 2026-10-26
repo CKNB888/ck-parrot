@@ -3402,6 +3402,11 @@ enum ProfileTest {
         check("notifications: warn for meeting reminders alone", N.needsWarning(.off, mode: .off, reminders: true))
         check("notifications: quiet when nothing needs them", !N.needsWarning(.off, mode: .off, reminders: false))
         check("notifications: quiet when on", !N.needsWarning(.on, mode: .ask, reminders: true))
+        check("腾讯会议 named", D.displayName(for: "com.tencent.meeting") == "腾讯会议")
+        check("钉钉 named", D.displayName(for: "com.alibaba.DingTalkMac") == "钉钉")
+        check("web meeting: Google Meet title", D.webMeeting(inTitle: "Meet - abc-defg-hij") == "Google Meet")
+        check("web meeting: 腾讯会议网页版", D.webMeeting(inTitle: "腾讯会议 - 网页版") == "腾讯会议")
+        check("web meeting: ordinary page is not a meeting", D.webMeeting(inTitle: "GitHub - CKNB888") == nil)
         check("user-ignored app dropped", D.relevantApps(["us.zoom.xos"], ignored: ["us.zoom.xos"]).isEmpty)
         check("ignoring Chrome covers its helper",
               D.relevantApps(["com.google.Chrome.helper"], ignored: ["com.google.Chrome"]).isEmpty)
@@ -3414,8 +3419,17 @@ enum ProfileTest {
         check("name: Teams", D.displayName(for: "com.microsoft.teams2") == "Microsoft Teams")
         check("name: Chrome", D.displayName(for: "com.google.Chrome") == "Chrome")
         check("name: unknown process", D.displayName(for: D.unknownApp) == "Another app")
-        check("auto-record defaults to ask", AutoRecordMode(rawValue: "nonsense") == nil
-              && (UserDefaults.standard.string(forKey: "__none__").flatMap(AutoRecordMode.init) ?? .ask) == .ask)
+        check("auto-record defaults to auto (打开即监听)", AutoRecordMode(rawValue: "nonsense") == nil
+              && (UserDefaults.standard.string(forKey: "__none__").flatMap(AutoRecordMode.init) ?? AutoRecordMode.fallback) == .auto)
+        check("meeting app: Tencent Meeting named in Chinese", D.displayName(for: "com.tencent.meeting") == "腾讯会议")
+        check("meeting app: DingTalk named", D.displayName(for: "com.alibaba.DingTalkMac") == "钉钉")
+        check("meeting app: Feishu / WeCom recognised", D.isMeetingApp("com.bytedance.macos.feishu") && D.isMeetingApp("com.tencent.WeWorkMac"))
+        check("meeting app: helper folded in", D.isMeetingApp("com.tencent.meeting.helper"))
+        check("meeting app: WeChat / Chrome output alone is not a meeting", !D.isMeetingApp("com.tencent.xinWeChat") && !D.isMeetingApp("com.google.Chrome"))
+        check("meeting app: prefix needs a dot boundary", !D.isMeetingApp("com.tencent.meetingfake"))
+        check("browser meeting: Google Meet title", BrowserMeeting.meeting(in: ["Meet - abc-defg-hij", "Inbox"]) == "Google Meet")
+        check("browser meeting: Tencent web", BrowserMeeting.meeting(in: ["腾讯会议 - 网页版"]) == "腾讯会议")
+        check("browser meeting: ordinary tab", BrowserMeeting.meeting(in: ["GitHub", "Docs"]) == nil)
     }
 
     static func event(_ id: String, _ title: String, start: TimeInterval, minutes: Double,

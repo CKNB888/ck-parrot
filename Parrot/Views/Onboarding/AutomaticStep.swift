@@ -2,7 +2,7 @@ import SwiftUI
 
 struct AutomaticStep: View {
     @Environment(RecordingManager.self) private var recordingManager
-    @AppStorage(AutoRecordMode.defaultsKey) private var autoRecordRaw = AutoRecordMode.ask.rawValue
+    @AppStorage(AutoRecordMode.defaultsKey) private var autoRecordRaw = AutoRecordMode.fallback.rawValue
     @State private var calendarConnecting = false
     @State private var notifications: NotificationAccess.State = .notAsked
     @State private var loginItemOn = LoginItem.state == .on || LoginItem.state == .needsApproval
