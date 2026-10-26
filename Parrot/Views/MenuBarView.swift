@@ -140,7 +140,7 @@ struct MenuBarView: View {
                     HStack {
                         Text("AI Model").font(.system(size: 12)).foregroundStyle(.secondary)
                         Spacer()
-                        Text(verbatim: "\(providerKind.label) · \(panelModel")
+                        Text(verbatim: "\(providerKind.label) · \(panelModel)")
                             .font(.system(size: 12, weight: .medium)).lineLimit(1)
                         Image(systemName: showModels ? "chevron.up" : "chevron.down").font(.system(size: 10))
                     }
